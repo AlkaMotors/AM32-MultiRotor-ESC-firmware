@@ -1,7 +1,7 @@
 //#define FD6288
-#define TTRC4IN1              // or iflight target
+//#define TTRC4IN1              // or iflight target
 //#define MP6531
-//#define tmotor55     // like iflight but with leds
+#define tmotor55     // like iflight but with leds
 //#define tmotor45
 //#define hglrc
 
