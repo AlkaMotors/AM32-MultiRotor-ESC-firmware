@@ -6,6 +6,7 @@
  */
 
 #include "dshot.h"
+
 //#include "serial_telemetry.h"
 
 int dpulse[16] = {0} ;
@@ -31,7 +32,9 @@ const char gcr_encode_table[16] = { 0b11001,
 int shift_amount = 0;
 uint32_t gcrnumber;
 extern int e_com_time;
+extern int zero_crosses;
 extern char send_telemetry;
+extern int smoothedinput;
 int dshot_full_number;
 
 
@@ -79,9 +82,10 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					dshot_goodcounts++;
 					if(dpulse[11]==1){
                     send_telemetry=1;
-					}else{
-					send_telemetry=0;
 					}
+//					else{
+//					send_telemetry=0;
+//					}
 					if (tocheck > 47){
 
 
@@ -105,34 +109,50 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
 					case 1:
 						playInputTune();
+
 					break;
 
 					case 2:
 						playInputTune2();
+
 				    break;
+
+					case 3:
+						playBeaconTune3();
+
+					break;
 
 					case 7:
 						dir_reversed = 0;
+						playInputTune2();
+
 				    break;
 
 				    case 8:
 				    	dir_reversed = 1;
+				    	playInputTune();
+
 				    break;
 
 					case 9:
 						bi_direction = 0;
+						playInputTune2();
+
 						armed = 0;
 						zero_input_count = 0;
+
 				    break;
 
 					case 10:
 						bi_direction = 1;
+						playInputTune();
+
 						zero_input_count = 0;
 						armed = 0;
 				    break;
 
 					case 12:
-						//	storeEEpromConfig();
+						saveEEpromSettings();
 					while (1) {   // resets esc as iwdg times out
 
 					}
@@ -164,6 +184,9 @@ void make_dshot_package(){
 //	TIM8->CNT = 0;
 
  // e_com_time = (commutation_interval * 6 ) >>1;
+//if(zero_crosses < 20 && e_com_time < ){
+//	e_com_time = smoothedinput<<2;
+//}
   if (!running){
 	  e_com_time = 65535;
   }
@@ -217,11 +240,11 @@ for (int i = 15; i >= 9 ; i--){
 //		  gcr[1] = high_bit_length;        //  since pwm is inverted
 //          gcr[22] = 0;
 
-		  gcr[1] = 64;
+		  gcr[1+7] = 64;
 		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
-			  gcr[20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[20-i]>>6)) << 6;        // exclusive ored with number before it multiplied by 64 to match output timer.
+			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) << 6;        // exclusive ored with number before it multiplied by 64 to match output timer.
 		  }
-          gcr[0] = 0;
+          gcr[7] = 0;
 
 
 }

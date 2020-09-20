@@ -12,7 +12,10 @@
 void playStartupTune(void);
 void playInputTune(void);
 void playInputTune2(void);
+void playBeaconTune3(void);
 void playDuskingTune(void);
+
+void saveEEpromSettings(void);
 
 extern void delayMillis();
 

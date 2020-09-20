@@ -63,6 +63,15 @@ int serial_transfer = 0;
 extern void transfercomplete();
 extern void PeriodElapsedCallback();
 extern void interruptRoutine();
+extern void doPWMChanges();
+extern void tenKhzRoutine();
+extern void sendDshotDma();
+extern void receiveDshotDma();
+
+extern char send_telemetry;
+extern int count;
+extern char telemetry_done;
+extern uint16_t process_time;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -151,20 +160,24 @@ void DMA1_Channel2_3_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
 	  if(LL_DMA_IsActiveFlag_TC2(DMA1))
 	  {
+	//	telemetry_done = 1;
 		serial_transfer++;
+		send_telemetry = 0;
 	    LL_DMA_ClearFlag_GI2(DMA1);
+	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
 	    /* Call function Transmission complete Callback */
 
 	  }
 	  else if(LL_DMA_IsActiveFlag_TE2(DMA1))
 	  {
 		  LL_DMA_ClearFlag_GI2(DMA1);
+		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
 	    /* Call Error function */
 	   // USART_TransferError_Callback();
 	  }
 
 
-	LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+
   /* USER CODE END DMA1_Channel2_3_IRQn 0 */
   
   /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
@@ -184,18 +197,44 @@ void DMA1_Channel4_5_IRQHandler(void)
 	}
 	  if(LL_DMA_IsActiveFlag_TC5(DMA1) == 1)
 	  {
+
 	    LL_DMA_ClearFlag_GI5(DMA1);
 
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
 
-
+//	    TIM6->CNT = 0;
+//	    TIM17->CNT = 0;
+//	    TIM6->SR = 0x00;
 	    transfercomplete();
+
+
 
 	  }
 	  else if(LL_DMA_IsActiveFlag_TE5(DMA1) == 1)
 	  {
 		  LL_DMA_ClearFlag_GI5(DMA1);
 	  }
+
+//	  if(LL_DMA_IsActiveFlag_TC4(DMA1))
+//	  {
+//		serial_transfer++;
+//	    LL_DMA_ClearFlag_GI4(DMA1);
+//	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+//	    /* Call function Transmission complete Callback */
+//
+//	  }
+//	  else if(LL_DMA_IsActiveFlag_TE4(DMA1))
+//	  {
+//		  LL_DMA_ClearFlag_GI4(DMA1);
+//		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+//	    /* Call Error function */
+//	   // USART_TransferError_Callback();
+//	  }
+
+
+
+
+
 #endif
 
 
@@ -212,7 +251,9 @@ void DMA1_Channel4_5_IRQHandler(void)
 
 		    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
 
-
+//		    TIM6->CNT = 0;
+//		    TIM17->CNT = 0;
+//		    TIM6->SR = 0x00;
 		    transfercomplete();
 
 		  }
@@ -229,6 +270,7 @@ void DMA1_Channel4_5_IRQHandler(void)
   */
 void ADC1_COMP_IRQHandler(void)
 {
+//	TIM17->CNT = 0;
   /* USER CODE BEGIN ADC1_COMP_IRQn 0 */
 	  if(LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_21) != RESET)
 	  {
@@ -239,7 +281,7 @@ void ADC1_COMP_IRQHandler(void)
 	    interruptRoutine();
 	  }
   /* USER CODE END ADC1_COMP_IRQn 0 */
-  
+	//  process_time = TIM17->CNT;
   /* USER CODE BEGIN ADC1_COMP_IRQn 1 */
 
   /* USER CODE END ADC1_COMP_IRQn 1 */
@@ -251,6 +293,14 @@ void ADC1_COMP_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+	//TIM6->DIER &= ~(0x1UL << (0U));
+	  if(LL_TIM_IsActiveFlag_UPDATE(TIM6) == 1)
+	  {
+
+	    LL_TIM_ClearFlag_UPDATE(TIM6);
+	    tenKhzRoutine();
+
+	  }
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
   
@@ -265,11 +315,14 @@ void TIM6_DAC_IRQHandler(void)
 void TIM14_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM14_IRQn 0 */
-	  if(LL_TIM_IsActiveFlag_UPDATE(TIM14) == 1)
-	  {
+//	  if(LL_TIM_IsActiveFlag_UPDATE(TIM14) == 1)
+//	  {
+	LL_TIM_ClearFlag_UPDATE(TIM14);
+
 		PeriodElapsedCallback();
-	    LL_TIM_ClearFlag_UPDATE(TIM14);
-	  }
+
+//	  }
+
   /* USER CODE END TIM14_IRQn 0 */
   /* USER CODE BEGIN TIM14_IRQn 1 */
 
@@ -295,6 +348,8 @@ void TIM16_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
+
+
 
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
@@ -357,7 +412,21 @@ void DMA1_Channel1_IRQHandler(void)         // ADC
 	  }
 }
 
+void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
+{
+	  if(LL_TIM_IsActiveFlag_CC1(TIM1) == 1)
+	  {
 
+	    LL_TIM_ClearFlag_CC1(TIM1);
+	  }
+
+	  if(LL_TIM_IsActiveFlag_UPDATE(TIM1) == 1)
+	  {
+		  LL_TIM_ClearFlag_UPDATE(TIM1);
+		  doPWMChanges();
+
+	  }
+}
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

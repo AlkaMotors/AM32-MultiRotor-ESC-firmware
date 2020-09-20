@@ -21,4 +21,7 @@ void makeTelemPackage(uint8_t temp,
 void telem_UART_Init(void);
 void send_telem_DMA();
 
+void telem_UART_Init_CH4(void);
+void send_telem_DMA_CH4();
+
 #endif /* SERIAL_TELEMETRY_H_ */

@@ -1,7 +1,7 @@
-//#define FD6288
+#define FD6288
 //#define TTRC4IN1              // or iflight target
 //#define MP6531
-#define tmotor55     // like iflight but with leds
+//#define tmotor55     // like iflight but with leds
 //#define tmotor45
 //#define hglrc
 
@@ -13,6 +13,8 @@
 
 #ifdef FD6288
 
+
+#define    FIRMWARE_NAME  "FD6288_PA2  "
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
 #define    INPUT_PIN_PORT              GPIOA
@@ -54,6 +56,7 @@
 
 #ifdef TTRC4IN1
 
+#define    FIRMWARE_NAME  "IFlight_50A "
 #define     USE_TIMER_3_CHANNEL_1
 
 #define    INPUT_PIN               LL_GPIO_PIN_4
@@ -96,6 +99,7 @@
 
 #ifdef  MP6531
 
+#define    FIRMWARE_NAME  "Mp6531_Dev  "
 
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
@@ -133,6 +137,8 @@
 
 
 #ifdef tmotor55
+
+#define    FIRMWARE_NAME  "T-MOTOR 55A "
 
 #define     USE_TIMER_3_CHANNEL_1
 
@@ -211,6 +217,8 @@
 
 
 #ifdef hglrc
+
+#define    FIRMWARE_NAME  "HGLRC_60A   "
 
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2

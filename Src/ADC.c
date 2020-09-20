@@ -30,7 +30,7 @@ void ADC_DMA_Callback(){  // read dma buffer and set extern variables
 
 #else
 ADC_raw_temp =    ADCDataDMA[2];
-ADC_raw_volts  = ADCDataDMA[0]/2;
+ADC_raw_volts  = ADCDataDMA[0];
 ADC_raw_current =ADCDataDMA[1];
 #endif
 }

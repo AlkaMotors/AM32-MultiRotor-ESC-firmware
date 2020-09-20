@@ -13,6 +13,8 @@
 //#define APP_START (uint32_t)0x08001000
 //#define FLASH_STORAGE 0x08005000  // at the 31kb mark
 #define page_size 0x400                   // 1 kb for f051
+
+
 uint32_t FLASH_FKEY1 =0x45670123;
 uint32_t FLASH_FKEY2 =0xCDEF89AB;
 
