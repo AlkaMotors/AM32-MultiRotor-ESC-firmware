@@ -7,6 +7,7 @@
 
 #include "sounds.h"
 #include "phaseouts.h"
+#include "functions.h"
 
 extern int signaltimeout;
 

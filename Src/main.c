@@ -26,6 +26,17 @@
  *
  * 1.58
  * -- move signal timeout to 10khz routine and set armed timeout to one quarter second 2500 / 10000
+ * 1.59
+ * -- moved comp order definitions to target.h
+ * -- fixed update version number if older than new version
+ * -- cleanup, moved all input and output to IO.c
+ * -- moved comparator functions to comparator.c
+ * -- removed ALOT of useless variables
+ * -- added siskin target
+ * -- moved pwm changes to 10khz routine
+ * -- moved basic functions to functions.c
+ * -- moved peripherals setup to periherals.c
+ * -- added crawler mode settings
  */
 
 
@@ -38,9 +49,13 @@
 #include "sounds.h"
 #include "ADC.h"
 #include "serial_telemetry.h"
+#include "IO.h"
+#include "comparator.h"
+#include "functions.h"
+#include "peripherals.h"
 
 uint8_t version_major = 1;
-uint8_t version_minor = 58;
+uint8_t version_minor = 59;
 
 uint8_t device_name[12] = FIRMWARE_NAME ;
 
@@ -49,13 +64,7 @@ uint8_t device_name[12] = FIRMWARE_NAME ;
 
 uint16_t DEAD_TIME = 45;
 
-int checkcount = 0;
-
-typedef enum
-{
-  GPIO_PIN_RESET = 0U,
-  GPIO_PIN_SET
-}GPIO_PinState;
+char crawler_mode = 0;
 
 char brake_on_stop = 0;
 char dir_reversed = 0;
@@ -70,23 +79,28 @@ char comp_pwm = 1;
 int min_startup_duty = 180;
 int sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
-char crawler_mode = 0;
 char advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
 char stuck_rotor_protection = 1;
 char startup_boost = 25;
+char stall_protection = 0;
+char reversing_dead_band = 1;
 
 uint16_t TIMER1_MAX_ARR = 1999;
 
 uint16_t oneKhz_timer = 0;
-char reversing_dead_band = 1;
+int checkcount = 0;
+
+typedef enum
+{
+  GPIO_PIN_RESET = 0U,
+  GPIO_PIN_SET
+}GPIO_PinState;
 
 uint16_t minimum_duty_cycle = 64;
 char quiet_mode = 1;
 char desync_check = 0;
-
 char low_kv_filter_level = 20;
 
-char stall_protection = 0;
 int duty_cycle_maximum = 1999;
 int low_rpm_level  = 20;        // thousand erpm
 int high_rpm_level = 70;      //
@@ -109,24 +123,12 @@ char send_telemetry = 0;
 char telemetry_done = 0;
 char prop_brake_active = 0;
 
-char out_put = 0;
-int int_count = 0;
-
-uint16_t filter_delay = 10;
-
 uint8_t eepromBuffer[48] ={0};
-
 uint32_t gcr[30] =  {0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,64,0,0,0,0,64,0,0,0,64,64,0,64,0};
 uint8_t gcr_size;
-
-
 uint16_t process_time = 0;
 
-uint16_t last_input_at_commutation = 0;
-uint16_t current_input;
-
 char dshot_telemetry = 0;
-char coasting = 0;
 char output = 0;
 int dshot_frametime = 0;
 
@@ -135,24 +137,11 @@ uint16_t phase_b_interval = 0;
 uint16_t phase_c_interval = 0;
 uint32_t current_EXTI_LINE;
 
-char buffer_divider = 44;
-int transfercount = 0;
 int dshot_goodcounts = 0;
 int dshot_badcounts = 0;
 uint8_t last_dshot_command = 0;
-
-int stop_time = 0;
 char old_routine = 0;
-
-int current_state= 0;
-uint16_t Current_GPIO_Pin;
-GPIO_TypeDef* current_gpio_port;
-
-
 int adjusted_input;
-int filter_level_up = 8;
-int filter_level_down = 8;
-int dshot_runout_timer = 62500;
 
 #define TEMP30_CAL_VALUE            ((uint16_t*)((uint32_t)0x1FFFF7B8))
 #define TEMP110_CAL_VALUE           ((uint16_t*)((uint32_t)0x1FFFF7C2))
@@ -174,21 +163,13 @@ int timeout_count = 0;
 int bemf_timeout_threshold = 10;
 
 int changeover_step = 5;
-
-int max_change;
-int offset;
-
-int ticks = 0;
 int filter_level = 5;
-int toggled = 0;
 int running = 0;
 int advance = 0;
 int advancedivisor = 3;
-int blanktime;
 int START_ARR=800;
-int rising = 1;
+char rising = 1;
 int count = 0;
-
 
 const int pwmSin[] = {180,183,186,189,193,196,199,202,
 		205,208,211,214,217,220,224,227,
@@ -247,41 +228,12 @@ int forward = 1;
 int gate_drive_offset = 60;
 
 int stuckcounter = 0;
-int duty_cycle_limit = 0;
-
-int looptime;
 int k_erpm;
-
-char reversed_direction = 0;
-
-char ic_timer_prescaler;
-char output_timer_prescaler;
 
 uint16_t adjusted_duty_cycle;
 uint16_t tim1_arr = 1999;
-
-int threshold_up = 20;
-int threshold_down = 20;
 int bad_count = 0;
-
-int ADCtimer= 30;
-int demagtime = 50;
-
-int whatstepisthis = 0 ;       // for debugging
-int myneutral = 1300; // for debugging
-int myneutralup = 1500;
-
-
-int buffersize = 32;
-int smallestnumber = 20000;
-uint32_t dma_buffer[64];
-int propulse[4] = {0,0,0,0};
-
-int calcCRC;
-int checkCRC;
 int dshotcommand;
-int max_servo_deviation = 150;
-int servorawinput;
 int armed_count_threshold = 1000;
 
 char armed = 0;
@@ -298,83 +250,28 @@ char oneshot125 = 0;
 char servoPwm = 0;
 int zero_crosses;
 
-
-int integral = 0;
-int threshold = 850;
 int zcfound = 0;
-int difference;
+
 int bemfcounter;
 int min_bemf_counts_up = 7;
 int min_bemf_counts_down = 7;
-int zcs = 0;
-
 int adc_timer = 600;
-int ROC = 1;
-
 int lastzctime;
 uint16_t thiszctime;
-int upthiszctime;
-int uplastzctime;
-int wait_time;
-
 int phase = 1;
-
-int tim2_start_arr= 616;
-
-uint32_t last_adc_channel;
-
 int duty_cycle = 0;
-uint32_t ADC1ConvertedValues[2] = {0,0};
-int bemf_rising = 1;
-
-int step = 1;
-int pot = 1000;
-
+char step = 1;
 uint16_t commutation_interval = 12500;
 int pwm = 1;
 int floating =2;
 int lowside = 3;
-int zero_cross_offset_up= 1;  //  up and down offset adc read
-int zero_cross_offset_down= 30;
 int sensorless = 1;
 int waitTime = 0;
-int threshhold = 5;
-
 int signaltimeout = 0;
 
 uint8_t ubAnalogWatchdogStatus = RESET;
 
-uint16_t dshot_raw_input;
-uint16_t max_dshot_deviation = 1;
 
-void SystemClock_Config(void);
-static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
-static void MX_ADC_Init(void);
-static void MX_COMP1_Init(void);
-static void MX_TIM1_Init(void);
-static void MX_TIM2_Init(void);
-static void MX_IWDG_Init(void);
-static void MX_TIM16_Init(void);
-static void MX_TIM14_Init(void);
-static void MX_TIM6_Init(void);
-static void MX_TIM17_Init(void);
-static void MX_USART1_UART_Init(void);
-
-static void UN_TIM_Init(void);
-static void LED_GPIO_init();
-
-long map(long x, long in_min, long in_max, long out_min, long out_max)
-{
-	if (x < in_min){
-		x = in_min;
-	}
-	if (x > in_max){
-		x = in_max;
-	}
-	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-
-}
 
 
 void loadEEpromSettings(){
@@ -523,171 +420,6 @@ void initAfterJump(){
 }
 
 
-
-int getAbsDif(int number1, int number2){
-	int result = number1 - number2;
-	if (result < 0) {
-	    result = -result;
-	}
-	return result;
-}
-
-
-void delayMicros(uint32_t micros){
-	TIM17->CNT = 0;
-	while (TIM17->CNT < micros){
-
-	}
-}
-
-void delayMillis(uint32_t millis){
-	TIM17->CNT = 0;
-	TIM17->PSC = 47999;
-	LL_TIM_GenerateEvent_UPDATE(TIM17);
-	while (TIM17->CNT < millis){
-
-	}
-	TIM17->PSC = 47;
-	LL_TIM_GenerateEvent_UPDATE(TIM17);
-}
-
-
-void changeToOutput(){
-	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-
-#ifdef USE_TIMER_2_CHANNEL_3
-
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM2);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM2);
-	  IC_TIMER_REGISTER->CCMR2 = 0x60;
-	  IC_TIMER_REGISTER->CCER = 0x200;
-#endif
-
-#ifdef USE_TIMER_3_CHANNEL_1
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
-	  IC_TIMER_REGISTER->CCMR1 = 0x60;
-	  IC_TIMER_REGISTER->CCER = 0x3;
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-	  LL_APB1_GRP2_ForceReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  LL_APB1_GRP2_ReleaseReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  IC_TIMER_REGISTER->CCMR1 = 0x60;                         // channel 1 tim 15
-	  IC_TIMER_REGISTER->CCER = 0x3;
-#endif
-
-	  IC_TIMER_REGISTER->PSC = output_timer_prescaler;
-	  IC_TIMER_REGISTER->ARR = 61;
-	  out_put = 1;
-	  LL_TIM_GenerateEvent_UPDATE(IC_TIMER_REGISTER);
-}
-
-void changeToInput(){
-	  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-
-#ifdef USE_TIMER_2_CHANNEL_3
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM2);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM2);
-	  IC_TIMER_REGISTER->CCMR2 = 0x1;
-	  IC_TIMER_REGISTER->CCER = 0xa00;
-#endif
-
-#ifdef USE_TIMER_3_CHANNEL_1
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
-	  IC_TIMER_REGISTER->CCER = 0xa;
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-	  LL_APB1_GRP2_ForceReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  LL_APB1_GRP2_ReleaseReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
-	  IC_TIMER_REGISTER->CCER = 0xa;
-#endif
-	  IC_TIMER_REGISTER->PSC = ic_timer_prescaler;
-	  IC_TIMER_REGISTER->ARR = 0xFFFF;
-	  LL_TIM_GenerateEvent_UPDATE(IC_TIMER_REGISTER);
-	  out_put = 0;
-
-}
-void receiveDshotDma(){
-
-
-	changeToInput();
-	IC_TIMER_REGISTER->CNT = 0;
-#ifdef USE_TIMER_2_CHANNEL_4
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR4, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
-	   LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, buffersize);
-	   LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
-	   LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
-	   LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
-#ifdef USE_TIMER_2_CHANNEL_4
-	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-
-#endif
-	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
-	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
-	//   TIM16->PSC = 1;
-
-}
-
-void sendDshotDma(){
-
-
-	changeToOutput();
-
-
-#ifdef USE_TIMER_2_CHANNEL_4
-	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR4, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-			  LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
-
-			  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, 30);
-			  LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
-			  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
-			  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
-
-#ifdef USE_TIMER_2_CHANNEL_4
-			  LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-			  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-			  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-			  LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
-			  LL_TIM_EnableAllOutputs(IC_TIMER_REGISTER);
-			  LL_TIM_EnableCounter(IC_TIMER_REGISTER);
-
-}
-
-
 void getSmoothedInput() {
 
 		total = total - readings[readIndex];
@@ -702,285 +434,27 @@ void getSmoothedInput() {
 
 }
 
-void detectInput(){
-	smallestnumber = 20000;
-	dshot = 0;
-	proshot = 0;
-	multishot = 0;
-	oneshot42 = 0;
-	oneshot125 = 0;
-	servoPwm = 0;
-	int lastnumber = dma_buffer[0];
-	for ( int j = 1 ; j < 31; j++){
-
-		if((dma_buffer[j] - lastnumber) < smallestnumber){ // blank space
-			smallestnumber = dma_buffer[j] - lastnumber;
-
-		}
-		lastnumber = dma_buffer[j];
-	}
-
-	if ((smallestnumber > 3)&&(smallestnumber < 39)){
-		ic_timer_prescaler= 0;
-		output_timer_prescaler=0;
-		dshot = 1;
-		buffer_divider = 44;
-		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
-		buffersize = 32;
-	}
-	if ((smallestnumber > 40 )&&(smallestnumber < 80)){
-		dshot = 1;
-		ic_timer_prescaler=1;
-		output_timer_prescaler=1;
-		IC_TIMER_REGISTER->CNT = 0xffff;
-		buffer_divider = 44;
-		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
-		buffersize = 32;
-	}
-	if ((smallestnumber > 100 )&&(smallestnumber < 400)){
-		multishot = 1;
-		armed_count_threshold = 1000;
-		buffersize = 4;
-	}
-//	if ((smallestnumber > 2000 )&&(smallestnumber < 3000)){
-//		oneshot42 = 1;
-//	}
-////	if ((smallestnumber > 3000 )&&(smallestnumber < 7000)){
-////		oneshot125 = 1;
-////	}
-	if (smallestnumber > 6000){
-		servoPwm = 1;
-		ic_timer_prescaler=47;
-		armed_count_threshold = 35;
-		buffersize = 4;
-	}
-
-	if (smallestnumber == 0){
-		inputSet = 0;
-	}else{
-
-		inputSet = 1;
-	}
-
-}
-
-
-void computeMSInput(){
-
-	int lastnumber = dma_buffer[0];
-	for ( int j = 1 ; j < 2; j++){
-
-		if(((dma_buffer[j] - lastnumber) < 1500) && ((dma_buffer[j] - lastnumber) > 0)){ // blank space
-
-			newinput = map((dma_buffer[j] - lastnumber),243,1200, 0, 2000);
-			break;
-		}
-		lastnumber = dma_buffer[j];
-	}
-}
-
-
-void computeServoInput(){
-
-	int lastnumber = dma_buffer[0];
-	for ( int j = 1 ; j < 3; j++){
-
-		if(((dma_buffer[j] - lastnumber) >1000 ) && ((dma_buffer[j] - lastnumber) < 2010)){ // blank space
-
-			servorawinput = map((dma_buffer[j] - lastnumber), 1030, 2000, 0, 2000);
-
-			break;
-		}
-		lastnumber = dma_buffer[j];
-	}
-	if (servorawinput - newinput > max_servo_deviation){
-		newinput += max_servo_deviation;
-	}else if(newinput - servorawinput > max_servo_deviation){
-		newinput -= max_servo_deviation;
-	}else{
-		newinput = servorawinput;
-	}
-
-}
-
-void transfercomplete(){
-	if(armed && dshot_telemetry){
-	    if(out_put){
-
-
-	  	receiveDshotDma();
-	   	return;
-	    }else{
-
-			sendDshotDma();
-			make_dshot_package();
-			computeDshotDMA();
-	    return;
-	    }
-	}
-
-	  if (inputSet == 0){
-	 	 detectInput();
-	 	receiveDshotDma();
-	 	return;
-	  }
-
-	if (inputSet == 1){
-	if(!armed){
-		signaltimeout = 0;
-		if (input < 0){
-			  						input = 0;
-			  					}
-		 		 if (input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
-		 		 			zero_input_count++;
-		 		 		}else{
-		 		 			zero_input_count = 0;
-		 		 		}
-		}
-
-if(dshot_telemetry){
-    if(out_put){
-//    	TIM17->CNT = 0;
-    	make_dshot_package();          // this takes around 10us !!
-  	computeDshotDMA();             //this is slow too..
-  	receiveDshotDma();             //holy smokes.. reverse the line and set up dma again
-   	return;
-    }else{
-		sendDshotDma();
-    return;
-    }
-}else{
-
-		if (dshot == 1){
-			computeDshotDMA();
-			if(send_telemetry){
-			  makeTelemPackage(degrees_celsius,
-					  ADC_raw_volts,
-			  					  1000,
-			  					  200,
-			  					  k_erpm);
-			  send_telem_DMA();
-			}
-			receiveDshotDma();
-		}
-		if (proshot == 1){
-		//	computeProshotDMA();
-		//	HAL_TIM_IC_Start_DMA(&IC_TIMER_POINTER, IC_TIMER_CHANNEL, dma_buffer , 16);
-		}
-
-		if  (servoPwm == 1){
-			computeServoInput();
-			IC_TIMER_REGISTER->CNT = 0;
-			signaltimeout = 0;
-			receiveDshotDma();
-		}
-//		if  (multishot){
-//			computeMSInput();
-//			HAL_TIM_IC_Start_DMA(&htim2, timer2_input_channel, dma_buffer , 3);
-//
-//		}
-//		if  (oneshot125){
-//			computeOS125Input();
-//			HAL_TIM_IC_Start_DMA(&htim2, timer2_input_channel, dma_buffer , 3);
-//
-//		}
-//		if  (oneshot42){
-//			computeOS42Input();
-//			HAL_TIM_IC_Start_DMA(&htim2, timer2_input_channel, dma_buffer , 3);
-//
-//		}
-
-	}
-	}
-}
-
-
 void getBemfState(){
 
     if (rising){
     	if (LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_LOW){
     		bemfcounter++;
     		}else{
-    	//	bemfcounter = 0;
-    			bad_count++;
-    			if(bad_count > 2){
-    				bemfcounter = 0;
-    			}
+    		bad_count++;
+    		if(bad_count > 2){
+    		bemfcounter = 0;
+    		}
    	}
     }else{
     	if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
     		bemfcounter++;
     	}else{
-    //		bemfcounter = 0;
     		bad_count++;
-    	    			if(bad_count > 2){
-    	    				bemfcounter = 0;
-    	    			}
+    	    if(bad_count > 2){
+    	    bemfcounter = 0;
+    	  }
     	}
     }
-}
-
-void maskPhaseInterrupts(){
-	EXTI->IMR &= (0 << 21);
-}
-
-void changeCompInput() {
-//	TIM3->CNT = 0;
-//	HAL_COMP_Stop_IT(&hcomp1);            // done in comparator interrupt routine
-
-	if (step == 1 || step == 4) {   // c floating
-	//	hcomp1.Init.InvertingInput = COMP_INVERTINGINPUT_IO1;
-#ifdef use_A0_B4_C5_comp_order
-		COMP->CSR = 0b1010001;        // pa5
-#else
-		COMP->CSR = 0b1100001;         // pa0
-#endif
-	}
-
-	if (step == 2 || step == 5) {     // a floating
-#ifdef MP6531
-		//COMP->CSR = 0x40;
-	//	hcomp1.Init.InvertingInput = COMP_INVERTINGINPUT_DAC1;
-		COMP->CSR = 0b1000001;                        /// if f051k6  step 2 , 5 is dac 1 ( swap comp input)
-#endif
-
-#ifdef FD6288
-	//hcomp1.Init.InvertingInput = COMP_INVERTINGINPUT_DAC2;      // PA5
-		COMP->CSR = 0b1010001;
-#endif
-#ifdef use_A0_B4_C5_comp_order
-	                                                              // PA0
-		COMP->CSR = 0b1100001;
-#endif
-	}
-
-	if (step == 3 || step == 6) {      // b floating
-#ifdef MP6531
-		//COMP->CSR = 0x50
-	//	hcomp1.Init.InvertingInput = COMP_INVERTINGINPUT_DAC2;
-		COMP->CSR = 0b1010001;
-#endif
-#if defined (FD6288) || defined (use_A0_B4_C5_comp_order)
-	//	hcomp1.Init.InvertingInput = COMP_INVERTINGINPUT_DAC1;       // PA4
-		COMP->CSR = 0b1000001;
-#endif
-	}
-	if (rising){
-
-		EXTI->RTSR = 0x0;
-	EXTI->FTSR = 0x200000;
-
-	//	hcomp1.Init.TriggerMode = COMP_TRIGGERMODE_IT_FALLING;   // polarity of comp output reversed
-	}else{                          // falling bemf
-
-	EXTI->FTSR = 0x0;
-	EXTI->RTSR = 0x200000;
-	//	hcomp1.Init.TriggerMode = COMP_TRIGGERMODE_IT_RISING;
-	}
-
-
 }
 
 void commutate(){
@@ -1004,8 +478,6 @@ void commutate(){
 		rising = !(step % 2);
 	}
 	comStep(step);
-
-
 	changeCompInput();
 
 if(commutation_interval > 4000 && crawler_mode){
@@ -1014,18 +486,13 @@ if(commutation_interval > 4000 && crawler_mode){
 	bemfcounter = 0;
 	zcfound = 0;
 	timeout_count = 0;
-
-
 }
 
 void interruptRoutine(){
-
 if ((TIM2->CNT < 125) && (duty_cycle < 600) && (zero_crosses < 500)){    //should be impossible, desync?exit anyway
-
 	return;
 }
 thiszctime = TIM2->CNT;
-
 stuckcounter++;             // stuck at 100 interrupts before the main loop happens again.
 if (stuckcounter > 100){
 	maskPhaseInterrupts();
@@ -1033,36 +500,36 @@ if (stuckcounter > 100){
 	return;
 }
 			if (rising){
-
-				for (int i = 0; i < filter_level; i++){
-					if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
-											return;
-										}
+			for (int i = 0; i < filter_level; i++){
+				if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
+				return;
+				}
 				}
 			}else{
 				for (int i = 0; i < filter_level; i++){
-					if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_LOW){
-											return;
-										}
+				if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_LOW){
+			    return;
+			    }
 				}
 			}
-//	}
 							maskPhaseInterrupts();
 							LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_21);
 							TIM2->CNT = 0 ;
 							TIM14->CNT = 0;
-		//	TIM2->CNT = 0 + (TIM2->CNT - thiszctime);
-		//	TIM14->CNT = TIM2->CNT;
+
 			TIM14->ARR = waitTime;
 			TIM14->SR = 0x00;
 			TIM14->DIER |= (0x1UL << (0U));             // enable TIM14 interrupt
 }
 
-
-
 void tenKhzRoutine(){
+	TIM1->ARR = tim1_arr;
 
-	average_interval = e_com_time / 3;
+	TIM1->CCR1 = adjusted_duty_cycle;
+	TIM1->CCR2 = adjusted_duty_cycle;
+	TIM1->CCR3 = adjusted_duty_cycle;
+
+average_interval = e_com_time / 3;
 if(desync_check){
 //	if(step==6){       // desync check
 		if(getAbsDif(average_interval,last_average_interval) > average_interval >> 1 && (zero_crosses > 40)){ //throttle resitricted before zc 40.
@@ -1074,9 +541,6 @@ old_routine = 1;
 		desync_check = 0;
 		//getSmoothedInput();
 	}
-
-
-
 	if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
 	  		              ADC_raw_volts,
@@ -1102,7 +566,7 @@ old_routine = 1;
 				input = 0;
 				inputSet = 0;
 				zero_input_count = 0;
-				smallestnumber = 20000;
+			//	smallestnumber = 20000;
 				TIM1->CCR1 = 0;
 			    TIM1->CCR2 = 0;
 				TIM1->CCR3 = 0;
@@ -1120,7 +584,7 @@ old_routine = 1;
 			input = 0;
 			inputSet = 0;
 			zero_input_count = 0;
-			smallestnumber = 20000;
+		//	smallestnumber = 20000;
 			TIM1->CCR1 = 0;
 		    TIM1->CCR2 = 0;
 			TIM1->CCR3 = 0;
@@ -1218,7 +682,7 @@ void zcfoundroutine(){
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
-	blanktime = commutation_interval / 4;
+//	blanktime = commutation_interval / 4;
 	while (TIM2->CNT - thiszctime < waitTime - advance){
 
 	}
@@ -1228,9 +692,10 @@ void zcfoundroutine(){
 
     zero_crosses++;
     if(crawler_mode){
-    	 if (zero_crosses >= 100 && adjusted_input > 400) {
-    	    	old_routine = 0;
-    	    	EXTI->IMR |= (1 << 21);          // enable interrupt
+   	 if (zero_crosses >= 100 && commutation_interval < 2000) {
+   	    	old_routine = 0;
+   	    	EXTI->IMR |= (1 << 21);          // enable interrupt
+
     	 }
     }else{
    // if (commutation_interval < 2000 || zero_crosses > 100) {
@@ -1244,11 +709,11 @@ void zcfoundroutine(){
 
 
 void doPWMChanges(){
-	TIM1->ARR = tim1_arr;
-
-	TIM1->CCR1 = adjusted_duty_cycle;
-	TIM1->CCR2 = adjusted_duty_cycle;
-	TIM1->CCR3 = adjusted_duty_cycle;
+//	TIM1->ARR = tim1_arr;
+//
+//	TIM1->CCR1 = adjusted_duty_cycle;
+//	TIM1->CCR2 = adjusted_duty_cycle;
+//	TIM1->CCR3 = adjusted_duty_cycle;
 
 }
 
@@ -1287,7 +752,7 @@ int main(void)
   LL_TIM_EnableAllOutputs(TIM1);
   /* Force update generation */
   LL_TIM_GenerateEvent_UPDATE(TIM1);
-  LL_TIM_EnableIT_UPDATE(TIM1);
+ // LL_TIM_EnableIT_UPDATE(TIM1);
 #ifdef USE_ADC_INPUT
 
 #else
@@ -1312,17 +777,13 @@ int main(void)
    LL_TIM_EnableCounter(TIM2);
    LL_TIM_GenerateEvent_UPDATE(TIM2);
 
-   LL_TIM_EnableCounter(TIM6);                 // delay timer
+   LL_TIM_EnableCounter(TIM6);                 // 10khz timer
    LL_TIM_GenerateEvent_UPDATE(TIM6);
 
-   TIM6->DIER |= (0x1UL << (0U));
-
-  // TIM16->DIER &= ~(0x1UL << (0U));
-
+   TIM6->DIER |= (0x1UL << (0U));  // enable interrupt
 
    __IO uint32_t wait_loop_index = 0;
-
-   /* Enable comparator */
+  /* Enable comparator */
    LL_COMP_Enable(COMP1);
 
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
@@ -1332,7 +793,7 @@ int main(void)
    }
 
    playStartupTune();
-   playDuskingTune();
+ //  playDuskingTune();
    ADC_Init();
    enableADC_DMA();
    activateADC();
@@ -1350,9 +811,35 @@ int main(void)
    }
 #else
   receiveDshotDma();
+
+  if(crawler_mode){
+  	throttle_max_at_low_rpm = 1000;
+  	throttle_ranges_adjustment = 1;
+  	bi_direction = 1;
+  	use_sin_start = 1;
+  	low_rpm_throttle_limit = 1;
+  	VARIABLE_PWM = 0;
+  	motor_kv = 1000;
+  	 motor_poles = 14;
+  	lowkv = 0;
+  	comp_pwm = 1;
+  	min_startup_duty = 130;
+  	sin_mode_min_s_d = 130;
+  	bemf_timeout = 10;
+
+  	 advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
+  	 stuck_rotor_protection = 0;
+  	 stall_protection = 1;
+
+  	 minimum_duty_cycle = 20;
+
+  }else{
+
+
+
   loadEEpromSettings();
 
-  if(version_major >= eepromBuffer[3]  && version_minor > eepromBuffer[4]){
+  if(version_major != eepromBuffer[3]  && version_minor > eepromBuffer[4]){
 	  eepromBuffer[3] = version_major;
 	  eepromBuffer[4] = version_minor;
 	  for(int i = 0; i < 12 ; i ++){
@@ -1361,6 +848,7 @@ int main(void)
 	  saveEEpromSettings();
   }
 
+  }
 	if (dir_reversed == 1){
 			forward = 0;
 		}else{
@@ -1368,13 +856,14 @@ int main(void)
 		}
 	tim1_arr = TIMER1_MAX_ARR;
 
-#endif
-//TODO, timeouts are based on counts of the main loop, which currently takes about 30us. This is not good and the control loop should be done on timed interval.
+	if(!comp_pwm){
+		use_sin_start = 0;
+	}
 
+#endif
 
   while (1)
   {
-
 	  adc_counter++;
 	  if(adc_counter>50){   // for testing adc and telemetry
 		  degrees_celsius = __LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
@@ -1531,7 +1020,7 @@ if(newinput > 2000){
 #endif
 
 		  }
-		  coasting = 0;
+	//	  coasting = 0;
 	 //	 running = 1;
 	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
 	  }
@@ -1613,21 +1102,21 @@ if(newinput > 2000){
 if (zero_crosses < 150 || commutation_interval > 900 || duty_cycle < 400) {
 		advancedivisor = 4;
 		filter_level = 12;
-		filter_delay = 0;
+//		filter_delay = 0;
 	} else {
 		advancedivisor = 4;         // 15 degree advance
 		filter_level = 5;
-		filter_delay = 0;
+//		filter_delay = 0;
 
 	}
 	if (duty_cycle > 900 && zero_crosses > 100 && commutation_interval < 900){
 		filter_level = 3;
-		filter_delay = 0;
+//		filter_delay = 0;
 	}
 
 	if (commutation_interval < 90 && duty_cycle > 800){
 		filter_level = 2;
-		filter_delay = 0;
+	//	filter_delay = 0;
 	}
 
 if(lowkv){
@@ -1644,23 +1133,17 @@ if (old_routine && running){
 	 		 if (bemfcounter > min_bemf_counts_up){
 	 			 zcfound = 1;
 	 			 zcfoundroutine();
-
-
 	 		}
 	 		  }else{
 	 			  if (bemfcounter > min_bemf_counts_down){
  			  			 zcfound = 1;
 	 		  			 zcfoundroutine();
-
-
 	 			  		}
 	 		  }
 	 	  }
-//
 }
 	 	  if (TIM2->CNT > 40000 && running == 1){
-
-bemf_timout_happened ++;
+              bemf_timout_happened ++;
 	 		  zcfoundroutine();
 	 		  maskPhaseInterrupts();
 	 		  old_routine = 1;
@@ -1676,8 +1159,6 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-
-		 	//  count = 0;
              step_delay = map (input, 48, 137, 500, 100);
 	 		 delayMicros(step_delay);
 
@@ -1711,494 +1192,7 @@ if(input > 48 && armed){
 
 }
 
-// PERIPHERAL SETUP
 
-void SystemClock_Config(void)
-{
-  LL_FLASH_SetLatency(LL_FLASH_LATENCY_1);
-
-  if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_1)
-  {
-  Error_Handler();  
-  }
-  LL_RCC_HSI_Enable();
-
-   /* Wait till HSI is ready */
-  while(LL_RCC_HSI_IsReady() != 1)
-  {
-    
-  }
-  LL_RCC_HSI_SetCalibTrimming(16);
-  LL_RCC_HSI14_Enable();
-
-   /* Wait till HSI14 is ready */
-  while(LL_RCC_HSI14_IsReady() != 1)
-  {
-    
-  }
-  LL_RCC_HSI14_SetCalibTrimming(16);
-  LL_RCC_LSI_Enable();
-
-   /* Wait till LSI is ready */
-  while(LL_RCC_LSI_IsReady() != 1)
-  {
-    
-  }
-  LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSI_DIV_2, LL_RCC_PLL_MUL_12);
-  LL_RCC_PLL_Enable();
-
-   /* Wait till PLL is ready */
-  while(LL_RCC_PLL_IsReady() != 1)
-  {
-    
-  }
-  LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-  LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
-  LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-
-   /* Wait till System clock is ready */
-  while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
-  {
-  
-  }
-  LL_Init1msTick(48000000);
-  LL_SetSystemCoreClock(48000000);
-  LL_RCC_HSI14_EnableADCControl();
-  LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK1);
-}
-
-
-static void MX_COMP1_Init(void)
-{
-
-LL_COMP_InitTypeDef COMP_InitStruct = {0};
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  /**COMP1 GPIO Configuration  
-  PA1   ------> COMP1_INP
-  PA5   ------> COMP1_INM 
-  */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_1;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  NVIC_SetPriority(ADC1_COMP_IRQn, 0);
-  NVIC_EnableIRQ(ADC1_COMP_IRQn);
-
-  COMP_InitStruct.PowerMode = LL_COMP_POWERMODE_HIGHSPEED;
-  COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO1;
-  COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_DAC1_CH2;
-  COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
-  COMP_InitStruct.OutputSelection = LL_COMP_OUTPUT_NONE;
-  COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
-  LL_COMP_Init(COMP1, &COMP_InitStruct);
-
-}
-
-
-static void MX_IWDG_Init(void)
-{
-
-  LL_IWDG_Enable(IWDG);
-  LL_IWDG_EnableWriteAccess(IWDG);
-  LL_IWDG_SetPrescaler(IWDG, LL_IWDG_PRESCALER_16);
-  LL_IWDG_SetReloadCounter(IWDG, 4000);
-  while (LL_IWDG_IsReady(IWDG) != 1)
-  {
-  }
-
-  LL_IWDG_SetWindow(IWDG, 4095);
-  LL_IWDG_ReloadCounter(IWDG);
-
-
-}
-
-
-static void MX_TIM1_Init(void)
-{
-
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-  LL_TIM_OC_InitTypeDef TIM_OC_InitStruct = {0};
-  LL_TIM_BDTR_InitTypeDef TIM_BDTRInitStruct = {0};
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM1);
-
-
-  TIM_InitStruct.Prescaler = 0;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 1999;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM1, &TIM_InitStruct);
-  LL_TIM_EnableARRPreload(TIM1);
-  LL_TIM_SetClockSource(TIM1, LL_TIM_CLOCKSOURCE_INTERNAL);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH1);
-  TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
-  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.CompareValue = 0;
-  TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
-  TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH2);
-  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH2, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH2);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH3);
-  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH3);
-  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH4);
-  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
-  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
-  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH4, &TIM_OC_InitStruct);
-  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH4);
-  LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_RESET);
-  LL_TIM_DisableMasterSlaveMode(TIM1);
-  TIM_BDTRInitStruct.OSSRState = LL_TIM_OSSR_DISABLE;
-  TIM_BDTRInitStruct.OSSIState = LL_TIM_OSSI_DISABLE;
-  TIM_BDTRInitStruct.LockLevel = LL_TIM_LOCKLEVEL_OFF;
-  TIM_BDTRInitStruct.DeadTime = DEAD_TIME;
-  TIM_BDTRInitStruct.BreakState = LL_TIM_BREAK_DISABLE;
-  TIM_BDTRInitStruct.BreakPolarity = LL_TIM_BREAK_POLARITY_HIGH;
-  TIM_BDTRInitStruct.AutomaticOutput = LL_TIM_AUTOMATICOUTPUT_DISABLE;
-  LL_TIM_BDTR_Init(TIM1, &TIM_BDTRInitStruct);
-
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-  /**TIM1 GPIO Configuration  
-  PA7   ------> TIM1_CH1N
-  PB0   ------> TIM1_CH2N
-  PB1   ------> TIM1_CH3N
-  PA8   ------> TIM1_CH1
-  PA9   ------> TIM1_CH2
-  PA10   ------> TIM1_CH3 
-  */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_1;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_8;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_9;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 2);
-  NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
-
-}
-
-
-static void MX_TIM2_Init(void)
-{
-
- LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
-  TIM_InitStruct.Prescaler = 23;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 0xFFFF;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_Init(TIM2, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM2);
-  LL_TIM_SetClockSource(TIM2, LL_TIM_CLOCKSOURCE_INTERNAL);
-  LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_RESET);
-  LL_TIM_DisableMasterSlaveMode(TIM2);
-
-}
-
-
-static void MX_TIM6_Init(void)
-{
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6);
-
-  NVIC_SetPriority(TIM6_DAC_IRQn, 2);
-  NVIC_EnableIRQ(TIM6_DAC_IRQn);
-
-  TIM_InitStruct.Prescaler = 47;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 100;
-  LL_TIM_Init(TIM6, &TIM_InitStruct);
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_DisableARRPreload(TIM6);
-  LL_TIM_DisableMasterSlaveMode(TIM6);
-
-
-}
-
-
-static void MX_TIM14_Init(void)
-{
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM14);
-
-  NVIC_SetPriority(TIM14_IRQn, 0);
-  NVIC_EnableIRQ(TIM14_IRQn);
-  TIM_InitStruct.Prescaler = 23;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 4000;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_Init(TIM14, &TIM_InitStruct);
-  LL_TIM_EnableARRPreload(TIM14);
-
-}
-
-
-static void MX_TIM16_Init(void)
-{
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM16);
-
-  NVIC_SetPriority(TIM16_IRQn, 2);
-  NVIC_EnableIRQ(TIM16_IRQn);
-
-  TIM_InitStruct.Prescaler = 0;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 9000;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM16, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM16);
-
-}
-
-
-static void MX_TIM17_Init(void)
-{
- LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM17);
-
-  TIM_InitStruct.Prescaler = 47;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 65535;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM17, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM17);
-
-
-}
-
-
-static void MX_DMA_Init(void) 
-{
-
-  /* Init with LL driver */
-  /* DMA controller clock enable */
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-
-  /* DMA interrupt init */
-  /* DMA1_Channel2_3_IRQn interrupt configuration */
-  NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1);
-  NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
-  /* DMA1_Channel4_5_IRQn interrupt configuration */
-  NVIC_SetPriority(DMA1_Channel4_5_IRQn, 1);
-  NVIC_EnableIRQ(DMA1_Channel4_5_IRQn);
-
-}
-
-static void MX_GPIO_Init(void)
-{
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* GPIO Ports Clock Enable */
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-
-  /**/
-  LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_15);
-
-  /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-}
-
-
-static void UN_TIM_Init(void)
-{
-
-
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-  /* Peripheral clock enable */
-#ifdef USE_TIMER_15_CHANNEL_1
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM15);
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-  /**TIM16 GPIO Configuration
-  PA6   ------> TIM16_CH1
-  */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_2;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_0;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-#endif
-
-#ifdef USE_TIMER_3_CHANNEL_1
-
-  LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM3);
-  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-  /**TIM16 GPIO Configuration
-  PA6   ------> TIM16_CH1
-  */
-  GPIO_InitStruct.Pin = INPUT_PIN;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-#endif
-
- /* TIM16 DMA Init */
-
-  /* TIM16_CH1_UP Init */
-  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-
-  LL_DMA_SetChannelPriorityLevel(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
-
-  LL_DMA_SetMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MODE_NORMAL);
-
-  LL_DMA_SetPeriphIncMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
-
-  LL_DMA_SetMemoryIncMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
-
-  LL_DMA_SetPeriphSize(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PDATAALIGN_HALFWORD);
-
-  LL_DMA_SetMemorySize(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MDATAALIGN_WORD);
-
-  /* TIM16 interrupt Init */
-
-#ifdef USE_TIMER_15_CHANNEL_1
-  NVIC_SetPriority(TIM15_IRQn, 0);
-  NVIC_EnableIRQ(TIM15_IRQn);
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-  NVIC_SetPriority(TIM3_IRQn, 0);
-   NVIC_EnableIRQ(TIM3_IRQn);
-   NVIC_SetPriority(IC_DMA_IRQ_NAME, 1);
-   NVIC_EnableIRQ(IC_DMA_IRQ_NAME);
-#endif
-
-  TIM_InitStruct.Prescaler = 0;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 63;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(IC_TIMER_REGISTER, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(IC_TIMER_REGISTER);
-  LL_TIM_IC_SetActiveInput(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_ACTIVEINPUT_DIRECTTI);
-  LL_TIM_IC_SetPrescaler(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_ICPSC_DIV1);
-  LL_TIM_IC_SetFilter(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_FILTER_FDIV1);
-  LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_BOTHEDGE);
-
-
-}
-
-
-void LED_GPIO_init(){
-	  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-	  /* GPIO Ports Clock Enable */
-
-	  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-	  LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
-
-	  LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_15);
-      LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_5);
-	  LL_GPIO_ResetOutputPin(GPIOB, LL_GPIO_PIN_3);
-
-	  GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
-	  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-	  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-	  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-	  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-	  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-	  GPIO_InitStruct.Pin = LL_GPIO_PIN_5;
-	  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-	  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-	  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-	  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-	  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-	  GPIO_InitStruct.Pin = LL_GPIO_PIN_3;
-	  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-	  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-	  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-	  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-	  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-}
 
 void Error_Handler(void)
 {
