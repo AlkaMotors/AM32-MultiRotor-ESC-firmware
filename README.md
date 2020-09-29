@@ -18,7 +18,7 @@ PWM rate can be varied from 24khz -48khz. Alternately an option can be chosen to
 
 Complemetary pwm (braking) can be turned on or off and is ON by default.
 
-Startup power and minimum pwm can be varied from 0.5-2 percent duty cycle with the slider in the config tool.
+Startup power and minimum pwm can be varied with the slider in the config tool.
 
 By default a low rpm power protection feature is on, the KV rating of the motor is used to decide the level of protection at a given rpm. 
 
