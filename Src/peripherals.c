@@ -11,7 +11,7 @@
 #include "peripherals.h"
 #include "targets.h"
 
-extern uint16_t DEAD_TIME;
+//extern uint16_t DEAD_TIME;
 
 
 

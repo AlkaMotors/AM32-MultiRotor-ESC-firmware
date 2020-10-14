@@ -22,7 +22,7 @@
  * -- move serial ADC telemetry calculations and desync check to 10Khz interrupt.
  *
  * 1.57
- * -- remove spurious commuataions and rpm data at startup by polling for longer interval on startup
+ * -- remove spurious commuatations and rpm data at startup by polling for longer interval on startup
  *
  * 1.58
  * -- move signal timeout to 10khz routine and set armed timeout to one quarter second 2500 / 10000
@@ -37,6 +37,11 @@
  * -- moved basic functions to functions.c
  * -- moved peripherals setup to periherals.c
  * -- added crawler mode settings
+ *
+ * 1.60
+ * -- added sine mode hysteresis
+ * -- increased power in stall protection and lowered start rpm for crawlers
+ * -- removed onehot125 from crawler mode
  */
 
 
@@ -55,16 +60,16 @@
 #include "peripherals.h"
 
 uint8_t version_major = 1;
-uint8_t version_minor = 59;
+uint8_t version_minor = 60;
 
 uint8_t device_name[12] = FIRMWARE_NAME ;
 
 #define APPLICATION_ADDRESS 0x08001000
 #define EEPROM_START_ADD  (uint32_t)0x08007C00
 
-uint16_t DEAD_TIME = 45;
+//uint16_t DEAD_TIME = 45;
 
-char crawler_mode = 0;
+char crawler_mode = 1;
 
 char brake_on_stop = 0;
 char dir_reversed = 0;
@@ -523,12 +528,13 @@ if (stuckcounter > 100){
 }
 
 void tenKhzRoutine(){
+	if(!stepper_sine){
 	TIM1->ARR = tim1_arr;
 
 	TIM1->CCR1 = adjusted_duty_cycle;
 	TIM1->CCR2 = adjusted_duty_cycle;
 	TIM1->CCR3 = adjusted_duty_cycle;
-
+	}
 average_interval = e_com_time / 3;
 if(desync_check){
 //	if(step==6){       // desync check
@@ -578,7 +584,7 @@ old_routine = 1;
 				NVIC_SystemReset();
 			}
 
-		if (signaltimeout > 15000){     // 1.5 second
+		if (signaltimeout > 25000){     // 1.5 second
 			allOff();
 			armed = 0;
 			input = 0;
@@ -600,8 +606,11 @@ old_routine = 1;
 
 
 void advanceincrement(){
-
+#ifdef MP6531
+ if(forward){
+#else
 if (!forward){
+#endif
 	phase_A_position ++;
     if (phase_A_position > 359){
 	   phase_A_position = 0 ;
@@ -814,7 +823,6 @@ int main(void)
 
   if(crawler_mode){
   	throttle_max_at_low_rpm = 1000;
-  	throttle_ranges_adjustment = 1;
   	bi_direction = 1;
   	use_sin_start = 1;
   	low_rpm_throttle_limit = 1;
@@ -823,8 +831,8 @@ int main(void)
   	 motor_poles = 14;
   	lowkv = 0;
   	comp_pwm = 1;
-  	min_startup_duty = 130;
-  	sin_mode_min_s_d = 130;
+  	min_startup_duty = 110;
+  	sin_mode_min_s_d = 120;
   	bemf_timeout = 10;
 
   	 advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
@@ -839,7 +847,7 @@ int main(void)
 
   loadEEpromSettings();
 
-  if(version_major != eepromBuffer[3]  && version_minor > eepromBuffer[4]){
+  if(version_major != eepromBuffer[3] || version_minor != eepromBuffer[4]){
 	  eepromBuffer[3] = version_major;
 	  eepromBuffer[4] = version_minor;
 	  for(int i = 0; i < 12 ; i ++){
@@ -898,27 +906,35 @@ if(newinput > 2000){
 #endif
   			  playInputTune();
   		  }
-  		  if (bi_direction == 1 && proshot == 0 && dshot == 0){
-				if (newinput > 1100) {
-					if (forward == dir_reversed) {
-				adjusted_input = 0;
 
-				forward = 1 - dir_reversed;
-				}
-				adjusted_input = (newinput - 1099) * 3;
+   		 if (bi_direction == 1 && proshot == 0 && dshot == 0){
+   						if (newinput > 1000) {
+   							if (forward == dir_reversed) {
+   						adjusted_input = 0;
+   						forward = 1 - dir_reversed;
+   						old_routine = 1;
+   						zero_crosses = 0;
+ 						}else{
+   						adjusted_input = map(newinput, 1000, 2000, 0, 2000);
 
-				}
-				if (newinput < 760) {
-				if (forward == (1 - dir_reversed)) {
+   													//	tempbrake = 0;
+   			         	}
+   						}
+   						if (newinput < 850) {
+   						if (forward == (1 - dir_reversed)) {
+   						old_routine = 1;
+   						zero_crosses = 0;
+   						adjusted_input = 0;
+   						forward = dir_reversed;
+   							}else{
+   						 adjusted_input = map(newinput, 0, 850, 2000, 0);
+   							}
+   						}
+   						if (newinput >= 850 && newinput < 1000) {
+   							adjusted_input = 0;
+   						}
 
-				adjusted_input = 0;
-				forward = dir_reversed;
-					}
-			adjusted_input = ((760 - newinput) * 3);
-								}
-									if (newinput >= 760 && newinput < 1100) {
-										adjusted_input = 0;
-									}
+
 
  		}else if ((proshot || dshot) && bi_direction) {
   					if (newinput > 1047) {
@@ -1007,7 +1023,7 @@ if(newinput > 2000){
 
 		  if ( stepper_sine == 0){
 
-	  if (input >= 47 +(90*use_sin_start) && armed){
+	  if (input >= 47 +(80*use_sin_start) && armed){
 		  if (running == 0){
 			  if(!old_routine){
 			 startMotor();
@@ -1024,7 +1040,7 @@ if(newinput > 2000){
 	 //	 running = 1;
 	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
 	  }
-	  if (input < 47 + (90*use_sin_start)){
+	  if (input < 47 + (80*use_sin_start)){
 
   		  if(!comp_pwm){
   			duty_cycle = 0;
@@ -1057,7 +1073,7 @@ if(newinput > 2000){
  		  }
 		  }
 
-   if (zero_crosses < 30){
+   if (zero_crosses < (20 >> crawler_mode)){
 	   if (duty_cycle < min_startup_duty){
 	   duty_cycle = min_startup_duty;
 
@@ -1071,9 +1087,9 @@ if(newinput > 2000){
   	 if(duty_cycle < minimum_duty_cycle){
 	  duty_cycle = minimum_duty_cycle;
   	 }
-  	 if(stall_protection && zero_crosses > 50){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
+  	 if(stall_protection && zero_crosses > 10){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
 	 if(commutation_interval > 7000){
-		    	 duty_cycle = duty_cycle + map(commutation_interval, 7000, 9000, 1, 80);
+		    	 duty_cycle = duty_cycle + map(commutation_interval, 6000, 9000, 1, 100);
 		     }
   	 }
    }
@@ -1090,10 +1106,12 @@ if(newinput > 2000){
 
 		if (armed && running && (input > 47)){
 				if(VARIABLE_PWM){
-				tim1_arr = map(commutation_interval, 96, 200, 1000, TIMER1_MAX_ARR);
+				tim1_arr = map(commutation_interval, 96, 200, 999, TIMER1_MAX_ARR);
 		        advance_level = eepromBuffer[23];
 				}
-			    adjusted_duty_cycle = (duty_cycle * tim1_arr)/2000;
+
+			    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/1999)+1;
+
 		  }else{           // not armed
 
 				  adjusted_duty_cycle = 0;
@@ -1159,7 +1177,7 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 500, 100);
+             step_delay = map (input, 48, 137, 500, 60);
 	 		 delayMicros(step_delay);
 
 	 		  }else{

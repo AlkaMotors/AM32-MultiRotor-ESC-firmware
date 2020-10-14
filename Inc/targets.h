@@ -1,6 +1,6 @@
-#define FD6288
+//#define FD6288
 //#define TTRC4IN1              // or iflight target
-//#define MP6531
+#define MP6531
 //#define tmotor55     // like iflight but with leds
 //#define tmotor45
 //#define hglrc
@@ -14,7 +14,7 @@
 
 #ifdef FD6288
 
-
+#define    DEAD_TIME 45
 #define    FIRMWARE_NAME  "FD6288_PA2  "
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
@@ -52,6 +52,7 @@
 #define    FIRMWARE_NAME  "IFlight_50A "
 #define     USE_TIMER_3_CHANNEL_1
 
+#define    DEAD_TIME 45
 #define    INPUT_PIN               LL_GPIO_PIN_4
 #define    INPUT_PIN_PORT              GPIOB
 #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
@@ -94,6 +95,7 @@
 
 #define    FIRMWARE_NAME  "Mp6531_Dev  "
 
+#define    DEAD_TIME 45
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
 #define    INPUT_PIN_PORT              GPIOA
@@ -134,7 +136,7 @@
 #define    FIRMWARE_NAME  "T-MOTOR 55A "
 
 #define     USE_TIMER_3_CHANNEL_1
-
+#define    DEAD_TIME 45
 #define    INPUT_PIN               LL_GPIO_PIN_4
 #define    INPUT_PIN_PORT              GPIOB
 #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
@@ -174,6 +176,7 @@
 
 #define    FIRMWARE_NAME  "T-MOTOR 45A "
 
+#define    DEAD_TIME 45
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
 #define    INPUT_PIN_PORT              GPIOA
@@ -214,7 +217,7 @@
 #ifdef hglrc
 
 #define    FIRMWARE_NAME  "HGLRC_60A   "
-
+#define    DEAD_TIME 45
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
 #define    INPUT_PIN_PORT              GPIOA
@@ -250,9 +253,9 @@
 #endif
 
 
-#ifdef FD6288
+#ifdef siskin
 
-#define    FIRMWARE_NAME  "FD6288_PA2  "
+#define    FIRMWARE_NAME  "SISKIN_PA2  "
 #define    USE_TIMER_15_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_2
 #define    INPUT_PIN_PORT              GPIOA
@@ -260,6 +263,7 @@
 #define    IC_TIMER_REGISTER          TIM15
 #define    IC_TIMER_POINTER           htim15
 
+#define    DEAD_TIME 45
 #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_5
 #define    DMA_HANDLE_TYPE_DEF     hdma_tim15_ch1
 #define    IC_DMA_IRQ_NAME         DMA1_Channel4_5_IRQn
