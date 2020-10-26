@@ -1,3 +1,4 @@
+#ifndef USE_MAKE
 //#define FD6288
 //#define TTRC4IN1              // or iflight target
 #define MP6531
@@ -5,6 +6,7 @@
 //#define tmotor45
 //#define hglrc
 //#define siskin
+#endif
 
 //GLOBAL
 //#define USE_ADC_INPUT

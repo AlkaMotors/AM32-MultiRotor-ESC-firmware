@@ -44,7 +44,7 @@
  * -- removed onehot125 from crawler mode
  */
 
-
+#include <stdint.h>
 #include "main.h"
 
 #include "targets.h"
