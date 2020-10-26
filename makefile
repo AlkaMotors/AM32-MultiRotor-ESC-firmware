@@ -43,4 +43,4 @@ $(TARGETS) :
 
 $(TARGETS:%=%.bin) : clean $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(OBJ)
-	arm-none-eabi-objcopy -O binary $(TARGET).elf $(TARGET).bin
+	$(CP) $(TARGET).elf $(TARGET).bin
