@@ -43,4 +43,4 @@ $(TARGETS) :
 
 $(TARGETS:%=%.bin) : clean $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(OBJ)
-	$(CP) $(TARGET).elf $(TARGET).bin
+	$(CP) -O binary $(TARGET).elf $(TARGET).bin
