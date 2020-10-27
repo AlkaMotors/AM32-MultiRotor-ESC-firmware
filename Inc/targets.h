@@ -1,11 +1,11 @@
 #ifndef USE_MAKE
 //#define FD6288
-//#define TTRC4IN1              // or iflight target
+//#define IFLIGHT              // or iflight target
 #define MP6531
-//#define tmotor55     // like iflight but with leds
-//#define tmotor45
-//#define hglrc
-//#define siskin
+//#define TMOTOR55     // like iflight but with leds
+//#define TMOTOR45
+//#define HGLRC
+//#define SISKIN
 #endif
 
 //GLOBAL
@@ -49,7 +49,7 @@
 #endif
 
 
-#ifdef TTRC4IN1
+#ifdef IFLIGHT
 
 #define    FIRMWARE_NAME  "IFlight_50A "
 #define     USE_TIMER_3_CHANNEL_1
@@ -133,7 +133,7 @@
 #endif
 
 
-#ifdef tmotor55
+#ifdef TMOTOR55
 
 #define    FIRMWARE_NAME  "T-MOTOR 55A "
 
@@ -174,7 +174,7 @@
 #define use_A0_B4_C5_comp_order
 #endif
 
-#ifdef tmotor45
+#ifdef TMOTOR45
 
 #define    FIRMWARE_NAME  "T-MOTOR 45A "
 
@@ -216,7 +216,7 @@
 #endif
 
 
-#ifdef hglrc
+#ifdef HGLRC
 
 #define    FIRMWARE_NAME  "HGLRC_60A   "
 #define    DEAD_TIME 45
@@ -255,7 +255,7 @@
 #endif
 
 
-#ifdef siskin
+#ifdef SISKIN
 
 #define    FIRMWARE_NAME  "SISKIN_PA2  "
 #define    USE_TIMER_15_CHANNEL_1
