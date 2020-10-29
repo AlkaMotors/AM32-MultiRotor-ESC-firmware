@@ -3,7 +3,7 @@ CP := arm-none-eabi-objcopy
 MCU := -mcpu=cortex-m0 -mthumb
 LDSCRIPT := STM32F051K6TX_FLASH.ld
 LIBS := -lc -lm -lnosys 
-LDFLAGS := $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBS) -Wl,--gc-sections
+LDFLAGS := --specs=nano.specs -T$(LDSCRIPT) $(LIBS) -Wl,--gc-sections
 MAIN_SRC_DIR := Src
 SRC_DIR := Startup \
 	Src \
@@ -29,9 +29,9 @@ VALUES :=  \
 	-DHSI_VALUE=8000000 \
 	-DUSE_FULL_LL_DRIVER \
 	-DPREFETCH_ENABLE=1
-CFLAGS := $(MCU) $(VALUES) $(INCLUDES) -O2 -Wall -fdata-sections -ffunction-sections
+CFLAGS = $(MCU) $(VALUES) $(INCLUDES) -O2 -Wall -fdata-sections -ffunction-sections
 CFLAGS += -D$(TARGET)
-CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
+CFLAGS += -MMD -MP -MF $(@:%.bin=%.d)
 TARGETS := FD6288 MP6531 IFLIGHT TMOTOR55 TMOTOR45 HGLRC SISKIN
 
 .PHONY : clean all
