@@ -45,3 +45,4 @@ $(TARGETS) :
 $(TARGETS:%=%.bin) : clean $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(OBJ)
 	$(CP) -O binary $(TARGET).elf $(TARGET).bin
+	$(CP) $(TARGET).elf -O ihex  $(TARGET).hex
