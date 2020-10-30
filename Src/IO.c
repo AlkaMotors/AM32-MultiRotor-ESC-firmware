@@ -162,7 +162,6 @@ void sendDshotDma(){
 
 void detectInput(){
 	smallestnumber = 20000;
-	uint16_t largest_interval = 0;
 	dshot = 0;
 //	proshot = 0;
 //	multishot = 0;
