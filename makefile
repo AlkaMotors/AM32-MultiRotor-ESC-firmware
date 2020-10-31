@@ -3,7 +3,7 @@ CP := arm-none-eabi-objcopy
 MCU := -mcpu=cortex-m0 -mthumb
 LDSCRIPT := STM32F051K6TX_FLASH.ld
 LIBS := -lc -lm -lnosys 
-LDFLAGS := --specs=nano.specs -T$(LDSCRIPT) $(LIBS) -Wl,--gc-sections
+LDFLAGS := -specs=nano.specs -T$(LDSCRIPT) $(LIBS) -Wl,--gc-sections
 MAIN_SRC_DIR := Src
 SRC_DIR := Startup \
 	Src \
