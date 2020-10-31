@@ -59,10 +59,17 @@
 #include "functions.h"
 #include "peripherals.h"
 
-uint8_t version_major = 1;
-uint8_t version_minor = 60;
+typedef struct __attribute__((packed)) {
+  uint8_t version_major;
+  uint8_t version_minor;
+  char device_name[12];
+} firmware_info_s;
 
-uint8_t device_name[12] = FIRMWARE_NAME ;
+firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
+  version_major: 1,
+  version_minor: 60,
+  device_name: FIRMWARE_NAME
+};
 
 #define APPLICATION_ADDRESS 0x08001000
 #define EEPROM_START_ADD  (uint32_t)0x08007C00
@@ -847,11 +854,11 @@ int main(void)
 
   loadEEpromSettings();
 
-  if(version_major != eepromBuffer[3] || version_minor != eepromBuffer[4]){
-	  eepromBuffer[3] = version_major;
-	  eepromBuffer[4] = version_minor;
+  if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
+	  eepromBuffer[3] = firmware_info.version_major;
+	  eepromBuffer[4] = firmware_info.version_minor;
 	  for(int i = 0; i < 12 ; i ++){
-		  eepromBuffer[5+i] = device_name[i];
+		  eepromBuffer[5+i] = firmware_info.device_name[i];
 	  }
 	  saveEEpromSettings();
   }
