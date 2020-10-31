@@ -69,7 +69,7 @@ uint8_t device_name[12] = FIRMWARE_NAME ;
 
 //uint16_t DEAD_TIME = 45;
 
-char crawler_mode = 1;
+char crawler_mode = 0;
 
 char brake_on_stop = 0;
 char dir_reversed = 0;
