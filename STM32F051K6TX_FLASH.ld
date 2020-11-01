@@ -37,10 +37,12 @@ _Min_Stack_Size = 0x400 ;	/* required amount of stack */
 
 MEMORY
 {
-  SRAM    (xrw)   : ORIGIN = 0x20000000,    LENGTH = 192
-  RAM     (xrw)   : ORIGIN = 0x200000C0,    LENGTH = 8K - 192
-FLASH (rx)      : ORIGIN = 0x8001000, LENGTH = 27K
-EEPROM (rx)     : ORIGIN = ORIGIN(FLASH) + LENGTH(FLASH) LENGTH = 1K
+  SRAM          (xrw) : ORIGIN = 0x20000000, LENGTH = 192
+  RAM           (xrw) : ORIGIN = 0x200000C0, LENGTH = 8K - 192
+  FLASH_VECTAB  (rx)  : ORIGIN = 0x08001000, LENGTH = 192
+  FLASH_VERSION (rx)  : ORIGIN = 0x080010C0, LENGTH = 14
+  FLASH         (rx)  : ORIGIN = ORIGIN(FLASH_VERSION) + LENGTH(FLASH_VERSION), LENGTH = 27K - (LENGTH(FLASH_VECTAB) + LENGTH(FLASH_VERSION))
+  EEPROM        (rx)  : ORIGIN = 0x080007C00, LENGTH = 1K
 }
 
 /* Sections */
@@ -52,7 +54,14 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_VECTAB
+
+  /* The firmware version and name - at a fixed address to make it possible to read it from firmware files. */
+  .firmware_version :
+  {
+    . = ALIGN(4);
+	KEEP (*(.firmware_info))
+  } >FLASH_VERSION
 
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
