@@ -40,7 +40,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A5_B4_C0_comp_order
+#define PHASE_A_COMP COMP_PA5
+#define PHASE_B_COMP COMP_PA4
+#define PHASE_C_COMP COMP_PA0
 
 #endif
 
@@ -74,7 +76,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A0_B4_C5_comp_order
+#define PHASE_A_COMP COMP_PA0
+#define PHASE_B_COMP COMP_PA4
+#define PHASE_C_COMP COMP_PA5
 
 #endif
 
@@ -108,7 +112,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A4_B5_C0_comp_order
+#define PHASE_A_COMP COMP_PA4
+#define PHASE_B_COMP COMP_PA5
+#define PHASE_C_COMP COMP_PA0
 
 #endif
 
@@ -142,7 +148,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A0_B4_C5_comp_order
+#define PHASE_A_COMP COMP_PA0
+#define PHASE_B_COMP COMP_PA4
+#define PHASE_C_COMP COMP_PA5
 
 #endif
 
@@ -176,7 +184,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A0_B4_C5_comp_order
+#define PHASE_A_COMP COMP_PA0
+#define PHASE_B_COMP COMP_PA4
+#define PHASE_C_COMP COMP_PA5
 
 #endif
 
@@ -210,7 +220,9 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A0_B4_C5_comp_order
+#define PHASE_A_COMP COMP_PA0
+#define PHASE_B_COMP COMP_PA4
+#define PHASE_C_COMP COMP_PA5
 
 #endif
 
@@ -244,6 +256,8 @@
 #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define use_A4_B5_C0_comp_order
+#define PHASE_A_COMP COMP_PA4
+#define PHASE_B_COMP COMP_PA5
+#define PHASE_C_COMP COMP_PA0
 
 #endif
