@@ -1,4 +1,4 @@
-/* ALKA32- multirotor brushless controller firmware for the stm32f051 */
+/* AM32- multi-purpose brushless controller firmware for the stm32f051 */
 
 /*
  * 1.54 Changelog;
@@ -42,6 +42,23 @@
  * -- added sine mode hysteresis
  * -- increased power in stall protection and lowered start rpm for crawlers
  * -- removed onehot125 from crawler mode
+ * -- reduced maximum startup power from 400 to 350
+ * -- change minimum duty cycle to DEAD_TIME
+ * -- version and name moved to permanent spot in FLASH memory, thanks mikeller
+ *
+ * 1.61
+ * -- moved duty cycle calculation to 10khz and added max change option.
+ * -- decreased maximum interval change to 25%
+ * -- reduce wait time on fast acceleration (fast_accel)
+ * -- added check in interrupt for early zero cross
+ *
+ * 1.62
+ * --moved control to 10khz loop
+ * --changed condition for low rpm filter for duty cycle from || to &&
+ * --remove fast acceleration at higher throttle
+ * --introduced max deceleration and set it to 20ms to go from 100 to 0
+ * --added configurable servo throttle ranges
+ *
  */
 
 #include <stdint.h>
@@ -67,7 +84,7 @@ typedef struct __attribute__((packed)) {
 
 firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   version_major: 1,
-  version_minor: 60,
+  version_minor: 62,
   device_name: FIRMWARE_NAME
 };
 
@@ -77,12 +94,20 @@ firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
 //uint16_t DEAD_TIME = 45;
 
 char crawler_mode = 0;
+uint16_t velocity_count = 0;
+uint16_t velocity_count_threshold = 50;
+
+uint16_t servo_low_threshold = 1100; // anything below this point considered 0
+uint16_t servo_high_threshold = 1900;  // anything above this point considered 2000 (max)
+uint16_t servo_neutral = 1500;
+uint8_t servo_dead_band = 25;
 
 char brake_on_stop = 0;
 char dir_reversed = 0;
 char bi_direction = 0;
 char use_sin_start = 0;
 char low_rpm_throttle_limit = 1;
+char maximum_throttle_change_ramp = 1;
 uint16_t motor_kv = 2000;
 char motor_poles = 14;
 char VARIABLE_PWM = 1;
@@ -97,10 +122,14 @@ char startup_boost = 25;
 char stall_protection = 0;
 char reversing_dead_band = 1;
 
-uint16_t TIMER1_MAX_ARR = 1999;
-
 uint16_t oneKhz_timer = 0;
 int checkcount = 0;
+
+
+uint8_t max_duty_cycle_change = 2;
+char fast_accel = 1;
+uint16_t last_duty_cycle = 0;
+
 
 typedef enum
 {
@@ -108,11 +137,12 @@ typedef enum
   GPIO_PIN_SET
 }GPIO_PinState;
 
-uint16_t minimum_duty_cycle = 64;
-char quiet_mode = 1;
+uint16_t minimum_duty_cycle = DEAD_TIME;
 char desync_check = 0;
 char low_kv_filter_level = 20;
 
+
+uint16_t TIMER1_MAX_ARR = 1999;
 int duty_cycle_maximum = 1999;
 int low_rpm_level  = 20;        // thousand erpm
 int high_rpm_level = 70;      //
@@ -278,7 +308,7 @@ int pwm = 1;
 int floating =2;
 int lowside = 3;
 int sensorless = 1;
-int waitTime = 0;
+uint32_t waitTime = 0;
 int signaltimeout = 0;
 
 uint8_t ubAnalogWatchdogStatus = RESET;
@@ -299,8 +329,6 @@ void loadEEpromSettings(){
 	   }else{
 		  bi_direction = 0;
 	   }
-
-
 	   if(eepromBuffer[19] == 0x01){
 	 	  use_sin_start = 1;
 	 	 min_startup_duty = sin_mode_min_s_d;
@@ -315,13 +343,11 @@ void loadEEpromSettings(){
 	    }else{
 	    	VARIABLE_PWM = 0;
 	    }
-
 	   if(eepromBuffer[22] == 0x01){
 		   stuck_rotor_protection = 1;
 	    }else{
 	    	stuck_rotor_protection = 0;
 	    }
-
 	   if(eepromBuffer[23] < 4){
 		   advance_level = eepromBuffer[23];
 	    }else{
@@ -349,7 +375,7 @@ void loadEEpromSettings(){
 
 
 	   low_rpm_level  = motor_kv / 100;
-	   high_rpm_level = 20 + (motor_kv / 50);
+	   high_rpm_level = 25 + (motor_kv / 100);
 
 
 	if(!comp_pwm){
@@ -500,17 +526,43 @@ if(commutation_interval > 4000 && crawler_mode){
 	timeout_count = 0;
 }
 
+void PeriodElapsedCallback(){
+
+			TIM14->DIER &= ~((0x1UL << (0U)));             // disable interrupt
+			commutation_interval = (( 3*commutation_interval) + thiszctime)>>2;
+			commutate();
+			advance = (commutation_interval>>3) * advance_level;   // 60 divde 8 7.5 degree increments
+			waitTime = (commutation_interval >>1)  - advance;
+			if(!old_routine){
+			EXTI->IMR |= (1 << 21);     // enable comp interrupt
+			}
+			if(zero_crosses<10000){
+			zero_crosses++;
+			}
+		//	TIM17->CNT = 0;
+
+}
+
+
 void interruptRoutine(){
+	if (average_interval > 125){
 if ((TIM2->CNT < 125) && (duty_cycle < 600) && (zero_crosses < 500)){    //should be impossible, desync?exit anyway
 	return;
 }
-thiszctime = TIM2->CNT;
+
+if (TIM2->CNT < commutation_interval >> 1){
+	return;
+}
+
+
 stuckcounter++;             // stuck at 100 interrupts before the main loop happens again.
 if (stuckcounter > 100){
 	maskPhaseInterrupts();
 	zero_crosses = 0;
 	return;
 }
+	}
+thiszctime = TIM2->CNT;
 			if (rising){
 			for (int i = 0; i < filter_level; i++){
 				if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
@@ -527,15 +579,159 @@ if (stuckcounter > 100){
 							maskPhaseInterrupts();
 							LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_21);
 							TIM2->CNT = 0 ;
-							TIM14->CNT = 0;
 
-			TIM14->ARR = waitTime;
+
+		   waitTime = waitTime >> fast_accel;
+
+
+            TIM14->CNT = 0;
+            TIM14->ARR = waitTime;
 			TIM14->SR = 0x00;
 			TIM14->DIER |= (0x1UL << (0U));             // enable TIM14 interrupt
 }
 
+void startMotor() {
+	if (running == 0){
+	commutate();
+	commutation_interval = 10000;
+	TIM2->CNT = 5000;
+	running = 1;
+	}
+	EXTI->IMR |= (1 << 21);
+	sensorless = 1;
+}
+
+
+
+
 void tenKhzRoutine(){
+
 	if(!stepper_sine){
+	  if (input >= 47 +(80*use_sin_start) && armed){
+		  if (running == 0){
+			  if(!old_routine){
+			 startMotor();
+			  }
+			  running = 1;
+			  last_duty_cycle = min_startup_duty;
+#ifdef tmotor55
+			  GPIOB->BRR = LL_GPIO_PIN_3;  // off red
+			  GPIOA->BRR = LL_GPIO_PIN_15; // off green
+			  GPIOB->BSRR = LL_GPIO_PIN_5;  // on blue
+#endif
+
+		  }
+	//	  coasting = 0;
+	 //	 running = 1;
+	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
+	  }
+	  if (input < 47 + (80*use_sin_start)){
+
+		  if(!comp_pwm){
+			duty_cycle = 0;
+			if(!running){
+				old_routine = 1;
+				zero_crosses = 0;
+			}
+		  }else{
+		  if (!running){
+		  old_routine = 1;
+		  zero_crosses = 0;
+		  if(brake_on_stop){
+			  fullBrake();
+
+		  }else{
+			  allOff();
+		  }
+		  }
+
+	 	 duty_cycle = 0;
+	 	  phase_A_position = 0;
+	 	  phase_B_position = 119;
+	 	  phase_C_position = 239;
+	 	  if(use_sin_start == 1){
+	    	 stepper_sine = 1;
+	 	  }
+
+	 //	fullBrake();
+		  }
+		  }
+
+ if (zero_crosses < (20 >> crawler_mode)){
+	   if (duty_cycle < min_startup_duty){
+	   duty_cycle = min_startup_duty;
+
+	   }
+	   if (duty_cycle > 200<<crawler_mode){
+		   duty_cycle = 200<<crawler_mode;
+	   }
+ }
+
+if (duty_cycle < 160 && running){
+
+	 if(stall_protection && zero_crosses > 5){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
+		 min_startup_duty = 90; // slow it down again can be set higher by signal timeout.
+				 velocity_count++;
+				 if (velocity_count > velocity_count_threshold){
+					 if(commutation_interval > 9000){
+						    	// duty_cycle = duty_cycle + map(commutation_interval, 10000, 12000, 1, 100);
+						    	 minimum_duty_cycle++;
+						     }else{
+						    	 minimum_duty_cycle--;
+						     }
+					 if(minimum_duty_cycle > 200){
+						 minimum_duty_cycle = 200;
+					 }
+					 if(minimum_duty_cycle < 20){
+						 minimum_duty_cycle = 20;
+					 }
+
+				velocity_count = 0;
+
+				 }
+	 }
+ }
+	 if (duty_cycle > duty_cycle_maximum){
+		 duty_cycle = duty_cycle_maximum;
+	 }
+
+
+	 if ((duty_cycle - last_duty_cycle) > max_duty_cycle_change){
+		duty_cycle = last_duty_cycle + max_duty_cycle_change;
+		if(duty_cycle < 600){
+			fast_accel = 1;
+		}
+
+	}else if ((last_duty_cycle - duty_cycle) > 10){
+		duty_cycle = last_duty_cycle - 10;
+		fast_accel = 0;
+	}else{
+		fast_accel = 0;
+	}
+
+
+
+		if (armed && running && (input > 47)){
+		if(VARIABLE_PWM){
+	    tim1_arr = map(commutation_interval, 96, 200, 999, TIMER1_MAX_ARR);
+		advance_level = eepromBuffer[23];
+		}
+
+	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/1999)+1;
+//		 if(adjusted_duty_cycle < minimum_duty_cycle){
+//			 adjusted_duty_cycle = minimum_duty_cycle;
+//		 }
+		}else{           // not armed
+
+		adjusted_duty_cycle = 0;
+	    }
+		last_duty_cycle = duty_cycle;
+		if(maximum_throttle_change_ramp){
+		max_duty_cycle_change = map(k_erpm, low_rpm_level, high_rpm_level, 1, 40);
+		}else{
+		max_duty_cycle_change = 100;
+		}
+
 	TIM1->ARR = tim1_arr;
 
 	TIM1->CCR1 = adjusted_duty_cycle;
@@ -544,15 +740,17 @@ void tenKhzRoutine(){
 	}
 average_interval = e_com_time / 3;
 if(desync_check){
-//	if(step==6){       // desync check
-		if(getAbsDif(average_interval,last_average_interval) > average_interval >> 1 && (zero_crosses > 40)){ //throttle resitricted before zc 40.
-			zero_crosses = 6;
-running = 0;
-old_routine = 1;
+//	if(average_interval < last_average_interval){
+		if((getAbsDif(last_average_interval,average_interval) > average_interval>>1) && (average_interval < 500)){ //throttle resitricted before zc 20.
+		zero_crosses = 10;
+//running = 0;
+//old_routine = 1;
+		last_duty_cycle = min_startup_duty/2;
 		}
-		last_average_interval = average_interval;
+
 		desync_check = 0;
-		//getSmoothedInput();
+//	}
+	last_average_interval = average_interval;
 	}
 	if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
@@ -660,39 +858,7 @@ TIM1->CCR1 = (pwmSin[phase_C_position])+gate_drive_offset;
 }
 
 
-void PeriodElapsedCallback(){
-
-			TIM14->DIER &= ~((0x1UL << (0U)));             // disable interrupt
-			commutation_interval = (commutation_interval + thiszctime)>>1;
-			commutate();
-
-		//	commutation_interval = ((3* commutation_interval) + thiszctime)>>2;
-
-			advance = (commutation_interval>>3) * advance_level;   // 60 divde 8 7.5 degree increments
-			waitTime = (commutation_interval >>1)  - advance;
-			//	blanktime = commutation_interval / 8; // no blanktime /demag , if the motor is accelerating fast the next zc can happen right after commutation
-			if(!old_routine){
-			EXTI->IMR |= (1 << 21);     // enable comp interrupt
-			}
-			zero_crosses++;
-}
-
-void startMotor() {
-	if (running == 0){
-	commutate();
-	commutation_interval = 10000;
-	TIM2->CNT = 5000;
-	running = 1;
-	}
-	EXTI->IMR |= (1 << 21);
-	sensorless = 1;
-}
-
-
-void zcfoundroutine(){
-//	if(zero_crosses < 5){
-//		commutation_interval = 10000;
-//	}
+void zcfoundroutine(){   // only used in polling mode, blocking routine.
 	thiszctime = TIM2->CNT;
 	TIM2->CNT = 0;
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
@@ -718,6 +884,7 @@ void zcfoundroutine(){
     	if(zero_crosses > 30){
     	old_routine = 0;
     	EXTI->IMR |= (1 << 21);          // enable interrupt
+
     }
     }
 
@@ -822,14 +989,12 @@ int main(void)
 #ifdef USE_ADC_INPUT
    armed_count_threshold = 5000;
    inputSet = 1;
-   if(use_sin_start){
-   min_startup_duty = sin_mode_min_s_d;
-   }
+
 #else
   receiveDshotDma();
 
   if(crawler_mode){
-  	throttle_max_at_low_rpm = 1000;
+  	throttle_max_at_low_rpm = 600;
   	bi_direction = 1;
   	use_sin_start = 1;
   	low_rpm_throttle_limit = 1;
@@ -838,15 +1003,14 @@ int main(void)
   	 motor_poles = 14;
   	lowkv = 0;
   	comp_pwm = 1;
-  	min_startup_duty = 110;
-  	sin_mode_min_s_d = 120;
+  	sin_mode_min_s_d = 90;
   	bemf_timeout = 10;
-
-  	 advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
-  	 stuck_rotor_protection = 0;
-  	 stall_protection = 1;
-
-  	 minimum_duty_cycle = 20;
+    advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
+  	stuck_rotor_protection = 0;
+  	stall_protection = 1;
+    minimum_duty_cycle = 20;
+	low_rpm_level  = motor_kv / 100;
+	high_rpm_level = 20 + (motor_kv / 50);
 
   }else{
 
@@ -864,6 +1028,11 @@ int main(void)
   }
 
   }
+
+  if(use_sin_start){
+  min_startup_duty = sin_mode_min_s_d;
+  }
+
 	if (dir_reversed == 1){
 			forward = 0;
 		}else{
@@ -915,29 +1084,39 @@ if(newinput > 2000){
   		  }
 
    		 if (bi_direction == 1 && proshot == 0 && dshot == 0){
-   						if (newinput > 1000) {
+   						if (newinput > (1000 + (servo_dead_band<<1))) {
    							if (forward == dir_reversed) {
-   						adjusted_input = 0;
-   						forward = 1 - dir_reversed;
-   						old_routine = 1;
-   						zero_crosses = 0;
- 						}else{
-   						adjusted_input = map(newinput, 1000, 2000, 0, 2000);
+   								if(commutation_interval > 1500 || stepper_sine){
+   						    forward = 1 - dir_reversed;
+   							zero_crosses = 0;
+   						   old_routine = 1;
+   						maskPhaseInterrupts();
+   					}else{
+   					newinput = 0;
+   						}
+   						}
+   						adjusted_input = map(newinput, 1000 + (servo_dead_band<<1), 2000, 47, 2047);
 
    													//	tempbrake = 0;
-   			         	}
+
    						}
-   						if (newinput < 850) {
+   						if (newinput < (1000 -(servo_dead_band<<1))) {
    						if (forward == (1 - dir_reversed)) {
-   						old_routine = 1;
-   						zero_crosses = 0;
-   						adjusted_input = 0;
-   						forward = dir_reversed;
-   							}else{
-   						 adjusted_input = map(newinput, 0, 850, 2000, 0);
-   							}
+   							if(commutation_interval > 1500 || stepper_sine){
+   							  zero_crosses = 0;
+   							  old_routine = 1;
+   							 forward = dir_reversed;
+   							  maskPhaseInterrupts();
+   							 	}else{
+   							  	newinput = 0;
+
+   							  	}
+   							 }
+   						 adjusted_input = map(newinput, 0, 1000-(servo_dead_band<<1), 2047, 47);
    						}
-   						if (newinput >= 850 && newinput < 1000) {
+
+
+   						if (newinput >= (1000 - (servo_dead_band << 1)) && newinput <= (1000 + (servo_dead_band <<1))) {
    							adjusted_input = 0;
    						}
 
@@ -1030,101 +1209,23 @@ if(newinput > 2000){
 
 		  if ( stepper_sine == 0){
 
-	  if (input >= 47 +(80*use_sin_start) && armed){
-		  if (running == 0){
-			  if(!old_routine){
-			 startMotor();
-			  }
-			  running = 1;
-#ifdef tmotor55
-			  GPIOB->BRR = LL_GPIO_PIN_3;  // off red
-			  GPIOA->BRR = LL_GPIO_PIN_15; // off green
-			  GPIOB->BSRR = LL_GPIO_PIN_5;  // on blue
-#endif
 
-		  }
-	//	  coasting = 0;
-	 //	 running = 1;
-	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
-	  }
-	  if (input < 47 + (80*use_sin_start)){
 
-  		  if(!comp_pwm){
-  			duty_cycle = 0;
-  			if(!running){
-  				old_routine = 1;
-  				zero_crosses = 0;
-  			}
-  		  }else{
-		  if (!running){
-		  old_routine = 1;
-		  zero_crosses = 0;
-		  if(brake_on_stop){
-			  fullBrake();
 
-		  }else{
-			  allOff();
-		  }
-		  }
 
-	 	 duty_cycle = 0;
-	 	  phase_A_position = 0;
-	 	  phase_B_position = 119;
-	 	  phase_C_position = 239;
-	 	  if(use_sin_start == 1){
-	 	 stepper_sine = 1;
-
-	 	  }
-
-	 //	fullBrake();
- 		  }
-		  }
-
-   if (zero_crosses < (20 >> crawler_mode)){
-	   if (duty_cycle < min_startup_duty){
-	   duty_cycle = min_startup_duty;
-
-	   }
-	   if (duty_cycle > 400){
-		   duty_cycle = 400;
-	   }
-   }
-
-  if (duty_cycle < 160 && running){
-  	 if(duty_cycle < minimum_duty_cycle){
-	  duty_cycle = minimum_duty_cycle;
-  	 }
-  	 if(stall_protection && zero_crosses > 10){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
-	 if(commutation_interval > 7000){
-		    	 duty_cycle = duty_cycle + map(commutation_interval, 6000, 9000, 1, 100);
-		     }
-  	 }
-   }
-
-   k_erpm = running * ((1000000/ e_com_time) * 60) / 1000; // ecom time is time for one electrical revolution in microseconds
+  k_erpm = running * ((1000000/ e_com_time) * 60) / 1000; // ecom time is time for one electrical revolution in microseconds
    if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
 
   duty_cycle_maximum = map(k_erpm, low_rpm_level, high_rpm_level, throttle_max_at_low_rpm, throttle_max_at_high_rpm);   // for more performance lower the high_rpm_level, set to a consvervative number in source.
    }
 
-	 if (duty_cycle > duty_cycle_maximum){
-		 duty_cycle = duty_cycle_maximum;
-	 }
 
-		if (armed && running && (input > 47)){
-				if(VARIABLE_PWM){
-				tim1_arr = map(commutation_interval, 96, 200, 999, TIMER1_MAX_ARR);
-		        advance_level = eepromBuffer[23];
-				}
 
-			    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/1999)+1;
 
-		  }else{           // not armed
 
-				  adjusted_duty_cycle = 0;
-			  }
 
-if (zero_crosses < 150 || commutation_interval > 900 || duty_cycle < 400) {
+
+if ((zero_crosses < 150 || commutation_interval > 900) && (duty_cycle < 400)) {
 		advancedivisor = 4;
 		filter_level = 12;
 //		filter_delay = 0;
@@ -1134,7 +1235,7 @@ if (zero_crosses < 150 || commutation_interval > 900 || duty_cycle < 400) {
 //		filter_delay = 0;
 
 	}
-	if (duty_cycle > 900 && zero_crosses > 100 && commutation_interval < 900){
+	if (duty_cycle > 800 && zero_crosses > 100 && commutation_interval < 600){
 		filter_level = 3;
 //		filter_delay = 0;
 	}
@@ -1174,13 +1275,16 @@ if (old_routine && running){
 	 		  old_routine = 1;
 	 		   running = 0;
 	 		   zero_crosses = 0;
+	 		   if(crawler_mode&&stall_protection){
+	 			   min_startup_duty = 120;
+	 		   }
 	 	  }
 	 	  }else{            // stepper sine
 
 if(input > 48 && armed){
 
 	 		  if (input > 48 && input < 137){// sine wave stepper
-	 			 LL_TIM_DisableIT_UPDATE(TIM1);
+	 //			 LL_TIM_DisableIT_UPDATE(TIM1);
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
@@ -1200,7 +1304,7 @@ if(input > 48 && armed){
 	 			  running = 1;
 	 			 zero_crosses = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
-	 			 LL_TIM_EnableIT_UPDATE(TIM1);
+	 //			 LL_TIM_EnableIT_UPDATE(TIM1);
 	 			LL_TIM_GenerateEvent_UPDATE(TIM1);
 	 			  zcfoundroutine();
 	 			  }

@@ -11,7 +11,6 @@
 #include "serial_telemetry.h"
 #include "functions.h"
 
-
 char ic_timer_prescaler = 0;
 char output_timer_prescaler;
 int max_servo_deviation = 250;
@@ -22,7 +21,6 @@ uint32_t dma_buffer[64];
 char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
-
 
 void changeToOutput(){
 	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
@@ -84,7 +82,6 @@ void changeToInput(){
 }
 void receiveDshotDma(){
 
-
 	changeToInput();
 	IC_TIMER_REGISTER->CNT = 0;
 #ifdef USE_TIMER_2_CHANNEL_4
@@ -103,17 +100,14 @@ void receiveDshotDma(){
 #ifdef USE_TIMER_2_CHANNEL_4
 	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
 	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-
 #endif
 #ifdef USE_TIMER_3_CHANNEL_1
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-
 #endif
 #ifdef USE_TIMER_15_CHANNEL_1
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-
 #endif
 	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
@@ -129,21 +123,17 @@ void sendDshotDma(){
 
 #ifdef USE_TIMER_2_CHANNEL_4
 	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR4, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-
 #endif
 #ifdef USE_TIMER_3_CHANNEL_1
 	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-
 #endif
 #ifdef USE_TIMER_15_CHANNEL_1
 			  LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
 #endif
-
 			  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, 30);
 			  LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
 			  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
 			  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
-
 #ifdef USE_TIMER_2_CHANNEL_4
 			  LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
 #endif
@@ -156,7 +146,6 @@ void sendDshotDma(){
 			  LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 			  LL_TIM_EnableAllOutputs(IC_TIMER_REGISTER);
 			  LL_TIM_EnableCounter(IC_TIMER_REGISTER);
-
 }
 
 
@@ -170,14 +159,11 @@ void detectInput(){
 	servoPwm = 0;
 	int lastnumber = dma_buffer[0];
 	for ( int j = 1 ; j < 31; j++){
-
 		if((dma_buffer[j] - lastnumber) < smallestnumber){ // blank space
 			smallestnumber = dma_buffer[j] - lastnumber;
-
 		}
 		lastnumber = dma_buffer[j];
 	}
-
 	if ((smallestnumber > 3)&&(smallestnumber < 39)){
 		ic_timer_prescaler= 0;
 		output_timer_prescaler=0;
@@ -213,10 +199,10 @@ void detectInput(){
 			buffersize = 3;
 		}
 	}else{
-	if ((smallestnumber > 3000 )&&(smallestnumber < 6200)){
+	if ((smallestnumber > 3000 )&&(smallestnumber < 6500)){
 		oneshot125 = 1;
 	}
-	if (smallestnumber > 6200){
+	if (smallestnumber > 6500){
 		servoPwm = 1;
 		ic_timer_prescaler=47;
 		armed_count_threshold = 35;
@@ -255,8 +241,15 @@ void computeServoInput(){
 
 		if(((dma_buffer[j] - lastnumber) >1000 ) && ((dma_buffer[j] - lastnumber) < 2010)){ // blank space
 
-			servorawinput = map((dma_buffer[j] - lastnumber), 1030, 2000, 0, 2000);
-
+			if(bi_direction){
+				if(dma_buffer[j] - lastnumber <= servo_neutral){
+				servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_neutral, 0, 1000);
+				}else{
+				servorawinput = map((dma_buffer[j] - lastnumber), servo_neutral+1, servo_high_threshold, 1001, 2000);
+				}
+			}else{
+			servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_high_threshold, 0, 2000);
+			}
 			break;
 		}
 		lastnumber = dma_buffer[j];
