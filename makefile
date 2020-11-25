@@ -35,9 +35,9 @@ CFLAGS += -MMD -MP -MF $(@:%.bin=%.d)
 TARGETS := FD6288 MP6531 IFLIGHT TMOTOR55 TMOTOR45 HGLRC SISKIN DIATONE
 
 .PHONY : clean all
+all : $(TARGETS)
 clean :
 	rm -f Src/*.o
-all : $(TARGETS)
 
 $(TARGETS) :
 	$(MAKE) TARGET=$@ $@.bin
