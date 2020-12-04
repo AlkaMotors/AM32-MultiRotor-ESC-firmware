@@ -55,10 +55,15 @@
  * 1.62
  * --moved control to 10khz loop
  * --changed condition for low rpm filter for duty cycle from || to &&
- * --remove fast acceleration at higher throttle
  * --introduced max deceleration and set it to 20ms to go from 100 to 0
  * --added configurable servo throttle ranges
  *
+ *
+ *1.63
+ *-- increase time for zero cross error detection below 250us commutation interval
+ *-- increase max change a low rpm x10
+ *-- set low limit of throttle ramp to a lower point and increase upper range
+ *-- change desync event from full restart to just lower throttle.
  */
 
 #include <stdint.h>
@@ -84,14 +89,15 @@ typedef struct __attribute__((packed)) {
 
 firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   version_major: 1,
-  version_minor: 62,
+  version_minor: 63,
   device_name: FIRMWARE_NAME
 };
 
 #define APPLICATION_ADDRESS 0x08001000
 #define EEPROM_START_ADD  (uint32_t)0x08007C00
 
-//uint16_t DEAD_TIME = 45;
+uint8_t desync_happened = 0;
+char maximum_throttle_change_ramp = 1;
 
 char crawler_mode = 0;
 uint16_t velocity_count = 0;
@@ -100,14 +106,14 @@ uint16_t velocity_count_threshold = 50;
 uint16_t servo_low_threshold = 1100; // anything below this point considered 0
 uint16_t servo_high_threshold = 1900;  // anything above this point considered 2000 (max)
 uint16_t servo_neutral = 1500;
-uint8_t servo_dead_band = 25;
+uint8_t servo_dead_band = 100;
 
 char brake_on_stop = 0;
 char dir_reversed = 0;
 char bi_direction = 0;
 char use_sin_start = 0;
 char low_rpm_throttle_limit = 1;
-char maximum_throttle_change_ramp = 1;
+
 uint16_t motor_kv = 2000;
 char motor_poles = 14;
 char VARIABLE_PWM = 1;
@@ -118,7 +124,7 @@ int sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
 char advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
 char stuck_rotor_protection = 1;
-char startup_boost = 25;
+char startup_boost = 35;
 char stall_protection = 0;
 char reversing_dead_band = 1;
 
@@ -146,7 +152,7 @@ uint16_t TIMER1_MAX_ARR = 1999;
 int duty_cycle_maximum = 1999;
 int low_rpm_level  = 20;        // thousand erpm
 int high_rpm_level = 70;      //
-int throttle_max_at_low_rpm  = 500;
+int throttle_max_at_low_rpm  = 400;
 int throttle_max_at_high_rpm = 1999;
 
 uint16_t commutation_intervals[6] = {0};
@@ -208,7 +214,7 @@ int changeover_step = 5;
 int filter_level = 5;
 int running = 0;
 int advance = 0;
-int advancedivisor = 3;
+int advancedivisor = 6;
 int START_ARR=800;
 char rising = 1;
 int count = 0;
@@ -374,8 +380,8 @@ void loadEEpromSettings(){
        motor_poles = eepromBuffer[27];
 
 
-	   low_rpm_level  = motor_kv / 100;
-	   high_rpm_level = 25 + (motor_kv / 100);
+	   low_rpm_level  = motor_kv / 200;
+	   high_rpm_level = 40 + (motor_kv / 100);
 
 
 	if(!comp_pwm){
@@ -555,6 +561,7 @@ if (TIM2->CNT < commutation_interval >> 1){
 }
 
 
+
 stuckcounter++;             // stuck at 100 interrupts before the main loop happens again.
 if (stuckcounter > 100){
 	maskPhaseInterrupts();
@@ -635,6 +642,7 @@ void tenKhzRoutine(){
 			}
 		  }else{
 		  if (!running){
+			  duty_cycle = 0;
 		  old_routine = 1;
 		  zero_crosses = 0;
 		  if(brake_on_stop){
@@ -695,20 +703,29 @@ if (duty_cycle < 160 && running){
 		 duty_cycle = duty_cycle_maximum;
 	 }
 
+		if(maximum_throttle_change_ramp){
+	//	max_duty_cycle_change = map(k_erpm, low_rpm_level, high_rpm_level, 1, 40);
+			if(average_interval > 500){
+				max_duty_cycle_change = 10;
+			}else{
+				max_duty_cycle_change = 30;
+			}
 
 	 if ((duty_cycle - last_duty_cycle) > max_duty_cycle_change){
 		duty_cycle = last_duty_cycle + max_duty_cycle_change;
-		if(duty_cycle < 600){
+		if(commutation_interval > 500){
 			fast_accel = 1;
+		}else{
+			fast_accel = 0;
 		}
 
-	}else if ((last_duty_cycle - duty_cycle) > 10){
-		duty_cycle = last_duty_cycle - 10;
+	}else if ((last_duty_cycle - duty_cycle) > max_duty_cycle_change){
+		duty_cycle = last_duty_cycle - max_duty_cycle_change;
 		fast_accel = 0;
 	}else{
 		fast_accel = 0;
 	}
-
+		}
 
 
 		if (armed && running && (input > 47)){
@@ -721,16 +738,12 @@ if (duty_cycle < 160 && running){
 //		 if(adjusted_duty_cycle < minimum_duty_cycle){
 //			 adjusted_duty_cycle = minimum_duty_cycle;
 //		 }
-		}else{           // not armed
-
+		}
+		else{
 		adjusted_duty_cycle = 0;
 	    }
 		last_duty_cycle = duty_cycle;
-		if(maximum_throttle_change_ramp){
-		max_duty_cycle_change = map(k_erpm, low_rpm_level, high_rpm_level, 1, 40);
-		}else{
-		max_duty_cycle_change = 100;
-		}
+
 
 	TIM1->ARR = tim1_arr;
 
@@ -741,8 +754,11 @@ if (duty_cycle < 160 && running){
 average_interval = e_com_time / 3;
 if(desync_check){
 //	if(average_interval < last_average_interval){
+//
+//	}
 		if((getAbsDif(last_average_interval,average_interval) > average_interval>>1) && (average_interval < 500)){ //throttle resitricted before zc 20.
 		zero_crosses = 10;
+		desync_happened ++;
 //running = 0;
 //old_routine = 1;
 		last_duty_cycle = min_startup_duty/2;
@@ -1220,30 +1236,30 @@ if(newinput > 2000){
    }
 
 
+if (zero_crosses < 100 || commutation_interval > 500) {
 
-
-
-
-
-if ((zero_crosses < 150 || commutation_interval > 900) && (duty_cycle < 400)) {
-		advancedivisor = 4;
 		filter_level = 12;
-//		filter_delay = 0;
+
 	} else {
-		advancedivisor = 4;         // 15 degree advance
-		filter_level = 5;
-//		filter_delay = 0;
 
-	}
-	if (duty_cycle > 800 && zero_crosses > 100 && commutation_interval < 600){
 		filter_level = 3;
-//		filter_delay = 0;
+
+
+	}
+	if (commutation_interval < 100){
+		filter_level = 2;
 	}
 
-	if (commutation_interval < 90 && duty_cycle > 800){
-		filter_level = 2;
-	//	filter_delay = 0;
-	}
+
+//	if (duty_cycle > 800 && zero_crosses > 100 && commutation_interval < 400){
+//		filter_level = 3;
+////		filter_delay = 0;
+//	}
+//
+//	if (commutation_interval < 90 && duty_cycle > 800){
+//		filter_level = 2;
+//	//	filter_delay = 0;
+//	}
 
 if(lowkv){
 
