@@ -1,5 +1,5 @@
-CC := arm-none-eabi-gcc
-CP := arm-none-eabi-objcopy
+CC = $(ARM_SDK_PREFIX)gcc
+CP = $(ARM_SDK_PREFIX)objcopy
 MCU := -mcpu=cortex-m0 -mthumb
 LDSCRIPT := STM32F051K6TX_FLASH.ld
 LIBS := -lc -lm -lnosys 
@@ -32,10 +32,26 @@ VALUES :=  \
 CFLAGS = $(MCU) $(VALUES) $(INCLUDES) -O2 -Wall -fdata-sections -ffunction-sections
 CFLAGS += -D$(TARGET)
 CFLAGS += -MMD -MP -MF $(@:%.bin=%.d)
+
 TARGETS := FD6288 MP6531 IFLIGHT TMOTOR55 TMOTOR45 HGLRC SISKIN DIATONE MAMBA_F40PRO MAMBA_F50PRO MAMBA_F60PRO
+
+# Working directories
+ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
+
+# Build tools, so we all share the same versions
+# import macros common to all supported build systems
+include $(ROOT)/make/system-id.mk
+
+# configure some directories that are relative to wherever ROOT_DIR is located
+ifndef TOOLS_DIR
+TOOLS_DIR := $(ROOT)/tools
+endif
+BUILD_DIR := $(ROOT)/build
+DL_DIR := $(ROOT)/downloads
 
 .PHONY : clean all
 all : $(TARGETS)
+
 clean :
 	rm -f Src/*.o
 
@@ -46,3 +62,13 @@ $(TARGETS:%=%.bin) : clean $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(OBJ)
 	$(CP) -O binary $(TARGET).elf $(TARGET).bin
 	$(CP) $(TARGET).elf -O ihex  $(TARGET).hex
+
+# mkdirs
+$(DL_DIR):
+	mkdir -p $@
+
+$(TOOLS_DIR):
+	mkdir -p $@
+
+# include the tools makefile
+include $(ROOT)/make/tools.mk
