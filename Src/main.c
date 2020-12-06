@@ -84,6 +84,9 @@
 #include "functions.h"
 #include "peripherals.h"
 
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 63
+
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
   uint8_t version_minor;
@@ -91,8 +94,8 @@ typedef struct __attribute__((packed)) {
 } firmware_info_s;
 
 firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
-  version_major: 1,
-  version_minor: 63,
+  version_major: VERSION_MAJOR,
+  version_minor: VERSION_MINOR,
   device_name: FIRMWARE_NAME
 };
 
