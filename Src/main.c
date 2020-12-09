@@ -64,6 +64,9 @@
  *-- increase max change a low rpm x10
  *-- set low limit of throttle ramp to a lower point and increase upper range
  *-- change desync event from full restart to just lower throttle.
+ 
+ 1.64 
+ --added startup check for continuous high signal, reboot to enter bootloader.
  */
 
 #include <stdint.h>
@@ -130,7 +133,7 @@ char reversing_dead_band = 1;
 
 uint16_t oneKhz_timer = 0;
 int checkcount = 0;
-
+uint16_t low_pin_count = 0;
 
 uint8_t max_duty_cycle_change = 2;
 char fast_accel = 1;
@@ -320,7 +323,24 @@ int signaltimeout = 0;
 uint8_t ubAnalogWatchdogStatus = RESET;
 
 
-
+void checkForHighSignal(){
+changeToInput();
+LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_DOWN);
+delayMicros(1000);
+for(int i = 0 ; i < 1000; i ++){
+	 if( !(INPUT_PIN_PORT->IDR & INPUT_PIN)){  // if the pin is low for 5 checks out of 100 in  100ms or more its either no signal or signal. jump to application
+		 low_pin_count++;
+	 }
+     delayMicros(10);
+}
+LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
+	 if(low_pin_count > 5){
+		 return;      // its either a signal or a disconnected pin
+	 }else{
+		allOff();
+		NVIC_SystemReset();
+	 }
+}
 
 void loadEEpromSettings(){
 	   read_flash_bin( eepromBuffer , 0x08007c00 , 48);
@@ -996,20 +1016,11 @@ int main(void)
    ADC_Init();
    enableADC_DMA();
    activateADC();
-
    telem_UART_Init();
-
-
    MX_IWDG_Init();
    LL_IWDG_ReloadCounter(IWDG);
-#ifdef USE_ADC_INPUT
-   armed_count_threshold = 5000;
-   inputSet = 1;
-
-#else
-  receiveDshotDma();
-
-  if(crawler_mode){
+ 
+ if(crawler_mode){
   	throttle_max_at_low_rpm = 600;
   	bi_direction = 1;
   	use_sin_start = 1;
@@ -1029,11 +1040,7 @@ int main(void)
 	high_rpm_level = 20 + (motor_kv / 50);
 
   }else{
-
-
-
   loadEEpromSettings();
-
   if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
 	  eepromBuffer[3] = firmware_info.version_major;
 	  eepromBuffer[4] = firmware_info.version_minor;
@@ -1042,24 +1049,28 @@ int main(void)
 	  }
 	  saveEEpromSettings();
   }
-
   }
 
   if(use_sin_start){
   min_startup_duty = sin_mode_min_s_d;
   }
-
 	if (dir_reversed == 1){
 			forward = 0;
 		}else{
 			forward = 1;
 		}
 	tim1_arr = TIMER1_MAX_ARR;
-
 	if(!comp_pwm){
 		use_sin_start = 0;
 	}
 
+#ifdef USE_ADC_INPUT
+   armed_count_threshold = 5000;
+   inputSet = 1;
+
+#else
+ checkForHighSignal();     // will reboot if signal line is high for 10ms
+ receiveDshotDma();
 #endif
 
   while (1)
