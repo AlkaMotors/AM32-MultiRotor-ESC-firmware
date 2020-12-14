@@ -138,7 +138,7 @@ uint16_t low_pin_count = 0;
 uint8_t max_duty_cycle_change = 2;
 char fast_accel = 1;
 uint16_t last_duty_cycle = 0;
-
+char play_tone_flag = 0;
 
 typedef enum
 {
@@ -653,6 +653,15 @@ void tenKhzRoutine(){
 	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
 	  }
 	  if (input < 47 + (80*use_sin_start)){
+		if(play_tone_flag != 0){
+			if(play_tone_flag == 1){
+				playDefaultTone();
+
+			}if(play_tone_flag == 2){
+				playChangedTone();
+			}
+			play_tone_flag = 0;
+		}
 
 		  if(!comp_pwm){
 			duty_cycle = 0;
