@@ -38,6 +38,13 @@ TARGETS := FD6288 MP6531 IFLIGHT TMOTOR55 TMOTOR45 HGLRC SISKIN DIATONE MAMBA_F4
 # Working directories
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
+VERSION_MAJOR := $(shell grep " VERSION_MAJOR" Src/main.c | awk '{print $$3}' )
+VERSION_MINOR := $(shell grep " VERSION_MINOR" Src/main.c | awk '{print $$3}' )
+
+FIRMWARE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR)
+
+TARGET_BASENAME = $(TARGET)_$(FIRMWARE_VERSION)
+
 # Build tools, so we all share the same versions
 # import macros common to all supported build systems
 include $(ROOT)/make/system-id.mk
@@ -56,12 +63,14 @@ clean :
 	rm -f Src/*.o
 
 $(TARGETS) :
-	$(MAKE) TARGET=$@ $@.bin
+	$(MAKE) TARGET=$@ binary
 
-$(TARGETS:%=%.bin) : clean $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET).elf $(OBJ)
-	$(CP) -O binary $(TARGET).elf $(TARGET).bin
-	$(CP) $(TARGET).elf -O ihex  $(TARGET).hex
+binary : clean $(TARGET_BASENAME).bin
+
+$(TARGET_BASENAME).bin : $(OBJ)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET_BASENAME).elf $(OBJ)
+	$(CP) -O binary $(TARGET_BASENAME).elf $(TARGET_BASENAME).bin
+	$(CP) $(TARGET_BASENAME).elf -O ihex  $(TARGET_BASENAME).hex
 
 # mkdirs
 $(DL_DIR):
