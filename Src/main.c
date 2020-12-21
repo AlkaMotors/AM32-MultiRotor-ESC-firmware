@@ -65,8 +65,12 @@
  *-- set low limit of throttle ramp to a lower point and increase upper range
  *-- change desync event from full restart to just lower throttle.
  
- 1.64 
- --added startup check for continuous high signal, reboot to enter bootloader.
+ *1.64
+ * --added startup check for continuous high signal, reboot to enter bootloader.
+ *-- added brake on stop from eeprom
+ *-- added stall protection from eeprom
+ *-- added motor pole divider for sinusoidal and low rpm power protection
+ *-- fixed dshot commands, added confirmation beeps and removed blocking behavior
  */
 
 #include <stdint.h>
@@ -85,7 +89,7 @@
 #include "peripherals.h"
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 63
+#define VERSION_MINOR 64
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -393,7 +397,7 @@ void loadEEpromSettings(){
 
 	   if(eepromBuffer[25] < 151 && eepromBuffer[25] > 49){
 		   min_startup_duty = eepromBuffer[25]/ 2 + 10 + startup_boost;
-		   minimum_duty_cycle = eepromBuffer[25]/ 2 + 10;
+		   minimum_duty_cycle = eepromBuffer[25]/ 2 + DEAD_TIME/3;
 	    }else{
 	    	min_startup_duty = 150;
 	    	minimum_duty_cycle = (min_startup_duty / 2) + 10;
@@ -401,13 +405,22 @@ void loadEEpromSettings(){
 
        motor_kv = (eepromBuffer[26] * 40) + 20;
        motor_poles = eepromBuffer[27];
-
+       
+	   if(eepromBuffer[28] == 0x01){
+		   brake_on_stop = 1;
+	    }else{
+	    	brake_on_stop = 0;
+	    }
+	   if(eepromBuffer[29] == 0x01){
+		   stall_protection = 1;
+	    }else{
+	    	stall_protection = 0;
+	    }
 	   
 	   low_rpm_level  = motor_kv / 200 / (16 / motor_poles);
 	   high_rpm_level = (40 + (motor_kv / 100)) / (16/motor_poles);
 	   
-
-	   low_rpm_level  = motor_kv / 200;
+       low_rpm_level  = motor_kv / 200;
 	   high_rpm_level = 40 + (motor_kv / 100);
 
 
@@ -711,10 +724,10 @@ void tenKhzRoutine(){
 	   }
  }
 
-if (duty_cycle < 160 && running){
+if (running){
 
-	 if(stall_protection && zero_crosses > 5){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
-		 min_startup_duty = 90; // slow it down again can be set higher by signal timeout.
+	 .
+	 if(stall_protection){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
 				 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
 					 if(commutation_interval > 9000){
@@ -726,14 +739,15 @@ if (duty_cycle < 160 && running){
 					 if(minimum_duty_cycle > 200){
 						 minimum_duty_cycle = 200;
 					 }
-					 if(minimum_duty_cycle < 20){
-						 minimum_duty_cycle = 20;
+					 if(minimum_duty_cycle < (DEAD_TIME/2) + (eepromBuffer[25]/3)){
+						 minimum_duty_cycle= (DEAD_TIME/2) + (eepromBuffer[25]/3);
 					 }
 
 				velocity_count = 0;
 
 				 }
 	 }
+	 
  }
 	 if (duty_cycle > duty_cycle_maximum){
 		 duty_cycle = duty_cycle_maximum;
@@ -1339,6 +1353,7 @@ if(input > 48 && armed){
 	 			  if (phase_A_position == 0){
 	 			  stepper_sine = 0;
 	 			  running = 1;
+				  old_routine = 1;
 	 			 zero_crosses = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
 	 //			 LL_TIM_EnableIT_UPDATE(TIM1);
