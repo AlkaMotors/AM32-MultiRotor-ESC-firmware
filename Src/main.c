@@ -399,6 +399,10 @@ void loadEEpromSettings(){
        motor_kv = (eepromBuffer[26] * 40) + 20;
        motor_poles = eepromBuffer[27];
 
+	   
+	   low_rpm_level  = motor_kv / 200 / (16 / motor_poles);
+	   high_rpm_level = (40 + (motor_kv / 100)) / (16/motor_poles);
+	   
 
 	   low_rpm_level  = motor_kv / 200;
 	   high_rpm_level = 40 + (motor_kv / 100);
@@ -890,16 +894,10 @@ if (!forward){
 		}
 }
 
-#ifdef MP6531
-TIM1->CCR1 = (pwmSin[phase_C_position])+gate_drive_offset;
-    TIM1->CCR2 = (pwmSin[phase_B_position])+gate_drive_offset;
-    TIM1->CCR3 = (pwmSin[phase_A_position])+gate_drive_offset;
+    TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;
+    TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;
+    TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;
 
-#else
-    TIM1->CCR1 = (pwmSin[phase_A_position]/2)+gate_drive_offset;
-    TIM1->CCR2 = (pwmSin[phase_B_position]/2)+gate_drive_offset;
-    TIM1->CCR3 = (pwmSin[phase_C_position]/2)+gate_drive_offset;
-#endif
 }
 
 
@@ -1324,7 +1322,7 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 500, 60);
+             step_delay = map (input, 48, 137, 7000/motor_poles, 840/motor_poles);
 	 		 delayMicros(step_delay);
 
 	 		  }else{
