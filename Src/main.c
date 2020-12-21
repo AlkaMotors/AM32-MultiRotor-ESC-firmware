@@ -725,8 +725,6 @@ void tenKhzRoutine(){
  }
 
 if (running){
-
-	 .
 	 if(stall_protection){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
 				 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
