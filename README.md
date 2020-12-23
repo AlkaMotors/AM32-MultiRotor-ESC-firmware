@@ -27,8 +27,8 @@ To configure AM32 you should use the Multi_ESC config tool (Windows) which using
 https://github.com/conuthead/AM32-MultiRotor-ESC-firmware/tree/master/Release/CONFIG%20TOOL
 
 ## Hardware
-
-To do...
+Target compatibility List can be found here (DEC 2020)
+https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58-Yg/edit?usp=sharing
 
 ## Installation & Documentation
 
