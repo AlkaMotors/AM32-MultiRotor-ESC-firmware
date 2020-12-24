@@ -875,11 +875,7 @@ if(desync_check){
 
 
 void advanceincrement(){
-#ifdef MP6531
- if(forward){
-#else
 if (!forward){
-#endif
 	phase_A_position ++;
     if (phase_A_position > 359){
 	   phase_A_position = 0 ;
