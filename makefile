@@ -9,7 +9,6 @@ SRC_DIR := Startup \
 	Src \
 	Drivers/STM32F0xx_HAL_Driver/Src
 SRC := $(foreach dir,$(SRC_DIR),$(wildcard $(dir)/*.[cs]))
-OBJ := $(SRC:%.[cs]=%.o)
 INCLUDES :=  \
 	-IInc \
 	-IDrivers/STM32F0xx_HAL_Driver/Inc \
@@ -43,32 +42,32 @@ VERSION_MINOR := $(shell grep " VERSION_MINOR" Src/main.c | awk '{print $$3}' )
 
 FIRMWARE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR)
 
-TARGET_BASENAME = $(TARGET)_$(FIRMWARE_VERSION)
+TARGET_BASENAME = $(BIN_DIR)/$(TARGET)_$(FIRMWARE_VERSION)
 
 # Build tools, so we all share the same versions
 # import macros common to all supported build systems
 include $(ROOT)/make/system-id.mk
 
 # configure some directories that are relative to wherever ROOT_DIR is located
-ifndef TOOLS_DIR
-TOOLS_DIR := $(ROOT)/tools
-endif
-BUILD_DIR := $(ROOT)/build
+BIN_DIR := $(ROOT)/obj
+
+TOOLS_DIR ?= $(ROOT)/tools
 DL_DIR := $(ROOT)/downloads
 
 .PHONY : clean all
 all : $(TARGETS)
 
 clean :
-	rm -f Src/*.o
+	rm -rf $(BIN_DIR)/*
 
 $(TARGETS) :
 	$(MAKE) TARGET=$@ binary
 
-binary : clean $(TARGET_BASENAME).bin
+binary : $(TARGET_BASENAME).bin
 
-$(TARGET_BASENAME).bin : $(OBJ)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET_BASENAME).elf $(OBJ)
+$(TARGET_BASENAME).bin : $(SRC)
+	mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(TARGET_BASENAME).elf $(SRC)
 	$(CP) -O binary $(TARGET_BASENAME).elf $(TARGET_BASENAME).bin
 	$(CP) $(TARGET_BASENAME).elf -O ihex  $(TARGET_BASENAME).hex
 
