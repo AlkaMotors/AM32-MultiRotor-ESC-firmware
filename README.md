@@ -33,3 +33,11 @@ https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58
 ## Installation & Documentation
 
 To do...
+
+## Support and Developers Channel
+
+There's a dedicated Slack chat channel here:
+
+https://am32-invite.herokuapp.com/
+
+Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
