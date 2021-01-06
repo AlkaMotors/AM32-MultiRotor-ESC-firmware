@@ -19,7 +19,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Setup Python
-        uses: action/setup-python@v1
+        uses: actions/setup-python@v1
 
       - name: Install ARM SDK
         run: make arm_sdk_install
@@ -51,7 +51,7 @@ jobs:
           path: obj
       
       - name: Upload Hex Files
-        uses: action/upload-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: ${ARTIFACT_NAME}
           path: obj/*.hex
