@@ -53,5 +53,5 @@ jobs:
       - name: Upload Hex Files
         uses: actions/upload-artifact@v2
         with:
-          name: ${ARTIFACT_NAME}
+          name: ${{ env.ARTIFACT_NAME }}
           path: obj/*.hex
