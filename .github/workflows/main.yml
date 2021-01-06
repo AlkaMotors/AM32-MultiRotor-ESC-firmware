@@ -15,17 +15,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout code
+      - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: install arm sdk
+      - name: Setup Python
+        uses: action/setup-python@v1
+
+      - name: Install ARM SDK
         run: make arm_sdk_install
 
-      - name: build all targets
+      - name: Get GitHub Build Number (ENV)
+        id: get_buildno
+        run: echo "GITHUBBUILDNUMBER=${{ github.run_number }}" >> $GITHUB_ENV
+        continue-on-error: true
+
+      - name: Get Pull Request Number
+        id: get_pullno
+        run: echo "PULL_NUMBER=$(echo "$GITHUB_REF" | awk -F / '{print $3}')" >> $GITHUB_ENV
+        if: startsWith(github.ref, 'refs/pull/')
+
+      - name: Make artifact name
+        id: make_artifactname
+        run: |
+          ARTIFACT_NAME="AM32-F051-${{ github.run_number }}"
+          echo "${ARTIFACT_NAME}"
+          echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
+
+      - name: Build All Targets
         run: make all
 
-      - name: upload artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
           name: firmware-artifact
           path: obj
+      
+      - name: Upload Hex Files
+        uses: action/upload-artifact@v2
+        with:
+          name: ${ARTIFACT_NAME}
+          path: obj/*.hex
