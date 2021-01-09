@@ -44,10 +44,10 @@ jobs:
       - name: Build All Targets
         run: make all
 
-      - name: Upload Artifact
+      - name: Upload Bin Files
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARITIFACT_NAME}}-BIN
+          name: ${{ env.ARTIFACT_NAME }}-BIN
           path: obj/*.bin
       
       - name: Upload Hex Files
