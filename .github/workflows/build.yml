@@ -1,4 +1,4 @@
-name: AM32-Firmware
+name: Build AM32 F051 Firmware
 
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
@@ -47,11 +47,11 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: firmware-artifact
-          path: obj
+          name: ${{ env.ARITIFACT_NAME}}-BIN
+          path: obj/*.bin
       
       - name: Upload Hex Files
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARTIFACT_NAME }}
+          name: ${{ env.ARTIFACT_NAME }}-HEX
           path: obj/*.hex
