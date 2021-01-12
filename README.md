@@ -1,8 +1,10 @@
 # AM32-MultiRotor-ESC-firmware
 Firmware for STM32F051 based speed controllers for use with mutirotors
-<p align="left">
-  <a href="/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-brightgreen" alt="GitHub license" /></a>
-</p>
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+![Build Status](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/workflows/Build%20AM32-F051/badge.svg)
+![Codacy Badge](https://api.codacy.com/project/badge/Grade/5422b54319254b6f9b6d01464ae9380c)(https://www.codacy.com/gh/AlkaMotors/AM32-MultiRotor-ESC-firmware?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AlkaMotors/AM32-MultiRotor-ESC-firmware&amp;utm_campaign=Badge_Grade)
+
 
 The AM32 firmware is designed for STM32 ARM processors to control a brushless motor (BLDC).
 The firmware is intended to be safe and fast with smooth fast startups and linear throttle. It is meant for use with multirotor aircraft and a flight controller. The firmware can also be built with support for crawlers.
@@ -38,6 +40,18 @@ To do...
 
 There's a dedicated Slack chat channel here:
 
-https://am32-invite.herokuapp.com/
+ [Join Our Slack](https://am32-invite.herokuapp.com/)
+
 
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
+
+## Open Source / Contirbutors
+
+Big thanks to current and past contributors:
+
+- **Smith, Pete** (AlkaMotors)
+- **Chiang, Hugo** (DusKing1)
+- **ColinNiu**
+- **Keller, Michael** (mikeller)
+
+And many many others who haven't been mentioned...
