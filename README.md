@@ -28,7 +28,7 @@ WINDOWS : https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view
 
 LINUX :   https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing
 
-Alternately you can use the BlHeli-Configurator tool to flash or change settings.
+Alternately you can use the BlHeli-Configurator to flash or change settings.
 https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20
 
 
