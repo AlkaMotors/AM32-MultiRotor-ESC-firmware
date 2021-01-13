@@ -25,6 +25,7 @@ https://github.com/conuthead/AM32-MultiRotor-ESC-firmware/tree/master/Release
 To configure AM32 you can use the Multi_ESC config tool (Windows/Linux) which using betaflight passthrough capability, which can be found here:
 
 WINDOWS : https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing
+
 LINUX :   https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing
 
 Alternately you can use the BlHeli-Configurator tool to flash or change settings.
