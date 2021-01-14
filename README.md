@@ -38,7 +38,6 @@ https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58
 
 ## Installation & Documentation
 
-To do...
 
 ## Support and Developers Channel
 
