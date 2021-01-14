@@ -20,7 +20,7 @@ AM32 has the following features:
 
 ## Firmware Release & Configuration Tool
 
-https://github.com/conuthead/AM32-MultiRotor-ESC-firmware/tree/master/Release
+https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64
 
 To configure AM32 you can use the Multi_ESC config tool (Windows/Linux) which using betaflight passthrough capability, which can be found here:
 
