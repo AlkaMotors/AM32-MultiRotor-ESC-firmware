@@ -20,7 +20,7 @@ AM32 has the following features:
 
 ## Firmware Release & Configuration Tool
 
-The latest release of the firmware can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64).
+The latest release of the firmware can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/).
 
 To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
