@@ -24,24 +24,24 @@ https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64
 
 To configure AM32 you can use the Multi_ESC config tool (Windows/Linux) which using betaflight passthrough capability, which can be found here:
 
-WINDOWS : https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing
+[WINDOWS](https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing)
 
-LINUX :   https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing
+[LINUX](https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing)
 
-Alternately you can use the BlHeli-Configurator to flash or change settings.
-https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20
+Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings.
+
 
 
 ## Hardware
-Target compatibility List can be found here (DEC 2020)
-https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58-Yg/edit?usp=sharing
+Target compatibility List can be found [here](https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58-Yg/edit?usp=sharing) (DEC 2020)
+
 
 ## Installation & Documentation
 
 To use AM32 firmware on a blank ESC, a bootloader must first be installed using a ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
-Current bootloaders can be found here:
-https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/v5
+Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/v5).
+
 
 ## Support and Developers Channel
 
