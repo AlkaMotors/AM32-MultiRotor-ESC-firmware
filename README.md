@@ -54,7 +54,7 @@ Etiquette: Don't ask to ask and please wait around long enough for a reply - som
 A big thanks to all those who contributed time, advice and code to the AM32 project.\
 Hugo Chiang (Dusking)\
 Micheal Keller (Mikeller)\
-ColinNui\
+ColinNiu\
 Jacob Walser
 
 And for feedback from pilots:\
