@@ -20,15 +20,14 @@ AM32 has the following features:
 
 ## Firmware Release & Configuration Tool
 
-https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64
+The latest release of the firmware can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64).
 
-To configure AM32 you can use the Multi_ESC config tool (Windows/Linux) which using betaflight passthrough capability, which can be found here:
+To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-[WINDOWS](https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing)
-
+[WINDOWS](https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing)
 
-Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings.
+Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings. Currently only nightly builds support AM32.
 
 
 
@@ -50,3 +49,16 @@ There's a dedicated Slack chat channel here:
 https://am32-invite.herokuapp.com/
 
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
+
+## Contributors
+A big thanks to all those who contributed time, advice and code to the AM32 project.\
+Hugo Chiang (Dusking)\
+Micheal Keller (Mikeller)\
+ColinNui\
+Jacob Walser
+
+And for feedback from pilots:\
+Jye Smith\
+Markus Gritsch
+
+(and many more)
