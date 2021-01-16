@@ -32,7 +32,7 @@ Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-conf
 
 
 ## Hardware
-Target compatibility List can be found [here](https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58-Yg/edit?usp=sharing) (DEC 2020)
+Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/List-of-Supported-Hardware) (DEC 2020)
 
 
 ## Installation & Documentation
