@@ -57,8 +57,9 @@ Micheal Keller (Mikeller)\
 ColinNiu\
 Jacob Walser
 
-And for feedback from pilots:\
+And for feedback from pilots and drivers:\
 Jye Smith\
-Markus Gritsch
+Markus Gritsch\
+Voodoobrew 
 
 (and many more)
