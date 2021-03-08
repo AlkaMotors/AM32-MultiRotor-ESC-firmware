@@ -24,7 +24,7 @@ The latest release of the firmware can be found [here](https://github.com/AlkaMo
 
 To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-[WINDOWS](https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing),
+[WINDOWS](https://drive.google.com/file/d/1BG2TaUT4uBoKwynKN6QvFR7ysT9RGIb6/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing)
 
 Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings. Currently only nightly builds support AM32.
