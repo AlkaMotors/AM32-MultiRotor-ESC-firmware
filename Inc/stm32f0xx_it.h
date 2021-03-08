@@ -65,6 +65,8 @@ void TIM3_IRQHandler(void);
 void DMA1_Channel1_IRQHandler(void);
 void DMA1_Channel2_3_IRQHandler(void);
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void);
+void EXTI2_3_IRQHandler(void);
+void EXTI4_15_IRQHandler(void);
 /* USER CODE END EFP */
 
 #ifdef __cplusplus
@@ -72,5 +74,7 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void);
 #endif
 
 #endif /* __STM32F0xx_IT_H */
+
+
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

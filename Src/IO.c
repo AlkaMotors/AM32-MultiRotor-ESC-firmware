@@ -95,6 +95,7 @@ void receiveDshotDma(){
 #endif
 	   LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, buffersize);
 	   LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
+
 	   LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
 	   LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
 #ifdef USE_TIMER_2_CHANNEL_4
@@ -191,24 +192,13 @@ void detectInput(){
 //	if ((smallestnumber > 2000 )&&(smallestnumber < 3000)){
 //		oneshot42 = 1;
 //	}
-	if(crawler_mode){
 		if (smallestnumber > 3000){
 			servoPwm = 1;
 			ic_timer_prescaler=47;
 			armed_count_threshold = 35;
-			buffersize = 3;
+			buffersize = 2;
 		}
-	}else{
-	if ((smallestnumber > 3000 )&&(smallestnumber < 6500)){
-		oneshot125 = 1;
-	}
-	if (smallestnumber > 6500){
-		servoPwm = 1;
-		ic_timer_prescaler=47;
-		armed_count_threshold = 35;
-		buffersize = 3;
-	}
-	}
+
 	if (smallestnumber == 0){
 		inputSet = 0;
 	}else{
@@ -237,9 +227,9 @@ void computeMSInput(){
 void computeServoInput(){
 
 	int lastnumber = dma_buffer[0];
-	for ( int j = 1 ; j < 3; j++){
+	for ( int j = 1 ; j < 2; j++){
 
-		if(((dma_buffer[j] - lastnumber) >1000 ) && ((dma_buffer[j] - lastnumber) < 2010)){ // blank space
+		if(((dma_buffer[j] - lastnumber) >900 ) && ((dma_buffer[j] - lastnumber) < 2150)){ // blank space
 
 			if(bi_direction){
 				if(dma_buffer[j] - lastnumber <= servo_neutral){
@@ -289,10 +279,10 @@ void transfercomplete(){
 	if (inputSet == 1){
 	if(!armed){
 		signaltimeout = 0;
-		if (input < 0){
-			  						input = 0;
+		if (adjusted_input < 0){
+			adjusted_input = 0;
 			  					}
-		 		 if (input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
+		 		 if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
 		 		 			zero_input_count++;
 		 		 		}else{
 		 		 			zero_input_count = 0;
@@ -328,9 +318,11 @@ if(dshot_telemetry){
 
 		if  (servoPwm == 1){
 			computeServoInput();
-			IC_TIMER_REGISTER->CNT = 0;
+		//	IC_TIMER_REGISTER->CNT = 0;
 			signaltimeout = 0;
-			receiveDshotDma();
+			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
+     		receiveDshotDma();
+     	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
 		}
 
 	}

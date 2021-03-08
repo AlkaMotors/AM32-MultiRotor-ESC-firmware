@@ -14,6 +14,6 @@ void allOff();
 void comStep (int newStep);
 void fullBrake();
 void allpwm();
-
+void proportionalBrake();
 
 #endif /* INC_PHASEOUTS_H_ */
