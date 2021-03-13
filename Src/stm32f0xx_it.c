@@ -72,6 +72,7 @@ extern char send_telemetry;
 extern int count;
 extern char telemetry_done;
 extern uint16_t process_time;
+extern char servoPwm;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -193,22 +194,16 @@ void DMA1_Channel4_5_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel4_5_IRQn 0 */
 #ifdef USE_TIMER_15_CHANNEL_1
 	if(LL_DMA_IsActiveFlag_HT5(DMA1)){
-
+		if(servoPwm){
+		LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
+		 LL_DMA_ClearFlag_HT5(DMA1);
+		}
 	}
 	  if(LL_DMA_IsActiveFlag_TC5(DMA1) == 1)
 	  {
-
 	    LL_DMA_ClearFlag_GI5(DMA1);
-
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
-
-//	    TIM6->CNT = 0;
-//	    TIM17->CNT = 0;
-//	    TIM6->SR = 0x00;
 	    transfercomplete();
-
-
-
 	  }
 	  else if(LL_DMA_IsActiveFlag_TE5(DMA1) == 1)
 	  {
@@ -243,7 +238,10 @@ void DMA1_Channel4_5_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel4_5_IRQn 1 */
 #ifdef USE_TIMER_3_CHANNEL_1
 		if(LL_DMA_IsActiveFlag_HT4(DMA1)){
-
+			if(servoPwm){
+			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
+			 LL_DMA_ClearFlag_HT4(DMA1);
+			}
 		}
 		  if(LL_DMA_IsActiveFlag_TC4(DMA1) == 1)
 		  {
@@ -427,6 +425,8 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 
 	  }
 }
+
+
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -20,28 +20,27 @@ AM32 has the following features:
 
 ## Firmware Release & Configuration Tool
 
-https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/tag/v1.64
+The latest release of the firmware can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/releases/).
 
-To configure AM32 you can use the Multi_ESC config tool (Windows/Linux) which using betaflight passthrough capability, which can be found here:
+To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-WINDOWS : https://drive.google.com/file/d/1OMTUgsEZ9oAXelWaNMohQquGWg245Vmb/view?usp=sharing
+[WINDOWS](https://drive.google.com/file/d/1o5XP8kSecdH3bPRClUwI7150Od7UdhkG/view?usp=sharing),
+[LINUX](https://drive.google.com/file/d/164mF-7khqH822kLzF8sP5VAckHecoKGG/view?usp=sharing)
 
-LINUX :   https://drive.google.com/file/d/1ZA_rHGnxBD8RDgRgNhefiGdKknRi3Dc0/view?usp=sharing
+Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings. Currently only nightly builds support AM32.
 
-Alternately you can use the BlHeli-Configurator to flash or change settings.
-https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20
 
 
 ## Hardware
-Target compatibility List can be found here (DEC 2020)
-https://docs.google.com/spreadsheets/d/1NF1Rkq_BFkA53i3A-R1VcAJXwEQCIs_VxcVT_-58-Yg/edit?usp=sharing
+Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/List-of-Supported-Hardware) (DEC 2020)
+
 
 ## Installation & Documentation
 
 To use AM32 firmware on a blank ESC, a bootloader must first be installed using a ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
-Current bootloaders can be found here:
-https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/v5
+Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/v5).
+
 
 ## Support and Developers Channel
 
@@ -50,3 +49,17 @@ There's a dedicated Slack chat channel here:
 https://am32-invite.herokuapp.com/
 
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
+
+## Contributors
+A big thanks to all those who contributed time, advice and code to the AM32 project.\
+Hugo Chiang (Dusking)\
+Micheal Keller (Mikeller)\
+ColinNiu\
+Jacob Walser
+
+And for feedback from pilots and drivers:\
+Jye Smith\
+Markus Gritsch\
+Voodoobrew 
+
+(and many more)
