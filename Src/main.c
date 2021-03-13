@@ -84,7 +84,11 @@
  *-- added brushed motor control mode
  *-- added settings to EEPROM version 1
  *-- add gimbal control option.
- *--
+ *-- 
+ *-- added Dixie startup tone.
+ *-- added Spektrum surface receiver compatability.
+ *-- tweaked startup speeds for wraith32
+ *-- tweaked voltage divider for wraith32
  *--
  */
 
@@ -152,7 +156,7 @@ uint16_t low_voltage_count = 0;
 char THIRTY_TWO_MS_TLM = 0;
 uint16_t thirty_two_ms_count;
 char LOW_VOLTAGE_CUTOFF = 0;
-char VOLTAGE_DIVIDER = 11;     // 100k upper and 10k lower resistor in divider
+int VOLTAGE_DIVIDER = 11;     // 100k upper and 10k lower resistor in divider
 
 uint16_t battery_voltage;  // scale in volts * 10.  1260 is a battery voltage of 12.60
 uint16_t low_cell_volt_cutoff = 330; // 3.3volts per cell
@@ -761,7 +765,7 @@ void tenKhzRoutine(){
 		  }
 	//	  coasting = 0;
 	 //	 running = 1;
-	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
+	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (80*use_sin_start);
 	  }
 	  if (input < 47 + (80*use_sin_start)){
 		if(play_tone_flag != 0){
@@ -1003,13 +1007,21 @@ if (!forward){
 		}
 }
     if(GIMBAL_MODE){
-    TIM1->CCR1 = (2*pwmSin[phase_A_position])+gate_drive_offset;
-    TIM1->CCR2 = (2*pwmSin[phase_B_position])+gate_drive_offset;
-    TIM1->CCR3 = (2*pwmSin[phase_C_position])+gate_drive_offset;
+	TIM1->CCR1 = (2*pwmSin[phase_A_position])+gate_drive_offset;
+	TIM1->CCR2 = (2*pwmSin[phase_B_position])+gate_drive_offset;
+	TIM1->CCR3 = (2*pwmSin[phase_C_position])+gate_drive_offset;
     }else{
-    TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;
-    TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;
-    TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;
+    	TIM1->CCR1 = (5*pwmSin[phase_A_position]/10) + gate_drive_offset;	// Wraith settings
+    	TIM1->CCR2 = (5*pwmSin[phase_B_position]/10) + gate_drive_offset;	// Wraith settings
+    	TIM1->CCR3 = (5*pwmSin[phase_C_position]/10) + gate_drive_offset;	// Wraith settings
+	    
+//	TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;		// Default settings
+//	TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;		// Default settings
+//	TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;		// Default settings
+	  
+//	TIM1->CCR1 = (pwmSin[phase_A_position])+gate_drive_offset;		// 1408 motor settings
+//	TIM1->CCR2 = (pwmSin[phase_B_position]/)+gate_drive_offset;		// 1408 motor settings
+//	TIM1->CCR3 = (pwmSin[phase_C_position])+gate_drive_offset;		// 1408 motor settings
     }
 }
 
@@ -1123,8 +1135,6 @@ int main(void)
    enableADC_DMA();
    activateADC();
    telem_UART_Init();
-   MX_IWDG_Init();
-   LL_IWDG_ReloadCounter(IWDG);
  
   loadEEpromSettings();
   if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
@@ -1170,8 +1180,13 @@ int main(void)
 	   if(BRUSHED_MODE){
 		   playBrushedStartupTune();
 	   }else{
-		   playStartupTune();
+//		   playStartupTune();
+		   playDixie();
 	   }
+	
+	MX_IWDG_Init();
+	LL_IWDG_ReloadCounter(IWDG);
+	
 if (GIMBAL_MODE){
 	bi_direction = 1;
 	use_sin_start = 1;
@@ -1184,6 +1199,12 @@ if (GIMBAL_MODE){
 #else
  checkForHighSignal();     // will reboot if signal line is high for 10ms
  receiveDshotDma();
+#endif
+	
+#ifdef MP6531
+ 	VOLTAGE_DIVIDER = 8;
+#else
+	VOLTAGE_DIVIDER = 11;     // 100k upper and 10k lower resistor in divider
 #endif
 
   while (1)
@@ -1553,7 +1574,7 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 7000/motor_poles, 840/motor_poles);
+             step_delay = map (input, 48, 137, 10800/motor_poles, 420/motor_poles);
 	 		 delayMicros(step_delay);
 
 	 		  }else{
