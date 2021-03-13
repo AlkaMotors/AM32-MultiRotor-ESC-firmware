@@ -192,7 +192,7 @@ void detectInput(){
 //	if ((smallestnumber > 2000 )&&(smallestnumber < 3000)){
 //		oneshot42 = 1;
 //	}
-		if (smallestnumber > 3000){
+		if (smallestnumber > 90){		//Was 3000, lowered for compatability with spektrum surface recievers
 			servoPwm = 1;
 			ic_timer_prescaler=47;
 			armed_count_threshold = 35;
