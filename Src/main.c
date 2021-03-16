@@ -1007,22 +1007,20 @@ if (!forward){
 		}
 }
     if(GIMBAL_MODE){
-	TIM1->CCR1 = (2*pwmSin[phase_A_position])+gate_drive_offset;
-	TIM1->CCR2 = (2*pwmSin[phase_B_position])+gate_drive_offset;
-	TIM1->CCR3 = (2*pwmSin[phase_C_position])+gate_drive_offset;
-    }else{
-    	TIM1->CCR1 = (5*pwmSin[phase_A_position]/10) + gate_drive_offset;	// Wraith settings
-    	TIM1->CCR2 = (5*pwmSin[phase_B_position]/10) + gate_drive_offset;	// Wraith settings
-    	TIM1->CCR3 = (5*pwmSin[phase_C_position]/10) + gate_drive_offset;	// Wraith settings
-	    
-//	TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;		// Default settings
-//	TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;		// Default settings
-//	TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;		// Default settings
-	  
-//	TIM1->CCR1 = (pwmSin[phase_A_position])+gate_drive_offset;		// 1408 motor settings
-//	TIM1->CCR2 = (pwmSin[phase_B_position]/)+gate_drive_offset;		// 1408 motor settings
-//	TIM1->CCR3 = (pwmSin[phase_C_position])+gate_drive_offset;		// 1408 motor settings
+    TIM1->CCR1 = (2*pwmSin[phase_A_position])+gate_drive_offset;
+    TIM1->CCR2 = (2*pwmSin[phase_B_position])+gate_drive_offset;
+    TIM1->CCR3 = (2*pwmSin[phase_C_position])+gate_drive_offset;
     }
+#ifdef MP6531
+    TIM1->CCR1 = (pwmSin[phase_A_position]/2) + gate_drive_offset;
+    TIM1->CCR2 = (pwmSin[phase_B_position]/2) + gate_drive_offset;
+    TIM1->CCR3 = (pwmSin[phase_C_position]/2) + gate_drive_offset;
+	
+#else{
+    TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;
+    TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;
+    TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;
+#endif
 }
 
 
