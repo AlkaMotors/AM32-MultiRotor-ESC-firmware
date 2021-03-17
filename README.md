@@ -39,7 +39,7 @@ Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32
 
 To use AM32 firmware on a blank ESC, a bootloader must first be installed using a ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
-Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/v5).
+Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/V6).
 
 
 ## Support and Developers Channel
