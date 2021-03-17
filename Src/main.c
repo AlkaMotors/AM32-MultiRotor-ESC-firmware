@@ -765,7 +765,7 @@ void tenKhzRoutine(){
 		  }
 	//	  coasting = 0;
 	 //	 running = 1;
-	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (80*use_sin_start);
+	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
 	  }
 	  if (input < 47 + (80*use_sin_start)){
 		if(play_tone_flag != 0){
