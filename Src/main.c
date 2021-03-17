@@ -152,7 +152,7 @@ uint16_t low_voltage_count = 0;
 char THIRTY_TWO_MS_TLM = 0;
 uint16_t thirty_two_ms_count;
 char LOW_VOLTAGE_CUTOFF = 0;
-char VOLTAGE_DIVIDER = 11;     // 100k upper and 10k lower resistor in divider
+char VOLTAGE_DIVIDER = 110;     // 100k upper and 10k lower resistor in divider
 
 uint16_t battery_voltage;  // scale in volts * 10.  1260 is a battery voltage of 12.60
 uint16_t low_cell_volt_cutoff = 330; // 3.3volts per cell
@@ -1185,13 +1185,19 @@ if (GIMBAL_MODE){
  checkForHighSignal();     // will reboot if signal line is high for 10ms
  receiveDshotDma();
 #endif
-
+	
+#ifdef MP6531
+ 	VOLTAGE_DIVIDER = 75;
+#else
+	VOLTAGE_DIVIDER = 110;     // 100k upper and 10k lower resistor in divider
+#endif
+	
   while (1)
   {
 	  adc_counter++;
 	  if(adc_counter>100){   // for testing adc and telemetry
 		  degrees_celsius = __LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
-          battery_voltage = ((7 * battery_voltage) + (ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER) /10) >> 3;
+          battery_voltage = ((7 * battery_voltage) + (ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER) /100) >> 3;
           smoothed_raw_current = ((15*smoothed_raw_current + (ADC_raw_current) )>> 4);
 
 		  LL_ADC_REG_StartConversion(ADC1);
