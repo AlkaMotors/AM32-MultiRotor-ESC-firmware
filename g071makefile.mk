@@ -35,7 +35,7 @@ CFLAGS = $(MCU) $(VALUES) $(INCLUDES) -O2 -Wall -fdata-sections -ffunction-secti
 CFLAGS += -D$(TARGET)
 CFLAGS += -MMD -MP -MF $(@:%.bin=%.d)
 
-TARGETS := G072ESC
+TARGETS := G072ESC G071ENABLE G071_OPEN_DRAIN G071_OPEN_DRAIN_B
 
 # Working directories
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))

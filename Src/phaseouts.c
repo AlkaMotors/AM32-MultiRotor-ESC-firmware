@@ -10,7 +10,7 @@
 
 extern char comp_pwm;
 extern char prop_brake_active;
-
+#ifndef PWM_ENABLE_BRIDGE
 void proportionalBrake(){  // alternate all channels between braking (ABC LOW) and coasting (ABC float)
 	                        // put lower channel into alternate mode and turn upper OFF for each channel
 	// turn all HIGH channels off for ABC
@@ -33,7 +33,7 @@ void proportionalBrake(){  // alternate all channels between braking (ABC LOW) a
 
 
 
-#ifndef PWM_ENABLE_BRIDGE
+
 void phaseBPWM() {
 		if(!comp_pwm){            // for future
 		LL_GPIO_SetPinMode(PHASE_B_GPIO_PORT_LOW, PHASE_B_GPIO_LOW, LL_GPIO_MODE_OUTPUT);

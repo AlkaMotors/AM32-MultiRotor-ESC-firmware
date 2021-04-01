@@ -2,6 +2,7 @@
 #define G072ESC
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
+//#define G071_OPEN_DRAIN_B
 #endif
 
 //GLOBAL

@@ -778,8 +778,10 @@ void tenKhzRoutine(){
 				zero_crosses = 0;
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
+#ifndef PWM_ENABLE_BRIDGE
 					duty_cycle = getAbsDif(1000, newinput) + 1000;
 					proportionalBrake();
+#endif				
 			}
 
 
