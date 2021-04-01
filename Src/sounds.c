@@ -10,8 +10,20 @@
 #include "functions.h"
 
 extern int signaltimeout;
+extern char play_tone_flag;
 uint8_t beep_volume;
 
+
+void pause(uint16_t ms){
+	TIM1->CCR1 = 0; // volume of the beep, (duty cycle) don't go above 25
+	TIM1->CCR2 = 0;
+	TIM1->CCR3 = 0;
+
+	delayMillis(ms);
+	TIM1->CCR1 = 5; // volume of the beep, (duty cycle) don't go above 25
+	TIM1->CCR2 = 5;
+	TIM1->CCR3 = 5;
+}
 
 void setVolume(uint8_t volume){
 	if(volume > 11){

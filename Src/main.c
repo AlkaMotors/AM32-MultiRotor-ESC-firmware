@@ -85,13 +85,21 @@
  *-- added settings to EEPROM version 1
  *-- add gimbal control option.
  *--
+ *1.66
+ *-- move idwg init to after input tune
+ *-- remove reset after save command -- dshot
+ *-- added wraith32 target
+ *--
+ *-- 1.67
+ *-- Rework file structure for multiple MCU support
+ *-- Add g071 mcu
  *--
  */
 
 #include <stdint.h>
 #include "main.h"
-
 #include "targets.h"
+#include "signal.h"
 #include "dshot.h"
 #include "phaseouts.h"
 #include "eeprom.h"
@@ -103,8 +111,9 @@
 #include "functions.h"
 #include "peripherals.h"
 
+
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 65
+#define VERSION_MINOR 67
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -118,21 +127,30 @@ firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   device_name: FIRMWARE_NAME
 };
 
+//firmware build options
 char BRUSHED_MODE = 0;         // overrides everything else
 char RC_CAR_REVERSE = 0;         // have to set bidirectional, comp_pwm off and stall protection off, no sinusoidal startup
 char GIMBAL_MODE = 0;     // also sinusoidal_startup needs to be on.
 
+//move these to targets folder or peripherals for each mcu
+
+
 uint16_t current_angle = 90;
 uint16_t desired_angle = 90;
 
+uint32_t MCU_Id = 0;
+uint32_t REV_Id = 0;
 
-#define APPLICATION_ADDRESS 0x08001000
-#define EEPROM_START_ADD  (uint32_t)0x08007C00
+uint16_t loop_time = 0;
+uint16_t last_loop_time = 0;
+
+
+
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
 
-char crawler_mode = 0;
+char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
 uint16_t velocity_count_threshold = 50;
 
@@ -152,7 +170,7 @@ uint16_t low_voltage_count = 0;
 char THIRTY_TWO_MS_TLM = 0;
 uint16_t thirty_two_ms_count;
 char LOW_VOLTAGE_CUTOFF = 0;
-char VOLTAGE_DIVIDER = 11;     // 100k upper and 10k lower resistor in divider
+char VOLTAGE_DIVIDER = TARGET_VOLTAGE_DIVIDER;     // 100k upper and 10k lower resistor in divider
 
 uint16_t battery_voltage;  // scale in volts * 10.  1260 is a battery voltage of 12.60
 uint16_t low_cell_volt_cutoff = 330; // 3.3volts per cell
@@ -197,13 +215,13 @@ uint16_t minimum_duty_cycle = DEAD_TIME;
 char desync_check = 0;
 char low_kv_filter_level = 20;
 
-
-uint16_t TIMER1_MAX_ARR = 1999;
-int duty_cycle_maximum = 1999;
-int low_rpm_level  = 20;        // thousand erpm
+uint16_t tim1_arr = TIM1_AUTORELOAD;         // current auto reset value
+uint16_t TIMER1_MAX_ARR = TIM1_AUTORELOAD;      // maximum auto reset register value
+int duty_cycle_maximum = TIM1_AUTORELOAD;     //restricted by temperature or low rpm throttle protect
+int low_rpm_level  = 20;        // thousand erpm used to set range for throttle resrictions
 int high_rpm_level = 70;      //
 int throttle_max_at_low_rpm  = 400;
-int throttle_max_at_high_rpm = 1999;
+int throttle_max_at_high_rpm = TIM1_AUTORELOAD;
 
 uint16_t commutation_intervals[6] = {0};
 uint32_t average_interval = 0;
@@ -212,6 +230,8 @@ int e_com_time;
 
 uint16_t ADC_smoothed_input = 0;
 uint8_t degrees_celsius;
+uint16_t converted_degrees;
+uint8_t temperature_offset;
 uint16_t ADC_raw_temp;
 uint16_t ADC_raw_volts;
 uint16_t ADC_raw_current;
@@ -243,9 +263,10 @@ int adjusted_input;
 
 #define TEMP30_CAL_VALUE            ((uint16_t*)((uint32_t)0x1FFFF7B8))
 #define TEMP110_CAL_VALUE           ((uint16_t*)((uint32_t)0x1FFFF7C2))
+//
+//uint32_t temp110cal = 1;
+//uint32_t temp30cal = 1;
 
-int temp110cal;
-int temp30cal;
 int smoothedinput = 0;
 int voltageraw;
 
@@ -265,7 +286,7 @@ int filter_level = 5;
 int running = 0;
 int advance = 0;
 int advancedivisor = 6;
-int START_ARR=800;
+//int START_ARR=800;
 char rising = 1;
 int count = 0;
 
@@ -321,7 +342,7 @@ const int pwmSin[] = {180,183,186,189,193,196,199,202,
 		155,158,161,164,167,171,174,177};
 
 
-int sin_divider = 2;
+//int sin_divider = 2;
 int phase_A_position;
 int phase_B_position;
 int phase_C_position;
@@ -334,7 +355,7 @@ int stuckcounter = 0;
 int k_erpm;
 
 uint16_t adjusted_duty_cycle;
-uint16_t tim1_arr = 1999;
+
 int bad_count = 0;
 int dshotcommand;
 int armed_count_threshold = 1000;
@@ -395,7 +416,7 @@ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
 }
 
 void loadEEpromSettings(){
-	   read_flash_bin( eepromBuffer , 0x08007c00 , 48);
+	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 48);
 
 	   if(eepromBuffer[17] == 0x01){
 	 	  dir_reversed =  1;
@@ -409,7 +430,7 @@ void loadEEpromSettings(){
 	   }
 	   if(eepromBuffer[19] == 0x01){
 	 	  use_sin_start = 1;
-	 	 min_startup_duty = sin_mode_min_s_d;
+	 //	 min_startup_duty = sin_mode_min_s_d;
 	   }
 	   if(eepromBuffer[20] == 0x01){
 	  	  comp_pwm = 1;
@@ -433,16 +454,20 @@ void loadEEpromSettings(){
 	    }
 
 	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
-		   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, 1999 ,999);
+		   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD ,TIM1_AUTORELOAD/2);
 		   TIM1->ARR = TIMER1_MAX_ARR;
 	    }else{
-	    	tim1_arr = 1999;
+	    	tim1_arr = TIM1_AUTORELOAD;
 	    	TIM1->ARR = tim1_arr;
 	    }
 
 	   if(eepromBuffer[25] < 151 && eepromBuffer[25] > 49){
 		   min_startup_duty = eepromBuffer[25]/ 2 + 10 + startup_boost;
 		   minimum_duty_cycle = eepromBuffer[25]/ 2 + DEAD_TIME/3;
+//		   if (use_sin_start){
+//			   min_startup_duty = eepromBuffer[25];
+//			   minimum_duty_cycle = eepromBuffer[25]/ 4;
+//		   }
 	    }else{
 	    	min_startup_duty = 150;
 	    	minimum_duty_cycle = (min_startup_duty / 2) + 10;
@@ -461,7 +486,7 @@ void loadEEpromSettings(){
 	    }else{
 	    	stall_protection = 0;
 	    }
-	   
+	   setVolume(5);
 	   if(eepromBuffer[1] > 0){             // these commands weren't introduced until eeprom version 1.
 
 		   if(eepromBuffer[30] > 11){
@@ -546,35 +571,7 @@ void saveEEpromSettings(){
 }
 
 
-void initAfterJump(){
-    volatile uint32_t *VectorTable = (volatile uint32_t *)0x20000000;
-    uint32_t vector_index = 0;
-    for(vector_index  = 0; vector_index  < 48; vector_index++)
-    {
-      VectorTable[vector_index ] = *(__IO uint32_t*)(APPLICATION_ADDRESS + (vector_index <<2));         // no VTOR on cortex-MO so need to copy vector table
-    }
-  //	  /* Enable the SYSCFG peripheral clock*/
-    do {
-       volatile uint32_t tmpreg;
-       ((((RCC_TypeDef *) ((((uint32_t)0x40000000U) + 0x00020000) + 0x00001000))->APB2ENR) |= ((0x1U << (0U))));
-           /* Delay after an RCC peripheral clock enabling */
-      tmpreg = ((((RCC_TypeDef *) ((((uint32_t)0x40000000U) + 0x00020000) + 0x00001000))->APB2ENR) & ((0x1U << (0U))));
-         ((void)(tmpreg));
-          } while(0U);
-  //	  /* Remap SRAM at 0x00000000 */
-    do {((SYSCFG_TypeDef *) (((uint32_t)0x40000000U) + 0x00010000))->CFGR1 &= ~((0x3U << (0U)));
-        ((SYSCFG_TypeDef *) (((uint32_t)0x40000000U) + 0x00010000))->CFGR1 |= ((0x1U << (0U)) | (0x2U << (0U)));
-      }while(0);
 
-    if (SysTick_Config(SystemCoreClock / 1000))
-     {
-       /* Capture error */
-       while (1)
-       {
-       }
-     }
-    __enable_irq();
-}
 
 
 void getSmoothedInput() {
@@ -594,7 +591,7 @@ void getSmoothedInput() {
 void getBemfState(){
 
     if (rising){
-    	if (LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_LOW){
+    	if (LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
     		bemfcounter++;
     		}else{
     		bad_count++;
@@ -603,7 +600,7 @@ void getBemfState(){
     		}
    	}
     }else{
-    	if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
+    	if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
     		bemfcounter++;
     	}else{
     		bad_count++;
@@ -618,7 +615,7 @@ void commutate(){
 	commutation_intervals[step-1] = commutation_interval;
 	e_com_time = (commutation_intervals[0] + commutation_intervals[1] + commutation_intervals[2] + commutation_intervals[3] + commutation_intervals[4] +commutation_intervals[5]) >> 1;  // COMMUTATION INTERVAL IS 0.5US INCREMENTS
 
-//	TIM14->CNT = 0;
+//	COM_TIMER->CNT = 0;
 	if (forward == 1){
 		step++;
 		if (step > 6) {
@@ -650,29 +647,29 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 
 void PeriodElapsedCallback(){
 
-			TIM14->DIER &= ~((0x1UL << (0U)));             // disable interrupt
+			COM_TIMER->DIER &= ~((0x1UL << (0U)));             // disable interrupt
 			commutation_interval = (( 3*commutation_interval) + thiszctime)>>2;
 			commutate();
 			advance = (commutation_interval>>3) * advance_level;   // 60 divde 8 7.5 degree increments
 			waitTime = (commutation_interval >>1)  - advance;
 			if(!old_routine){
-			EXTI->IMR |= (1 << 21);     // enable comp interrupt
+			enableCompInterrupts();     // enable comp interrupt
 			}
 			if(zero_crosses<10000){
 			zero_crosses++;
 			}
-		//	TIM17->CNT = 0;
+		//	UTILITY_TIMER->CNT = 0;
 
 }
 
 
 void interruptRoutine(){
 	if (average_interval > 125){
-if ((TIM2->CNT < 125) && (duty_cycle < 600) && (zero_crosses < 500)){    //should be impossible, desync?exit anyway
+if ((INTERVAL_TIMER->CNT < 125) && (duty_cycle < 600) && (zero_crosses < 500)){    //should be impossible, desync?exit anyway
 	return;
 }
 
-if (TIM2->CNT < commutation_interval >> 1){
+if (INTERVAL_TIMER->CNT < (commutation_interval >> 1)){
 	return;
 }
 
@@ -685,51 +682,47 @@ if (stuckcounter > 100){
 	return;
 }
 	}
-
-	uint8_t bad_comp = 0;
-thiszctime = TIM2->CNT;
+thiszctime = INTERVAL_TIMER->CNT;
 			if (rising){
 			for (int i = 0; i < filter_level; i++){
-				if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_HIGH){
-					bad_comp++;
-						if(bad_comp > 1){ //as long there aren't two bad ones
+				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
 							return;
-						}
 					}
 
 				}
 			}else{
 				for (int i = 0; i < filter_level; i++){
-				if(LL_COMP_ReadOutputLevel(COMP1) == LL_COMP_OUTPUT_LEVEL_LOW){
-					bad_comp++;
-						if(bad_comp > 1){
+				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
 							return;
-						}
 			    }
 				}
 			}
 							maskPhaseInterrupts();
-							LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_21);
-							TIM2->CNT = 0 ;
+							enableCompInterrupts();
+					//		clearFlags();
+					//		LL_EXTI_ClearRisingFlag_0_31(EXTI_LINE);
+					//		LL_EXTI_ClearFallingFlag_0_31(EXTI_LINE);
+					//		LL_EXTI_ClearFlag_0_31(EXTI_LINE);
+							INTERVAL_TIMER->CNT = 0 ;
 
 
 		   waitTime = waitTime >> fast_accel;
 
 
-            TIM14->CNT = 0;
-            TIM14->ARR = waitTime;
-			TIM14->SR = 0x00;
-			TIM14->DIER |= (0x1UL << (0U));             // enable TIM14 interrupt
+            COM_TIMER->CNT = 0;
+            COM_TIMER->ARR = waitTime;
+			COM_TIMER->SR = 0x00;
+			COM_TIMER->DIER |= (0x1UL << (0U));             // enable COM_TIMER interrupt
 }
 
 void startMotor() {
 	if (running == 0){
 	commutate();
 	commutation_interval = 10000;
-	TIM2->CNT = 5000;
+	INTERVAL_TIMER->CNT = 5000;
 	running = 1;
 	}
-	EXTI->IMR |= (1 << 21);
+	enableCompInterrupts();
 	sensorless = 1;
 }
 
@@ -761,7 +754,11 @@ void tenKhzRoutine(){
 		  }
 	//	  coasting = 0;
 	 //	 running = 1;
-	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, 2000) - (40*use_sin_start);
+	  if(use_sin_start){
+		duty_cycle = map(input, 127, 2047, minimum_duty_cycle, TIMER1_MAX_ARR);
+  	  }else{
+	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, TIMER1_MAX_ARR);
+	  }
 	  }
 	  if (input < 47 + (80*use_sin_start)){
 		if(play_tone_flag != 0){
@@ -791,6 +788,7 @@ void tenKhzRoutine(){
 			  duty_cycle = 0;
 		  old_routine = 1;
 		  zero_crosses = 0;
+		  bad_count = 0;
 		  if(brake_on_stop){
 			  fullBrake();
 
@@ -799,7 +797,6 @@ void tenKhzRoutine(){
          duty_cycle = 0;
 		  }
 		  }
-
 		 	  phase_A_position = 0;
 		 	  phase_B_position = 119;
 		 	  phase_C_position = 239;
@@ -819,12 +816,12 @@ if(!prop_brake_active){
 		   duty_cycle = 200<<stall_protection;
 	   }
  }
-
 if (running){
 	 if(stall_protection){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
-				 velocity_count++;
+		 min_startup_duty = eepromBuffer[25];
+		 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
-					 if(commutation_interval > 9000){
+					 if(commutation_interval > 10000){
 						    	// duty_cycle = duty_cycle + map(commutation_interval, 10000, 12000, 1, 100);
 						    	 minimum_duty_cycle++;
 						     }else{
@@ -833,16 +830,15 @@ if (running){
 					 if(minimum_duty_cycle > 200){
 						 minimum_duty_cycle = 200;
 					 }
-					 if(minimum_duty_cycle < (DEAD_TIME/2) + (eepromBuffer[25]/3)){
-						 minimum_duty_cycle= (DEAD_TIME/2) + (eepromBuffer[25]/3);
+					 if(minimum_duty_cycle < eepromBuffer[25]/4){
+						 minimum_duty_cycle= eepromBuffer[25]/4;
 					 }
 
 				velocity_count = 0;
 
 				 }
 	 }
-	 
- }
+}
 	 if (duty_cycle > duty_cycle_maximum){
 		 duty_cycle = duty_cycle_maximum;
 	 }
@@ -873,10 +869,10 @@ if (running){
 }
 		if (armed && running && (input > 47)){
 		if(VARIABLE_PWM){
-	    tim1_arr = map(commutation_interval, 96, 200, 999, TIMER1_MAX_ARR);
+	    tim1_arr = map(commutation_interval, 96, 200, TIMER1_MAX_ARR/2, TIMER1_MAX_ARR);
 		advance_level = eepromBuffer[23];
 		}
-	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/1999)+1;
+	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 		}else{
 			if(RC_CAR_REVERSE){
 				if(prop_brake_active){
@@ -915,12 +911,14 @@ if(desync_check){
 	last_average_interval = average_interval;
 	}
 	if(send_telemetry){
+#ifdef	USE_SERIAL_TELEMETRY 	
 	  makeTelemPackage(degrees_celsius,
 			           battery_voltage,
 	  					  1250,
 	  					  200,
 	  					  k_erpm);
 	  send_telem_DMA();
+#endif
 	}
 
 	if(commutation_interval > 400){
@@ -939,7 +937,6 @@ if(desync_check){
 				input = 0;
 				inputSet = 0;
 				zero_input_count = 0;
-			//	smallestnumber = 20000;
 				TIM1->CCR1 = 0;
 			    TIM1->CCR2 = 0;
 				TIM1->CCR3 = 0;
@@ -957,7 +954,6 @@ if(desync_check){
 			input = 0;
 			inputSet = 0;
 			zero_input_count = 0;
-		//	smallestnumber = 20000;
 			TIM1->CCR1 = 0;
 		    TIM1->CCR2 = 0;
 			TIM1->CCR3 = 0;
@@ -978,7 +974,6 @@ if (!forward){
     if (phase_A_position > 359){
 	   phase_A_position = 0 ;
     }
-
 	    phase_B_position ++;
 	     if (phase_B_position > 359){
 		phase_B_position = 0 ;
@@ -992,7 +987,6 @@ if (!forward){
 	    if (phase_A_position < 0){
 		   phase_A_position = 359 ;
 	    }
-
 		    phase_B_position --;
 		     if (phase_B_position < 0){
 			phase_B_position = 359;
@@ -1003,25 +997,25 @@ if (!forward){
 		}
 }
     if(GIMBAL_MODE){
-    TIM1->CCR1 = (2*pwmSin[phase_A_position])+gate_drive_offset;
-    TIM1->CCR2 = (2*pwmSin[phase_B_position])+gate_drive_offset;
-    TIM1->CCR3 = (2*pwmSin[phase_C_position])+gate_drive_offset;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
     }else{
-    TIM1->CCR1 = (2*pwmSin[phase_A_position]/3)+gate_drive_offset;
-    TIM1->CCR2 = (2*pwmSin[phase_B_position]/3)+gate_drive_offset;
-    TIM1->CCR3 = (2*pwmSin[phase_C_position]/3)+gate_drive_offset;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
     }
 }
 
 
 void zcfoundroutine(){   // only used in polling mode, blocking routine.
-	thiszctime = TIM2->CNT;
-	TIM2->CNT = 0;
+	thiszctime = INTERVAL_TIMER->CNT;
+	INTERVAL_TIMER->CNT = 0;
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
 //	blanktime = commutation_interval / 4;
-	while (TIM2->CNT - thiszctime < waitTime - advance){
+	while (INTERVAL_TIMER->CNT - thiszctime < waitTime - advance){
 
 	}
 	commutate();
@@ -1032,13 +1026,13 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
     if(stall_protection || RC_CAR_REVERSE){
    	 if (zero_crosses >= 100 && commutation_interval <= 2000) {
    	    	old_routine = 0;
-   	    	EXTI->IMR |= (1 << 21);          // enable interrupt
+   	    	enableCompInterrupts();          // enable interrupt
 
     	 }
     }else{
     	if(zero_crosses > 30){
     	old_routine = 0;
-    	EXTI->IMR |= (1 << 21);          // enable interrupt
+    	enableCompInterrupts();          // enable interrupt
 
     }
     }
@@ -1050,23 +1044,10 @@ int main(void)
 {
  initAfterJump();
 
+ initCorePeripherals();
 
- LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
- LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-
-  SystemClock_Config();
-
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_COMP1_Init();
-  MX_TIM1_Init();
-  MX_TIM2_Init();
-
-  MX_TIM16_Init();
-  MX_TIM14_Init();
-  MX_TIM6_Init();
-  MX_TIM17_Init();
-
+//
+ 
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
@@ -1083,7 +1064,7 @@ int main(void)
 #ifdef USE_ADC_INPUT
 
 #else
-  UN_TIM_Init();
+//  
   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);  // input capture and output compare
   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
 #endif
@@ -1093,25 +1074,35 @@ int main(void)
   GPIOB->BSRR = LL_GPIO_PIN_3; // turn on red
 #endif
 
-   LL_TIM_EnableCounter(TIM14);               // commutation_timer priority 0
-   LL_TIM_GenerateEvent_UPDATE(TIM14);
-   LL_TIM_EnableIT_UPDATE(TIM14);
-   TIM14->DIER &= ~((0x1UL << (0U)));         // disable for now.
 
-   LL_TIM_EnableCounter(TIM17);
-   LL_TIM_GenerateEvent_UPDATE(TIM17);
+   LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
+   LL_TIM_GenerateEvent_UPDATE(COM_TIMER);
+   LL_TIM_EnableIT_UPDATE(COM_TIMER);
+   COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
+//
+   LL_TIM_EnableCounter(UTILITY_TIMER);
+   LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
+//
+   LL_TIM_EnableCounter(INTERVAL_TIMER);
+   LL_TIM_GenerateEvent_UPDATE(INTERVAL_TIMER);
 
-   LL_TIM_EnableCounter(TIM2);
-   LL_TIM_GenerateEvent_UPDATE(TIM2);
+   LL_TIM_EnableCounter(TEN_KHZ_TIMER);                 // 10khz timer
+   LL_TIM_GenerateEvent_UPDATE(TEN_KHZ_TIMER);
+   TEN_KHZ_TIMER->DIER |= (0x1UL << (0U));  // enable interrupt
 
-   LL_TIM_EnableCounter(TIM6);                 // 10khz timer
-   LL_TIM_GenerateEvent_UPDATE(TIM6);
 
-   TIM6->DIER |= (0x1UL << (0U));  // enable interrupt
+  //RCC->APB2ENR  &= ~(1 << 22);  // turn debug off
+#ifdef USE_ADC
+   ADC_Init();
+   enableADC_DMA();
+   activateADC();
+#endif
+
 
    __IO uint32_t wait_loop_index = 0;
-  /* Enable comparator */
-   LL_COMP_Enable(COMP1);
+    /* Enable comparator */
+  
+   LL_COMP_Enable(MAIN_COMP);
 
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
    while(wait_loop_index != 0)
@@ -1119,13 +1110,7 @@ int main(void)
      wait_loop_index--;
    }
 
-   ADC_Init();
-   enableADC_DMA();
-   activateADC();
-   telem_UART_Init();
-   MX_IWDG_Init();
-   LL_IWDG_ReloadCounter(IWDG);
- 
+
   loadEEpromSettings();
   if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
 	  eepromBuffer[3] = firmware_info.version_major;
@@ -1172,6 +1157,11 @@ int main(void)
 	   }else{
 		   playStartupTune();
 	   }
+
+	   MX_IWDG_Init();
+	   LL_IWDG_ReloadCounter(IWDG);
+
+
 if (GIMBAL_MODE){
 	bi_direction = 1;
 	use_sin_start = 1;
@@ -1185,14 +1175,41 @@ if (GIMBAL_MODE){
  checkForHighSignal();     // will reboot if signal line is high for 10ms
  receiveDshotDma();
 #endif
-
-  while (1)
+ 
+#ifdef MCU_F051
+ MCU_Id = DBGMCU->IDCODE &= 0xFFF;
+ REV_Id = DBGMCU->IDCODE >> 16;
+ 
+ if(REV_Id >= 4096){
+	 temperature_offset = 0;
+ }else{
+	 temperature_offset = 230;
+ }
+#endif
+ while (1)
   {
+
+LL_IWDG_ReloadCounter(IWDG);
+	count++;
+
+	if(count>10){
+
+
+		if(loop_time>=last_loop_time){
+	loop_time = (10*loop_time + (UTILITY_TIMER->CNT - last_loop_time))/11;
+		}
+    last_loop_time = UTILITY_TIMER->CNT;
+    count = 0;
+	}
 	  adc_counter++;
 	  if(adc_counter>100){   // for testing adc and telemetry
-		  degrees_celsius = __LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
-          battery_voltage = ((7 * battery_voltage) + (ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER) /10) >> 3;
+		  ADC_raw_temp = ADC_raw_temp - (temperature_offset);
+		  converted_degrees =__LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
+		  degrees_celsius =((7 * degrees_celsius) + converted_degrees) >> 3;
+
+          battery_voltage = ((7 * battery_voltage) + ((ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER)/100)) >> 3;
           smoothed_raw_current = ((15*smoothed_raw_current + (ADC_raw_current) )>> 4);
+
 
 		  LL_ADC_REG_StartConversion(ADC1);
 		  if(LOW_VOLTAGE_CUTOFF){
@@ -1205,7 +1222,7 @@ if (GIMBAL_MODE){
 				  running = 0;
 				  zero_input_count = 0;
 				  armed = 0;
-			//	  playInputTune();
+
 				  }
 			  }else{
 				  low_voltage_count = 0;
@@ -1220,6 +1237,8 @@ if (GIMBAL_MODE){
 		  }
 #endif
 	  }
+  
+	  
 #ifdef USE_ADC_INPUT
 
 signaltimeout = 0;
@@ -1230,7 +1249,7 @@ if(newinput > 2000){
 }
 #endif
 	  stuckcounter = 0;
-	  LL_IWDG_ReloadCounter(IWDG);
+	  
   		  if (zero_input_count > armed_count_threshold && !armed){
   			  armed = 1;
 #ifdef tmotor55
@@ -1445,13 +1464,7 @@ if(newinput > 2000){
 	 		 input=adjusted_input;
 
 	 	  }
-
-
 		  if ( stepper_sine == 0){
-
-
-
-
 
   k_erpm = running * ((1000000/ e_com_time) * 60) / 1000; // ecom time is time for one electrical revolution in microseconds
    if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
@@ -1475,15 +1488,7 @@ if (zero_crosses < 100 || commutation_interval > 500) {
 	}
 
 
-//	if (duty_cycle > 800 && zero_crosses > 100 && commutation_interval < 400){
-//		filter_level = 3;
-////		filter_delay = 0;
-//	}
-//
-//	if (commutation_interval < 90 && duty_cycle > 800){
-//		filter_level = 2;
-//	//	filter_delay = 0;
-//	}
+
 
 if(lowkv){
 
@@ -1508,7 +1513,7 @@ if (old_routine && running){
 	 		  }
 	 	  }
 }
-	 	  if (TIM2->CNT > 40000 && running == 1){
+	 	  if (INTERVAL_TIMER->CNT > 45000 && running == 1){
               bemf_timout_happened ++;
 	 		  zcfoundroutine();
 	 		  maskPhaseInterrupts();
@@ -1516,7 +1521,11 @@ if (old_routine && running){
 	 		   running = 0;
 	 		   zero_crosses = 0;
 	 		   if(crawler_mode&&stall_protection){
-	 			   min_startup_duty = 120;
+	 			   min_startup_duty = 110;
+	 				 minimum_duty_cycle = minimum_duty_cycle + 10;
+	 				 if(minimum_duty_cycle > 80){
+	 					 minimum_duty_cycle = 80;
+	 				 }
 	 		   }
 	 	  }
 	 	  }else{            // stepper sine
@@ -1553,7 +1562,7 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 7000/motor_poles, 840/motor_poles);
+             step_delay = map (input, 48, 137, 7000/motor_poles, 780/motor_poles);
 	 		 delayMicros(step_delay);
 
 	 		  }else{
@@ -1568,9 +1577,13 @@ if(input > 48 && armed){
 	 			  stepper_sine = 0;
 	 			  running = 1;
 				  old_routine = 1;
-	 			 zero_crosses = 0;
+		 		  commutation_interval = 9000;
+		 		  average_interval = 9000;
+		 		//  minimum_duty_cycle = ;
+		 		  INTERVAL_TIMER->CNT = 9000;
+				  zero_crosses = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
-	 //			 LL_TIM_EnableIT_UPDATE(TIM1);
+		 		 comStep(step);// rising bemf on a same as position 0.
 	 			LL_TIM_GenerateEvent_UPDATE(TIM1);
 	 			  zcfoundroutine();
 	 			  }
