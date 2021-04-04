@@ -35,12 +35,12 @@ Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-conf
 Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/List-of-Supported-Hardware) (DEC 2020)
 
 
-## Installation & Documentation
+## Installation & Bootloader
 
 To use AM32 firmware on a blank ESC, a bootloader must first be installed using a ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
 Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases).
-
+After the bootloader has been installed the main firmware from can be installed either with the configuration tools and a Betaflight flight controller or direct connect with a usb serial adapter modified for one wire.
 
 ## Support and Developers Channel
 
