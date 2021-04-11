@@ -27,7 +27,7 @@ To configure AM32 and upload firmware you can use the Multi_ESC config tool usin
 [WINDOWS](https://drive.google.com/file/d/1o5XP8kSecdH3bPRClUwI7150Od7UdhkG/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/164mF-7khqH822kLzF8sP5VAckHecoKGG/view?usp=sharing)
 
-Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings. Currently only nightly builds support AM32.
+Alternately you can use the [Online-ESC Configurator](https://esc-configurator.com/) to flash or change settings with any web browser that supports web serial.
 
 
 
