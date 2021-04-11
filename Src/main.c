@@ -89,11 +89,16 @@
  *-- move idwg init to after input tune
  *-- remove reset after save command -- dshot
  *-- added wraith32 target
+ *-- added average pulse check for signal detection
  *--
- *-- 1.67
+ *1.67
  *-- Rework file structure for multiple MCU support
  *-- Add g071 mcu
  *--
+ *1.68
+ *--increased allowed average pulse length to avoid double startup
+ *1.69
+ *--removed line re-enabling comparator after disabling.
  */
 
 #include <stdint.h>
@@ -113,7 +118,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 67
+#define VERSION_MINOR 69
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -143,9 +148,6 @@ uint32_t REV_Id = 0;
 
 uint16_t loop_time = 0;
 uint16_t last_loop_time = 0;
-
-
-
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
@@ -178,9 +180,11 @@ char cell_count = 0;
 
 char brushed_direction_set = 0;
 
+uint16_t consumption_timer = 0;
 
+float consumed_current = 0;
 uint16_t smoothed_raw_current = 0;
-uint8_t actual_current = 0;
+uint16_t actual_current = 0;
 
 uint16_t motor_kv = 2000;
 char motor_poles = 14;
@@ -353,6 +357,7 @@ int gate_drive_offset = 60;
 
 int stuckcounter = 0;
 int k_erpm;
+uint16_t e_rpm;      // electrical revolution /100 so,  123 is 12300 erpm
 
 uint16_t adjusted_duty_cycle;
 
@@ -698,11 +703,6 @@ thiszctime = INTERVAL_TIMER->CNT;
 				}
 			}
 							maskPhaseInterrupts();
-							enableCompInterrupts();
-					//		clearFlags();
-					//		LL_EXTI_ClearRisingFlag_0_31(EXTI_LINE);
-					//		LL_EXTI_ClearFallingFlag_0_31(EXTI_LINE);
-					//		LL_EXTI_ClearFlag_0_31(EXTI_LINE);
 							INTERVAL_TIMER->CNT = 0 ;
 
 
@@ -730,6 +730,13 @@ void startMotor() {
 
 
 void tenKhzRoutine(){
+	consumption_timer++;
+	if(consumption_timer > 10000){      // 1s sample interval
+		consumed_current = (float)actual_current/3600 + consumed_current;
+		consumption_timer = 0;
+	}
+
+
 	if(THIRTY_TWO_MS_TLM){
 		thirty_two_ms_count++;
 		if(thirty_two_ms_count>320){
@@ -778,10 +785,10 @@ void tenKhzRoutine(){
 				zero_crosses = 0;
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
-#ifndef PWM_ENABLE_BRIDGE
+#ifndef PWM_ENABLE_BRIDGE						
 					duty_cycle = getAbsDif(1000, newinput) + 1000;
-					proportionalBrake();
-#endif				
+				    proportionalBrake();
+#endif					
 			}
 
 
@@ -916,9 +923,9 @@ if(desync_check){
 #ifdef	USE_SERIAL_TELEMETRY 	
 	  makeTelemPackage(degrees_celsius,
 			           battery_voltage,
-	  					  1250,
-	  					  200,
-	  					  k_erpm);
+					   actual_current,
+	  				   (uint16_t)consumed_current/10,
+	  					e_rpm);
 	  send_telem_DMA();
 #endif
 	}
@@ -1194,15 +1201,15 @@ if (GIMBAL_MODE){
 LL_IWDG_ReloadCounter(IWDG);
 	count++;
 
-	if(count>10){
-
-
-		if(loop_time>=last_loop_time){
-	loop_time = (10*loop_time + (UTILITY_TIMER->CNT - last_loop_time))/11;
-		}
-    last_loop_time = UTILITY_TIMER->CNT;
-    count = 0;
-	}
+//	if(count>10){
+//
+//
+//		if(loop_time>=last_loop_time){
+//	loop_time = (10*loop_time + (UTILITY_TIMER->CNT - last_loop_time))/11;
+//		}
+//    last_loop_time = UTILITY_TIMER->CNT;
+//    count = 0;
+//	}
 	  adc_counter++;
 	  if(adc_counter>100){   // for testing adc and telemetry
 		  ADC_raw_temp = ADC_raw_temp - (temperature_offset);
@@ -1210,8 +1217,8 @@ LL_IWDG_ReloadCounter(IWDG);
 		  degrees_celsius =((7 * degrees_celsius) + converted_degrees) >> 3;
 
           battery_voltage = ((7 * battery_voltage) + ((ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER)/100)) >> 3;
-          smoothed_raw_current = ((15*smoothed_raw_current + (ADC_raw_current) )>> 4);
-
+          smoothed_raw_current = ((7*smoothed_raw_current + (ADC_raw_current) )>> 3);
+          actual_current = ((smoothed_raw_current * 3300/4095) * MILLIVOLT_PER_AMP )/10  + CURRENT_OFFSET;
 
 		  LL_ADC_REG_StartConversion(ADC1);
 		  if(LOW_VOLTAGE_CUTOFF){
@@ -1468,7 +1475,8 @@ if(newinput > 2000){
 	 	  }
 		  if ( stepper_sine == 0){
 
-  k_erpm = running * ((1000000/ e_com_time) * 60) / 1000; // ecom time is time for one electrical revolution in microseconds
+  e_rpm = (100000/ e_com_time) * 6;
+  k_erpm = running * e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
    if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
 
   duty_cycle_maximum = map(k_erpm, low_rpm_level, high_rpm_level, throttle_max_at_low_rpm, throttle_max_at_high_rpm);   // for more performance lower the high_rpm_level, set to a consvervative number in source.

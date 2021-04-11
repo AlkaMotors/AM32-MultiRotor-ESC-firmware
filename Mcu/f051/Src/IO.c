@@ -174,7 +174,7 @@ void detectInput(){
 	}
 	average_signal_pulse = average_signal_pulse/32 ;
 
-	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 20)) {
+	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
 		ic_timer_prescaler= 0;
 		output_timer_prescaler=0;
 		dshot = 1;
@@ -183,7 +183,7 @@ void detectInput(){
 		armed_count_threshold = 10000;
 		buffersize = 32;
 	}
-	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 20)){
+	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
 		dshot = 1;
 		ic_timer_prescaler=1;
 		output_timer_prescaler=1;

@@ -1,5 +1,5 @@
 #ifndef USE_MAKE
-//#define FD6288
+#define FD6288
 //#define IFLIGHT
 //#define MP6531
 //#define TMOTOR55     // like iflight but with leds
@@ -7,7 +7,7 @@
 //#define HGLRC
 //#define SISKIN
 //#define MAMBA_F50PRO
-#define WRAITH32
+//#define WRAITH32
 #endif
 
 //GLOBAL
@@ -26,6 +26,9 @@
 #define USE_SERIAL_TELEMETRY 
 #define USE_ADC
 #define MCU_F051
+
+#define     MILLIVOLT_PER_AMP           20
+#define     CURRENT_OFFSET              0
 
 #ifdef WRAITH32
 #define TARGET_VOLTAGE_DIVIDER  75

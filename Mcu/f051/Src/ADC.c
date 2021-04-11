@@ -6,7 +6,6 @@
  */
 #include "ADC.h"
 
-
 #ifdef USE_ADC_INPUT
 uint16_t ADCDataDMA[4];
 #else
@@ -34,6 +33,9 @@ ADC_raw_volts  = ADCDataDMA[0];
 ADC_raw_current =ADCDataDMA[1];
 #endif
 }
+
+
+
 
 void enableADC_DMA(){    // enables channel
 

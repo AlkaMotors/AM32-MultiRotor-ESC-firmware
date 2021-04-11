@@ -2,7 +2,6 @@
 #define G072ESC
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
-//#define G071_OPEN_DRAIN_B
 #endif
 
 //GLOBAL
@@ -29,6 +28,8 @@
 
 #define    FIRMWARE_NAME  "G071 DevESC "
 
+#define     MILLIVOLT_PER_AMP           15
+#define     CURRENT_OFFSET              0
 #define    USE_TIMER_3_CHANNEL_1
 #define    INPUT_PIN               LL_GPIO_PIN_4
 #define    INPUT_PIN_PORT              GPIOB
@@ -60,7 +61,8 @@
 #ifdef G071ENABLE
 
 #define    FIRMWARE_NAME  "G071 PWM_EN "
-
+#define     MILLIVOLT_PER_AMP           20
+#define     CURRENT_OFFSET              0
 #define    PWM_ENABLE_BRIDGE
 #define    USE_TIMER_3_CHANNEL_1
 
@@ -95,7 +97,8 @@
 #ifdef G071_OPEN_DRAIN
 
 #define    FIRMWARE_NAME  "G071 TEENSY "
-
+#define     MILLIVOLT_PER_AMP           20
+#define     CURRENT_OFFSET              0
 #define    OPEN_DRAIN_PWM
 #define    PWM_ENABLE_BRIDGE
 #define    USE_TIMER_3_CHANNEL_1
@@ -130,7 +133,8 @@
 #ifdef G071_OPEN_DRAIN_B
 
 #define    FIRMWARE_NAME  "G071 TEENSYB"
-
+#define     MILLIVOLT_PER_AMP           20
+#define     CURRENT_OFFSET              0
 #define    OPEN_DRAIN_PWM
 #define    PWM_ENABLE_BRIDGE
 #define    USE_TIMER_3_CHANNEL_1

@@ -40,6 +40,7 @@ ADC_raw_current = ADCDataDMA[0];
 }
 
 
+
 void enableADC_DMA(){    // enables channel
 
 	NVIC_SetPriority(DMA1_Channel2_3_IRQn, 3);
@@ -186,7 +187,7 @@ void ADC_Init(void)
   LL_ADC_SetOverSamplingScope(ADC1, LL_ADC_OVS_DISABLE);
   LL_ADC_SetTriggerFrequencyMode(ADC1, LL_ADC_CLOCK_FREQ_MODE_LOW);
   LL_ADC_REG_SetSequencerConfigurable(ADC1, LL_ADC_REG_SEQ_CONFIGURABLE);
-  LL_ADC_SetClock(ADC1, LL_ADC_CLOCK_ASYNC);
+  LL_ADC_SetClock(ADC1, LL_ADC_CLOCK_ASYNC_DIV4);
   LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_COMMON_1, LL_ADC_SAMPLINGTIME_160CYCLES_5);
   LL_ADC_SetSamplingTimeCommonChannels(ADC1, LL_ADC_SAMPLINGTIME_COMMON_2, LL_ADC_SAMPLINGTIME_160CYCLES_5);
   LL_ADC_DisableIT_EOC(ADC1);
