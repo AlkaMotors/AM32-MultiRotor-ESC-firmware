@@ -223,7 +223,7 @@ void MX_TIM1_Init(void)
   LL_TIM_Init(TIM1, &TIM_InitStruct);
   LL_TIM_EnableARRPreload(TIM1);
   LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH1);
-#ifdef USE_INVERTED_OUPUT
+#ifdef USE_SWAPPED_PWM_COM // renamed from USE_INVERTED_OUPUT
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM2;
 #else
   TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
