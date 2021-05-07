@@ -8,11 +8,14 @@
 #include "sounds.h"
 #include "phaseouts.h"
 #include "functions.h"
+#include "eeprom.h"
+#include "targets.h"
 
 extern int signaltimeout;
 extern char play_tone_flag;
 uint8_t beep_volume;
 
+uint8_t blueJayTuneBuffer[128] = {};
 
 void pause(uint16_t ms){
 	TIM1->CCR1 = 0; // volume of the beep, (duty cycle) don't go above 25
@@ -20,9 +23,9 @@ void pause(uint16_t ms){
 	TIM1->CCR3 = 0;
 
 	delayMillis(ms);
-	TIM1->CCR1 = 5; // volume of the beep, (duty cycle) don't go above 25
-	TIM1->CCR2 = 5;
-	TIM1->CCR3 = 5;
+	TIM1->CCR1 = beep_volume; // volume of the beep, (duty cycle) don't go above 25 out of 2000
+	TIM1->CCR2 = beep_volume;
+	TIM1->CCR3 = beep_volume;
 }
 
 void setVolume(uint8_t volume){
@@ -41,8 +44,77 @@ void setCaptureCompare(){
 	TIM1->CCR3 = beep_volume;
 }
 
+void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
+	uint16_t timerOne_reload = 2000;
+	if(freq < 523){
+		TIM1->PSC = 92;
+		timerOne_reload = map(freq, 261, 523, 2000, 1000);
+	}
+	if(freq > 523 && freq < 1046){
+		TIM1->PSC = 46;
+		timerOne_reload = map(freq, 523, 1046, 2000, 1000);
+	}
+	if(freq > 1046){
+		TIM1->PSC = 23;
+		timerOne_reload = map(freq, 1046, 4186, 2000, 500);
+	}
+
+	TIM1->ARR = timerOne_reload;
+	TIM1->CCR1 = beep_volume * timerOne_reload /2000 ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
+	TIM1->CCR2 = beep_volume * timerOne_reload /2000;
+	TIM1->CCR3 = beep_volume * timerOne_reload /2000;
+
+	delayMillis(bduration);
+}
+
+
+uint16_t getBlueJayNoteFrequency(uint8_t bjarrayfreq){
+	return 10000000/(bjarrayfreq * 247 + 4000);
+}
+
+void playBlueJayTune(){
+	uint8_t full_time_count = 0;
+	uint16_t duration;
+	uint16_t frequency;
+	comStep(3);
+	read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
+	for(int i = 4 ; i < 128 ; i+=2){
+		LL_IWDG_ReloadCounter(IWDG);
+		signaltimeout = 0;
+
+		if(blueJayTuneBuffer[i] == 255){
+			full_time_count++;
+
+		}else{
+			if(blueJayTuneBuffer[i+1] == 0){
+				duration = full_time_count * 254 + blueJayTuneBuffer[i];
+				TIM1->CCR1 = 0 ; //
+				TIM1->CCR2 = 0;
+				TIM1->CCR3 = 0;
+				delayMillis(duration);
+			}else{
+			frequency = getBlueJayNoteFrequency(blueJayTuneBuffer[i+1]);
+			duration= (full_time_count * 254 + blueJayTuneBuffer[i])  * (float)(1000 / frequency);
+			playBJNote(frequency, duration);
+			}
+			full_time_count = 0;
+		}
+	}
+	allOff();                // turn all channels low again
+	TIM1->PSC = 0;           // set prescaler back to 0.
+	TIM1->ARR = 2000;
+	signaltimeout = 0;
+	LL_IWDG_ReloadCounter(IWDG);
+}
+
 void playStartupTune(){
 	__disable_irq();
+
+	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
+		if(value != 0xFF){
+		playBlueJayTune();
+		}else{
+
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 
@@ -59,6 +131,7 @@ void playStartupTune(){
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
 	signaltimeout = 0;
+	}
 	__enable_irq();
 }
 
