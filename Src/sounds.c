@@ -45,24 +45,24 @@ void setCaptureCompare(){
 }
 
 void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
-	uint16_t timerOne_reload = 2000;
+	uint16_t timerOne_reload = TIM1_AUTORELOAD;
 	if(freq < 523){
-		TIM1->PSC = 92;
-		timerOne_reload = map(freq, 261, 523, 2000, 1000);
+		TIM1->PSC = 92*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 261, 523, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
 	}
 	if(freq > 523 && freq < 1046){
-		TIM1->PSC = 46;
-		timerOne_reload = map(freq, 523, 1046, 2000, 1000);
+		TIM1->PSC = 46*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 523, 1046, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
 	}
 	if(freq > 1046){
-		TIM1->PSC = 23;
-		timerOne_reload = map(freq, 1046, 4186, 2000, 500);
+		TIM1->PSC = 23*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 1046, 4186, TIM1_AUTORELOAD, TIM1_AUTORELOAD/4);
 	}
 
 	TIM1->ARR = timerOne_reload;
-	TIM1->CCR1 = beep_volume * timerOne_reload /2000 ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
-	TIM1->CCR2 = beep_volume * timerOne_reload /2000;
-	TIM1->CCR3 = beep_volume * timerOne_reload /2000;
+	TIM1->CCR1 = beep_volume * timerOne_reload /TIM1_AUTORELOAD ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
+	TIM1->CCR2 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
+	TIM1->CCR3 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
 
 	delayMillis(bduration);
 }
@@ -102,7 +102,7 @@ void playBlueJayTune(){
 	}
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
-	TIM1->ARR = 2000;
+	TIM1->ARR = TIM1_AUTORELOAD;
 	signaltimeout = 0;
 	LL_IWDG_ReloadCounter(IWDG);
 }
