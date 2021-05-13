@@ -14,6 +14,7 @@ extern char prop_brake_active;
 #ifndef PWM_ENABLE_BRIDGE
 
 #ifdef USE_INVERTED_LOW
+	#warning using inverted low side output
 	#define LOW_BITREG_ON  BRR
 	#define LOW_BITREG_OFF BSRR
 #else
@@ -22,6 +23,7 @@ extern char prop_brake_active;
 #endif
 
 #ifdef USE_INVERTED_HIGH
+	#warning using inverted high side output
 	//#define HIGH_BITREG_ON  BRR
 	#define HIGH_BITREG_OFF BSRR
 #else

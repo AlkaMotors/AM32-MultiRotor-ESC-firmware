@@ -212,7 +212,6 @@ void MX_TIM1_Init(void)
     TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
     TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
   #endif
-  TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
   LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH2);
@@ -251,12 +250,14 @@ void MX_TIM1_Init(void)
   PA9   ------> TIM1_CH2
   PA10   ------> TIM1_CH3
   */
-  #ifdef OPEN_DRAIN_LOW
+  #ifdef USE_OPEN_DRAIN_LOW
+    #warning using open drain low side
     #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
   #else
     #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
   #endif
-  #ifdef OPEN_DRAIN_HIGH
+  #ifdef USE_OPEN_DRAIN_HIGH
+    #warning using open drain high side
     #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
   #else
     #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
