@@ -8,11 +8,14 @@
 #include "sounds.h"
 #include "phaseouts.h"
 #include "functions.h"
+#include "eeprom.h"
+#include "targets.h"
 
 extern int signaltimeout;
 extern char play_tone_flag;
 uint8_t beep_volume;
 
+uint8_t blueJayTuneBuffer[128] = {};
 
 void pause(uint16_t ms){
 	TIM1->CCR1 = 0; // volume of the beep, (duty cycle) don't go above 25
@@ -20,9 +23,9 @@ void pause(uint16_t ms){
 	TIM1->CCR3 = 0;
 
 	delayMillis(ms);
-	TIM1->CCR1 = 5; // volume of the beep, (duty cycle) don't go above 25
-	TIM1->CCR2 = 5;
-	TIM1->CCR3 = 5;
+	TIM1->CCR1 = beep_volume; // volume of the beep, (duty cycle) don't go above 25 out of 2000
+	TIM1->CCR2 = beep_volume;
+	TIM1->CCR3 = beep_volume;
 }
 
 void setVolume(uint8_t volume){
@@ -41,49 +44,77 @@ void setCaptureCompare(){
 	TIM1->CCR3 = beep_volume;
 }
 
+void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
+	uint16_t timerOne_reload = TIM1_AUTORELOAD;
+	if(freq < 523){
+		TIM1->PSC = 92*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 261, 523, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
+	}
+	if(freq > 523 && freq < 1046){
+		TIM1->PSC = 46*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 523, 1046, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
+	}
+	if(freq > 1046){
+		TIM1->PSC = 23*CPU_FREQUENCY_MHZ/48;
+		timerOne_reload = map(freq, 1046, 4186, TIM1_AUTORELOAD, TIM1_AUTORELOAD/4);
+	}
+
+	TIM1->ARR = timerOne_reload;
+	TIM1->CCR1 = beep_volume * timerOne_reload /TIM1_AUTORELOAD ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
+	TIM1->CCR2 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
+	TIM1->CCR3 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
+
+	delayMillis(bduration);
+}
+
+
+uint16_t getBlueJayNoteFrequency(uint8_t bjarrayfreq){
+	return 10000000/(bjarrayfreq * 247 + 4000);
+}
+
+void playBlueJayTune(){
+	uint8_t full_time_count = 0;
+	uint16_t duration;
+	uint16_t frequency;
+	comStep(3);
+	read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
+	for(int i = 4 ; i < 128 ; i+=2){
+		LL_IWDG_ReloadCounter(IWDG);
+		signaltimeout = 0;
+
+		if(blueJayTuneBuffer[i] == 255){
+			full_time_count++;
+
+		}else{
+			if(blueJayTuneBuffer[i+1] == 0){
+				duration = full_time_count * 254 + blueJayTuneBuffer[i];
+				TIM1->CCR1 = 0 ; //
+				TIM1->CCR2 = 0;
+				TIM1->CCR3 = 0;
+				delayMillis(duration);
+			}else{
+			frequency = getBlueJayNoteFrequency(blueJayTuneBuffer[i+1]);
+			duration= (full_time_count * 254 + blueJayTuneBuffer[i])  * (float)(1000 / frequency);
+			playBJNote(frequency, duration);
+			}
+			full_time_count = 0;
+		}
+	}
+	allOff();                // turn all channels low again
+	TIM1->PSC = 0;           // set prescaler back to 0.
+	TIM1->ARR = TIM1_AUTORELOAD;
+	signaltimeout = 0;
+	LL_IWDG_ReloadCounter(IWDG);
+}
+
 void playStartupTune(){
 	__disable_irq();
-/*
+
 	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
 		if(value != 0xFF){
 		playBlueJayTune();
 		}else{
-*/
-	setCaptureCompare();
-	comStep(1);       // activate a pwm channel
-	TIM1->PSC = 100;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    pause(50);
-	comStep(2);       // activate a pwm channel
-	TIM1->PSC = 80;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    pause(50);
-	comStep(3);       // activate a pwm channel
-	TIM1->PSC = 70;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    pause(50);
-	comStep(4);       // activate a pwm channel
-	TIM1->PSC = 60;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    pause(50);
-	comStep(5);       // activate a pwm channel
-	TIM1->PSC = 50;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    pause(50);
-	comStep(6);
-	TIM1->PSC = 25;         // higher again..
-	delayMillis(200);
-	 pause(50);
-	allOff();                // turn all channels low again
-	TIM1->PSC = 0;           // set prescaler back to 0.
-	signaltimeout = 0;
-//	}
-	__enable_irq();
-}
 
-/*
-void playStartupTune(){
-	__disable_irq();
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 
@@ -100,6 +131,7 @@ void playStartupTune(){
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
 	signaltimeout = 0;
+	}
 	__enable_irq();
 }
 */
