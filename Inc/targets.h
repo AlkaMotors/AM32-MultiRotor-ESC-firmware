@@ -20,6 +20,7 @@
 
 //GLOBAL
 //#define USE_ADC_INPUT
+//#define USE_ALKAS_DEBUG_LED
 
 
 /****************************      F051 Targets ************************************/
@@ -27,66 +28,77 @@
 #define FIRMWARE_NAME           "FD6288_PA2  "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_A
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef IFLIGHT
 #define FIRMWARE_NAME           "IFlight_50A "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef MP6531
 #define FIRMWARE_NAME           "Mp6531_Dev  "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_C
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef TMOTOR55
 #define FIRMWARE_NAME           "T-MOTOR 55A "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef TMOTOR45
 #define FIRMWARE_NAME           "T-MOTOR 45A "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_C
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef HGLRC
 #define FIRMWARE_NAME           "HGLRC_60A   "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_E
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef SISKIN
 #define FIRMWARE_NAME           "SISKIN_PA2  "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_A
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef DIATONE
 #define FIRMWARE_NAME           "DIATONE GEN "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_F
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef MAMBA_F40PRO
 #define FIRMWARE_NAME           "MAMBA F40PRO"
 #define DEAD_TIME               13
 #define HARDWARE_GROUP_F0_F
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef MAMBA_F50PRO
 #define FIRMWARE_NAME           "MAMBA F50PRO"
 #define DEAD_TIME               14
 #define HARDWARE_GROUP_F0_F
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef MAMBA_F60PRO
 #define FIRMWARE_NAME           "MAMBA F60PRO"
 #define DEAD_TIME               14
 #define HARDWARE_GROUP_F0_F
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef WRAITH32
@@ -95,58 +107,65 @@
 #define TARGET_VOLTAGE_DIVIDER  75
 #define SINE_DIVIDER 			4
 #define HARDWARE_GROUP_F0_C
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef  AIKON20X20
 #define FIRMWARE_NAME           "Aikon 20x20 "
 #define DEAD_TIME               40
 #define HARDWARE_GROUP_F0_C
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef  AIKONSINGLE
 #define FIRMWARE_NAME           "Aikon AK32  "
 #define DEAD_TIME               40
 #define HARDWARE_GROUP_F0_B
+#define USE_SERIAL_TELEMETRY
 #endif
 
 #ifdef  CRTEENSY_HILARIESC
 #define FIRMWARE_NAME           "cr hilariesc"
 #define DEAD_TIME               40
 #define HARDWARE_GROUP_F0_G
+//#define USE_SERIAL_TELEMETRY
 #endif
 
 /*******************************   G071 Targets *********************************/
 
-#ifdef      G072ESC
-#define    	FIRMWARE_NAME  			"G071 DevESC "
-#define 	DEAD_TIME               	60
-#define     MILLIVOLT_PER_AMP           15
-#define     CURRENT_OFFSET              0
-#define     HARDWARE_GROUP_G0_A
+#ifdef  G072ESC
+#define FIRMWARE_NAME  			    "G071 DevESC "
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       15
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_A
+#define USE_SERIAL_TELEMETRY
 #endif
 
-#ifdef      G071ENABLE
-#define     FIRMWARE_NAME  "G071 PWM_EN "
-#define 	DEAD_TIME               	60
-#define     MILLIVOLT_PER_AMP           20
-#define     CURRENT_OFFSET              0
-#define     HARDWARE_GROUP_G0_B
+#ifdef  G071ENABLE
+#define FIRMWARE_NAME           "G071 PWM_EN "
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_B
+#define USE_SERIAL_TELEMETRY
 #endif
 
-#ifdef      G071_OPEN_DRAIN
-#define     FIRMWARE_NAME  "G071 TEENSY "
-#define 	DEAD_TIME               	60
-#define     MILLIVOLT_PER_AMP           20
-#define     CURRENT_OFFSET              0
-#define     HARDWARE_GROUP_G0_C
+#ifdef  G071_OPEN_DRAIN
+#define FIRMWARE_NAME           "G071 TEENSY "
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_C
+#define USE_SERIAL_TELEMETRY
 #endif
 
-#ifdef      G071_OPEN_DRAIN_B
-#define     FIRMWARE_NAME  "G071 TEENSYB"
-#define 	DEAD_TIME               	60
-#define     MILLIVOLT_PER_AMP           20
-#define     CURRENT_OFFSET              0
-#define     HARDWARE_GROUP_G0_D
+#ifdef  G071_OPEN_DRAIN_B
+#define FIRMWARE_NAME           "G071 TEENSYB"
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_D
 #endif
 
 
@@ -540,7 +559,7 @@
 #define APPLICATION_ADDRESS 0x08001000
 #define MAIN_COMP	COMP1
 #define EXTI_LINE   LL_EXTI_LINE_21
-#define USE_SERIAL_TELEMETRY 
+//#define USE_SERIAL_TELEMETRY // moved to individual ESCs
 #define USE_ADC
 #endif
 
@@ -555,7 +574,7 @@
 #define APPLICATION_ADDRESS 0x08001000
 #define MAIN_COMP	COMP2
 #define EXTI_LINE   LL_EXTI_LINE_18
-#define USE_SERIAL_TELEMETRY
+//#define USE_SERIAL_TELEMETRY // moved to individual ESCs
 #define USE_ADC
 #endif
 

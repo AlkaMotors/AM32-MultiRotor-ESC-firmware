@@ -43,6 +43,47 @@ void setCaptureCompare(){
 
 void playStartupTune(){
 	__disable_irq();
+/*
+	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
+		if(value != 0xFF){
+		playBlueJayTune();
+		}else{
+*/
+	setCaptureCompare();
+	comStep(1);       // activate a pwm channel
+	TIM1->PSC = 100;        // frequency of beep
+    delayMillis(200);         // duration of beep
+    pause(50);
+	comStep(2);       // activate a pwm channel
+	TIM1->PSC = 80;        // frequency of beep
+    delayMillis(200);         // duration of beep
+    pause(50);
+	comStep(3);       // activate a pwm channel
+	TIM1->PSC = 70;        // frequency of beep
+    delayMillis(200);         // duration of beep
+    pause(50);
+	comStep(4);       // activate a pwm channel
+	TIM1->PSC = 60;        // frequency of beep
+    delayMillis(200);         // duration of beep
+    pause(50);
+	comStep(5);       // activate a pwm channel
+	TIM1->PSC = 50;        // frequency of beep
+    delayMillis(200);         // duration of beep
+    pause(50);
+	comStep(6);
+	TIM1->PSC = 25;         // higher again..
+	delayMillis(200);
+	 pause(50);
+	allOff();                // turn all channels low again
+	TIM1->PSC = 0;           // set prescaler back to 0.
+	signaltimeout = 0;
+//	}
+	__enable_irq();
+}
+
+/*
+void playStartupTune(){
+	__disable_irq();
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 
@@ -61,6 +102,7 @@ void playStartupTune(){
 	signaltimeout = 0;
 	__enable_irq();
 }
+*/
 
 void playBrushedStartupTune(){
 	__disable_irq();
