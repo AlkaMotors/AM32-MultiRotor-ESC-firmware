@@ -134,6 +134,7 @@ void playStartupTune(){
 	}
 	__enable_irq();
 }
+*/
 
 void playBrushedStartupTune(){
 	__disable_irq();

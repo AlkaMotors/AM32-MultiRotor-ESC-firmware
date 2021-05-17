@@ -28,7 +28,9 @@ void initCorePeripherals(void){
   MX_TIM6_Init();
   MX_TIM17_Init();	 
   UN_TIM_Init();
-  telem_UART_Init();
+  #ifdef USE_SERIAL_TELEMETRY
+    telem_UART_Init();
+  #endif
 }
 
 void initAfterJump(void){
@@ -190,14 +192,28 @@ void MX_TIM1_Init(void)
   LL_TIM_EnableARRPreload(TIM1);
   LL_TIM_SetClockSource(TIM1, LL_TIM_CLOCKSOURCE_INTERNAL);
   LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH1);
-  TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
+  #ifdef USE_SWAPPED_OUPUT
+    TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM2;
+  #else
+    TIM_OC_InitStruct.OCMode = LL_TIM_OCMODE_PWM1;
+  #endif
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.CompareValue = 0;
-  TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
-  TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
-  TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
+  #ifdef USE_INVERTED_HIGH
+    TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_LOW;
+    TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_HIGH;
+  #else
+    TIM_OC_InitStruct.OCPolarity = LL_TIM_OCPOLARITY_HIGH;
+    TIM_OC_InitStruct.OCIdleState = LL_TIM_OCIDLESTATE_LOW;
+  #endif
+  #ifdef USE_INVERTED_LOW
+    TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_LOW;
+    TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_HIGH;
+  #else
+    TIM_OC_InitStruct.OCNPolarity = LL_TIM_OCPOLARITY_HIGH;
+    TIM_OC_InitStruct.OCNIdleState = LL_TIM_OCIDLESTATE_LOW;
+  #endif
   LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH1, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH2);
@@ -236,53 +252,65 @@ void MX_TIM1_Init(void)
   PA9   ------> TIM1_CH2
   PA10   ------> TIM1_CH3
   */
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
+  #ifdef USE_OPEN_DRAIN_LOW
+    #warning using open drain low side
+    #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
+  #else
+    #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
+  #endif
+  #ifdef USE_OPEN_DRAIN_HIGH
+    #warning using open drain high side
+    #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
+  #else
+    #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
+  #endif
+  GPIO_InitStruct.Pin = PHASE_A_GPIO_LOW;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LOW_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_A_GPIO_PORT_LOW, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
+  GPIO_InitStruct.Pin = PHASE_B_GPIO_LOW;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LOW_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_B_GPIO_PORT_LOW, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_1;
+  GPIO_InitStruct.Pin = PHASE_C_GPIO_LOW;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = LOW_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_C_GPIO_PORT_LOW, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_8;
+  GPIO_InitStruct.Pin = PHASE_A_GPIO_HIGH;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = HIGH_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_A_GPIO_PORT_HIGH, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_9;
+  GPIO_InitStruct.Pin = PHASE_B_GPIO_HIGH;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = HIGH_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_B_GPIO_PORT_HIGH, &GPIO_InitStruct);
 
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
+  GPIO_InitStruct.Pin = PHASE_C_GPIO_HIGH;
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
   GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.OutputType = HIGH_OUTPUT_TYPE;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   GPIO_InitStruct.Alternate = LL_GPIO_AF_2;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  LL_GPIO_Init(PHASE_C_GPIO_PORT_HIGH, &GPIO_InitStruct);
 
   NVIC_SetPriority(TIM1_BRK_UP_TRG_COM_IRQn, 2);
   NVIC_EnableIRQ(TIM1_BRK_UP_TRG_COM_IRQn);
@@ -416,13 +444,14 @@ void MX_GPIO_Init(void)
   LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_15);
 
   /**/
-  GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
-  GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
-  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
-  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+  #ifdef USE_ALKAS_DEBUG_LED
+    GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+    GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+    LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  #endif
 }
 
 
