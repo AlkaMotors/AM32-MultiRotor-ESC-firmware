@@ -40,7 +40,7 @@ int dshot_full_number;
 extern char play_tone_flag;
 uint8_t command_count = 0;
 uint8_t last_command = 0;
-
+uint8_t high_pin_count = 0;
 
 
 void computeDshotDMA(){
@@ -71,8 +71,11 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
 				if(!armed){
 					if (dshot_telemetry == 0){
-						 if(calcCRC == ~checkCRC+16){
-							 dshot_telemetry = 1;
+						 if(INPUT_PIN_PORT->IDR & INPUT_PIN){  // if the pin is high for 100 checks between signal pulses its inverted
+							 high_pin_count++;
+							 if(high_pin_count > 100){
+								 dshot_telemetry = 1;
+							 }
 						 }
 					}
 				}
