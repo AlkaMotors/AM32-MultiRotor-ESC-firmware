@@ -26,7 +26,7 @@ The latest release of the firmware can be found [here](https://github.com/AlkaMo
 
 To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-[WINDOWS](https://drive.google.com/file/d/1o5XP8kSecdH3bPRClUwI7150Od7UdhkG/view?usp=sharing),
+[WINDOWS](https://drive.google.com/file/d/1H2Ks_TOZGshxZ2eOfaa94-t4zi-acqGg/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/164mF-7khqH822kLzF8sP5VAckHecoKGG/view?usp=sharing)
 
 Alternately you can use the [Online-ESC Configurator](https://esc-configurator.com/) to flash or change settings with any web browser that supports web serial.
