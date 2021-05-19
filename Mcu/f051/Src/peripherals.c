@@ -253,13 +253,13 @@ void MX_TIM1_Init(void)
   PA10   ------> TIM1_CH3
   */
   #ifdef USE_OPEN_DRAIN_LOW
-    #warning using open drain low side
+    #pragma message ("using open drain low side")
     #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
   #else
     #define LOW_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
   #endif
   #ifdef USE_OPEN_DRAIN_HIGH
-    #warning using open drain high side
+    #pragma message ("using open drain high side")
     #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_OPENDRAIN
   #else
     #define HIGH_OUTPUT_TYPE LL_GPIO_OUTPUT_PUSHPULL
@@ -434,8 +434,6 @@ void MX_DMA_Init(void)
 
 void MX_GPIO_Init(void)
 {
-  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
   /* GPIO Ports Clock Enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOB);
@@ -445,6 +443,8 @@ void MX_GPIO_Init(void)
 
   /**/
   #ifdef USE_ALKAS_DEBUG_LED
+    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
     GPIO_InitStruct.Pin = LL_GPIO_PIN_15;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
     GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
