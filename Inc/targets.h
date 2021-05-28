@@ -62,7 +62,7 @@
 #ifdef HGLRC
 #define FIRMWARE_NAME           "HGLRC_60A   "
 #define DEAD_TIME               45
-#define HARDWARE_GROUP_F0_E
+#define HARDWARE_GROUP_F0_A
 #define USE_SERIAL_TELEMETRY
 #endif
 
