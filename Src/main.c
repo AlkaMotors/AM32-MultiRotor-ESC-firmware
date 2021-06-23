@@ -741,6 +741,7 @@ void tenKhzRoutine(){
 		thirty_two_ms_count++;
 		if(thirty_two_ms_count>320){
 			send_telemetry = 1;
+			thirty_two_ms_count = 0;
 		}
 	}
 
@@ -922,11 +923,12 @@ if(desync_check){
 	if(send_telemetry){
 #ifdef	USE_SERIAL_TELEMETRY 	
 	  makeTelemPackage(degrees_celsius,
-			           battery_voltage,
-					   actual_current,
-	  				   (uint16_t)consumed_current/10,
-	  					e_rpm);
+			   battery_voltage,
+			    actual_current,
+	  		    (uint16_t)consumed_current/10,
+	  		     e_rpm);
 	  send_telem_DMA();
+	  send_telemetry = 0;
 #endif
 	}
 
@@ -1023,8 +1025,7 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
-//	blanktime = commutation_interval / 4;
-	while (INTERVAL_TIMER->CNT - thiszctime < waitTime - advance){
+	while (INTERVAL_TIMER->CNT < waitTime){
 
 	}
 	commutate();
