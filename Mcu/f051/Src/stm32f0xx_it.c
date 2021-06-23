@@ -159,9 +159,6 @@ void DMA1_Channel2_3_IRQHandler(void)
   /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
 	  if(LL_DMA_IsActiveFlag_TC2(DMA1))
 	  {
-	//	telemetry_done = 1;
-	//	serial_transfer++;
-		send_telemetry = 0;
 	    LL_DMA_ClearFlag_GI2(DMA1);
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
 	    /* Call function Transmission complete Callback */
