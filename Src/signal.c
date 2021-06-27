@@ -85,14 +85,7 @@ void transfercomplete(){
 	if (inputSet == 1){
 	if(!armed){
 		signaltimeout = 0;
-		if (adjusted_input < 0){
-			adjusted_input = 0;
-			  					}
-		 		 if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
-		 		 			zero_input_count++;
-		 		 		}else{
-		 		 			zero_input_count = 0;
-		 		 		}
+
 		}
 
 if(dshot_telemetry){

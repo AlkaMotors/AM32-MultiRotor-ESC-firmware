@@ -99,6 +99,9 @@
  *--increased allowed average pulse length to avoid double startup
  *1.69
  *--removed line re-enabling comparator after disabling.
+ *1.70 fix dshot for Kiss FC
+ *1.71 fix dshot for Ardupilot / Px4 FC
+ *1.72 Fix telemetry output and add 1 second arming.
  */
 
 #include <stdint.h>
@@ -118,7 +121,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 69
+#define VERSION_MINOR 72
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -735,7 +738,35 @@ void tenKhzRoutine(){
 		consumed_current = (float)actual_current/3600 + consumed_current;
 		consumption_timer = 0;
 	}
-
+if(!armed){
+	if(inputSet){
+		if(adjusted_input == 0){
+			zero_input_count++;
+			if(zero_input_count > 10000){    // one second
+				armed = 1;
+				#ifdef tmotor55
+				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn off red
+				  			GPIOA->BSRR = LL_GPIO_PIN_15;   // turn on green
+				#endif
+				  			if(cell_count == 0 && LOW_VOLTAGE_CUTOFF){
+				  			  cell_count = battery_voltage / 370;
+				  			  for (int i = 0 ; i < cell_count; i++){
+				  			  playInputTune();
+				  			  delayMillis(100);
+				  			 LL_IWDG_ReloadCounter(IWDG);
+				  			  }
+				  			  }else{
+				  			  playInputTune();
+				  			  }
+				  			if(!servoPwm){
+				  				RC_CAR_REVERSE = 0;
+				  			}
+			}
+		}else{
+			zero_input_count =0;
+		}
+	}
+}
 
 	if(THIRTY_TWO_MS_TLM){
 		thirty_two_ms_count++;
@@ -784,6 +815,10 @@ void tenKhzRoutine(){
 			if(!running){
 				old_routine = 1;
 				zero_crosses = 0;
+				if(brake_on_stop){
+					fullBrake();
+
+				}
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
 #ifndef PWM_ENABLE_BRIDGE						
@@ -1170,7 +1205,7 @@ int main(void)
 
 	   MX_IWDG_Init();
 	   LL_IWDG_ReloadCounter(IWDG);
-
+zero_input_count = 0;
 
 if (GIMBAL_MODE){
 	bi_direction = 1;
@@ -1259,28 +1294,6 @@ if(newinput > 2000){
 }
 #endif
 	  stuckcounter = 0;
-	  
-  		  if (zero_input_count > armed_count_threshold && !armed){
-  			  armed = 1;
-#ifdef tmotor55
-  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn off red
-  			GPIOA->BSRR = LL_GPIO_PIN_15;   // turn on green
-#endif
-  			if(cell_count == 0 && LOW_VOLTAGE_CUTOFF){
-  			  cell_count = battery_voltage / 370;
-  			  for (int i = 0 ; i < cell_count; i++){
-  			  playInputTune();
-  			  delayMillis(100);
-  			 LL_IWDG_ReloadCounter(IWDG);
-  			  }
-  			  }else{
-  			  playInputTune();
-  			  }
-  			if(!servoPwm){
-  				RC_CAR_REVERSE = 0;
-  			}
-
-  		  }
   		  if (bi_direction == 1 && proshot == 0 && dshot == 0){
   			  if(RC_CAR_REVERSE){
   				  if (newinput > (1000 + (servo_dead_band<<1))) {
@@ -1476,8 +1489,8 @@ if(newinput > 2000){
 	 	  }
 		  if ( stepper_sine == 0){
 
-  e_rpm = (100000/ e_com_time) * 6;
-  k_erpm = running * e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
+  e_rpm = running *(100000/ e_com_time) * 6;
+  k_erpm =  e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
    if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
 
   duty_cycle_maximum = map(k_erpm, low_rpm_level, high_rpm_level, throttle_max_at_low_rpm, throttle_max_at_high_rpm);   // for more performance lower the high_rpm_level, set to a consvervative number in source.
