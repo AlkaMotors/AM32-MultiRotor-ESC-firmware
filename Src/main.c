@@ -102,8 +102,8 @@
  *1.70 fix dshot for Kiss FC
  *1.71 fix dshot for Ardupilot / Px4 FC
  *1.72 Fix telemetry output and add 1 second arming.
+ *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
  */
-
 #include <stdint.h>
 #include "main.h"
 #include "targets.h"
@@ -121,7 +121,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 72
+#define VERSION_MINOR 73
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -134,6 +134,8 @@ firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   version_minor: VERSION_MINOR,
   device_name: FIRMWARE_NAME
 };
+
+uint8_t EEPROM_VERSION;
 
 //firmware build options
 char BRUSHED_MODE = 0;         // overrides everything else
@@ -151,6 +153,7 @@ uint32_t REV_Id = 0;
 
 uint16_t loop_time = 0;
 uint16_t last_loop_time = 0;
+uint16_t armed_timeout_count;
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
@@ -526,6 +529,9 @@ void loadEEpromSettings(){
 		   }
 	   }
 
+	   if(motor_kv < 300){
+		   low_rpm_throttle_limit = 0;
+	   }
 	   low_rpm_level  = motor_kv / 200 / (16 / motor_poles);
 	   high_rpm_level = (40 + (motor_kv / 100)) / (16/motor_poles);
 	   
@@ -741,8 +747,9 @@ void tenKhzRoutine(){
 if(!armed){
 	if(inputSet){
 		if(adjusted_input == 0){
-			zero_input_count++;
-			if(zero_input_count > 10000){    // one second
+			armed_timeout_count++;
+			if(armed_timeout_count > 10000){    // one second
+				if(zero_input_count > 30){
 				armed = 1;
 				#ifdef tmotor55
 				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn off red
@@ -761,9 +768,13 @@ if(!armed){
 				  			if(!servoPwm){
 				  				RC_CAR_REVERSE = 0;
 				  			}
+			}else{
+				inputSet = 0;
+				armed_timeout_count =0;
+			}
 			}
 		}else{
-			zero_input_count =0;
+			armed_timeout_count =0;
 		}
 	}
 }
@@ -815,10 +826,10 @@ if(!armed){
 			if(!running){
 				old_routine = 1;
 				zero_crosses = 0;
-				if(brake_on_stop){
-					fullBrake();
+				  if(brake_on_stop){
+					  fullBrake();
 
-				}
+				  }
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
 #ifndef PWM_ENABLE_BRIDGE						
@@ -958,10 +969,10 @@ if(desync_check){
 	if(send_telemetry){
 #ifdef	USE_SERIAL_TELEMETRY 	
 	  makeTelemPackage(degrees_celsius,
-			   battery_voltage,
-			    actual_current,
-	  		    (uint16_t)consumed_current/10,
-	  		     e_rpm);
+			           battery_voltage,
+					   actual_current,
+	  				   (uint16_t)consumed_current/10,
+	  					e_rpm);
 	  send_telem_DMA();
 	  send_telemetry = 0;
 #endif
@@ -1060,7 +1071,8 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
-	while (INTERVAL_TIMER->CNT < waitTime){
+//	blanktime = commutation_interval / 4;
+	while (INTERVAL_TIMER->CNT - thiszctime < waitTime - advance){
 
 	}
 	commutate();
@@ -1157,6 +1169,7 @@ int main(void)
 
 
   loadEEpromSettings();
+//  EEPROM_VERSION = *(uint8_t*)(0x08000FFC);
   if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
 	  eepromBuffer[3] = firmware_info.version_major;
 	  eepromBuffer[4] = firmware_info.version_minor;
@@ -1165,6 +1178,10 @@ int main(void)
 	  }
 	  saveEEpromSettings();
   }
+//  if(EEPROM_VERSION != eepromBuffer[2]){
+//	  eepromBuffer[2] = EEPROM_VERSION;
+//	  saveEEpromSettings();
+//  }
 
 
   if(use_sin_start){
@@ -1202,10 +1219,10 @@ int main(void)
 	   }else{
 		   playStartupTune();
 	   }
-
+	   zero_input_count = 0;
 	   MX_IWDG_Init();
 	   LL_IWDG_ReloadCounter(IWDG);
-zero_input_count = 0;
+
 
 if (GIMBAL_MODE){
 	bi_direction = 1;
@@ -1294,6 +1311,7 @@ if(newinput > 2000){
 }
 #endif
 	  stuckcounter = 0;
+	  
   		  if (bi_direction == 1 && proshot == 0 && dshot == 0){
   			  if(RC_CAR_REVERSE){
   				  if (newinput > (1000 + (servo_dead_band<<1))) {
@@ -1489,7 +1507,7 @@ if(newinput > 2000){
 	 	  }
 		  if ( stepper_sine == 0){
 
-  e_rpm = running *(100000/ e_com_time) * 6;
+  e_rpm = running * (100000/ e_com_time) * 6;
   k_erpm =  e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
    if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
 
@@ -1649,5 +1667,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-

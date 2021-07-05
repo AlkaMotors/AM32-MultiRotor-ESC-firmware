@@ -32,24 +32,24 @@ void computeMSInput(){
 
 void computeServoInput(){
 
-	int lastnumber = dma_buffer[0];
-	for ( int j = 1 ; j < 2; j++){
 
-		if(((dma_buffer[j] - lastnumber) >900 ) && ((dma_buffer[j] - lastnumber) < 2150)){ // blank space
+		if(((dma_buffer[1] - dma_buffer[0]) >900 ) && ((dma_buffer[1] - dma_buffer[0]) < 2150)){
 
 			if(bi_direction){
-				if(dma_buffer[j] - lastnumber <= servo_neutral){
-				servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_neutral, 0, 1000);
+				if(dma_buffer[1] - dma_buffer[0] <= servo_neutral){
+				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_neutral, 0, 1000);
 				}else{
-				servorawinput = map((dma_buffer[j] - lastnumber), servo_neutral+1, servo_high_threshold, 1001, 2000);
+				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_neutral+1, servo_high_threshold, 1001, 2000);
 				}
 			}else{
-			servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_high_threshold, 0, 2000);
+			servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_high_threshold, 0, 2000);
 			}
-			break;
+			signaltimeout = 0;
+
+		}else{
+			zero_input_count = 0;      // reset if out of range
 		}
-		lastnumber = dma_buffer[j];
-	}
+
 	if (servorawinput - newinput > max_servo_deviation){
 		newinput += max_servo_deviation;
 	}else if(newinput - servorawinput > max_servo_deviation){
@@ -83,10 +83,8 @@ void transfercomplete(){
 	  }
 
 	if (inputSet == 1){
-	if(!armed){
-		signaltimeout = 0;
 
-		}
+
 
 if(dshot_telemetry){
     if(out_put){
@@ -110,13 +108,21 @@ if(dshot_telemetry){
 		}
 		if  (servoPwm == 1){
 			computeServoInput();
-		//	IC_TIMER_REGISTER->CNT = 0;
-			signaltimeout = 0;
 			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
      		receiveDshotDma();
      	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
 		}
 
+	}
+if(!armed){
+	if (adjusted_input < 0){
+		adjusted_input = 0;
+		}
+	 if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
+	 	zero_input_count++;
+	 		}else{
+	 	zero_input_count = 0;
+	 	}
 	}
 	}
 }
