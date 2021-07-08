@@ -103,6 +103,7 @@
  *1.71 fix dshot for Ardupilot / Px4 FC
  *1.72 Fix telemetry output and add 1 second arming.
  *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
+ *1.74 Add Sine Mode range and drake brake strength adjustment
  */
 #include <stdint.h>
 #include "main.h"
@@ -121,7 +122,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 73
+#define VERSION_MINOR 74
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -141,7 +142,7 @@ uint8_t EEPROM_VERSION;
 char BRUSHED_MODE = 0;         // overrides everything else
 char RC_CAR_REVERSE = 0;         // have to set bidirectional, comp_pwm off and stall protection off, no sinusoidal startup
 char GIMBAL_MODE = 0;     // also sinusoidal_startup needs to be on.
-
+char USE_HALL_SENSOR = 0;
 //move these to targets folder or peripherals for each mcu
 
 
@@ -157,6 +158,8 @@ uint16_t armed_timeout_count;
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
+char sine_mode_changeover_thottle_level = 5; 
+char drag_brake_strength = 10;
 
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
@@ -527,7 +530,23 @@ void loadEEpromSettings(){
 		   }else{
 			   RC_CAR_REVERSE = 0;
 		   }
+		   if(eepromBuffer[39] == 0x01){
+#ifdef HAS_HALL_SENSORS              
+			   USE_HALL_SENSOR = 1;
+#else
+			   USE_HALL_SENSOR = 0;
+#endif
+		   }else{
+			   USE_HALL_SENSOR = 0;
+		   }
+	   if(eepromBuffer[40] > 4 && eepromBuffer[40] < 26){            // sine mode changeover 5-25 percent throttle
+       sine_mode_changeover_thottle_level = eepromBuffer[40];
 	   }
+	   if(eepromBuffer[41] > 0 && eepromBuffer[41] < 11){        // drag brake 0-10
+       drag_brake_strength = eepromBuffer[41];
+	   }
+	   }
+
 
 	   if(motor_kv < 300){
 		   low_rpm_throttle_limit = 0;
@@ -790,6 +809,7 @@ if(!armed){
 	if(!stepper_sine && !BRUSHED_MODE){
 	  if (input >= 47 +(80*use_sin_start) && armed){
 		  if (running == 0){
+			  allOff();
 			  if(!old_routine){
 			 startMotor();
 			  }
@@ -802,12 +822,13 @@ if(!armed){
 #endif
 
 		  }
-	//	  coasting = 0;
-	 //	 running = 1;
 	  if(use_sin_start){
 		duty_cycle = map(input, 127, 2047, minimum_duty_cycle, TIMER1_MAX_ARR);
   	  }else{
 	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, TIMER1_MAX_ARR);
+	  }
+	  if(!RC_CAR_REVERSE){
+		  prop_brake_active = 0;
 	  }
 	  }
 	  if (input < 47 + (80*use_sin_start)){
@@ -828,7 +849,6 @@ if(!armed){
 				zero_crosses = 0;
 				  if(brake_on_stop){
 					  fullBrake();
-
 				  }
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
@@ -846,8 +866,11 @@ if(!armed){
 		  zero_crosses = 0;
 		  bad_count = 0;
 		  if(brake_on_stop){
-			  fullBrake();
-
+			if(!use_sin_start){ 
+			duty_cycle = 1980 + drag_brake_strength*2;  
+			proportionalBrake();
+	        prop_brake_active = 1;
+			}
 		  }else{
          allOff();
          duty_cycle = 0;
@@ -930,15 +953,11 @@ if (running){
 		}
 	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 		}else{
-			if(RC_CAR_REVERSE){
 				if(prop_brake_active){
 					adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 				}else{
 				adjusted_duty_cycle = 0;
 				}
-			}else{
-				adjusted_duty_cycle = 0;
-			}
 	    }
 		last_duty_cycle = duty_cycle;
 
@@ -950,7 +969,7 @@ if (running){
 	TIM1->CCR3 = adjusted_duty_cycle;
 	}
 average_interval = e_com_time / 3;
-if(desync_check){
+if(desync_check && zero_crosses > 10){
 //	if(average_interval < last_average_interval){
 //
 //	}
@@ -1502,8 +1521,20 @@ if(newinput > 2000){
 			  GPIOB->BSRR = LL_GPIO_PIN_3;
 #endif
 	 	  }else{
-	 		 input=adjusted_input;
+	  	  	if(use_sin_start){
+  				if(adjusted_input < 30){           // dead band ?
+  					input= 0;
+  					}
 
+  					if(adjusted_input > 30 && adjusted_input < (sine_mode_changeover_thottle_level * 20)){
+  					input= map(adjusted_input, 30 , (sine_mode_changeover_thottle_level * 20) , 47 ,160);
+  					}
+  					if(adjusted_input >= (sine_mode_changeover_thottle_level * 20)){
+  					input = map(adjusted_input , (sine_mode_changeover_thottle_level * 20) ,2000 , 160, 2000);
+  					}
+  				}else{
+  		   			input = adjusted_input;
+  				}
 	 	  }
 		  if ( stepper_sine == 0){
 
@@ -1600,7 +1631,7 @@ if (old_routine && running){
 if(input > 48 && armed){
 
 	 		  if (input > 48 && input < 137){// sine wave stepper
-	 //			 LL_TIM_DisableIT_UPDATE(TIM1);
+	 			
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
@@ -1621,9 +1652,11 @@ if(input > 48 && armed){
 				  old_routine = 1;
 		 		  commutation_interval = 9000;
 		 		  average_interval = 9000;
+				  last_average_interval = average_interval; 
 		 		//  minimum_duty_cycle = ;
 		 		  INTERVAL_TIMER->CNT = 9000;
 				  zero_crosses = 0;
+				  prop_brake_active = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
 		 		 comStep(step);// rising bemf on a same as position 0.
 	 			LL_TIM_GenerateEvent_UPDATE(TIM1);
@@ -1632,10 +1665,23 @@ if(input > 48 && armed){
 	 		  }
 
 }else{
-	TIM1->CCR1 = 0;												// set duty cycle to 50 out of 768 to start.
+	if(brake_on_stop){
+	duty_cycle = 1980 + drag_brake_strength*2;   
+	adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
+	TIM1->ARR = tim1_arr;
+	TIM1->CCR1 = adjusted_duty_cycle;
+	TIM1->CCR2 = adjusted_duty_cycle;
+	TIM1->CCR3 = adjusted_duty_cycle;
+	proportionalBrake();
+	prop_brake_active = 1;
+	}else{
+	TIM1->CCR1 = 0;
 	TIM1->CCR2 = 0;
 	TIM1->CCR3 = 0;
-	fullBrake();
+	allOff();
+	}
+
+
 }
 
 	 			}
