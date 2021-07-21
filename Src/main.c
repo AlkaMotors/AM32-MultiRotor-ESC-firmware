@@ -1,6 +1,9 @@
 /* AM32- multi-purpose brushless controller firmware for the stm32f051 */
 
-/*
+//===========================================================================
+//=============================== Changelog =================================
+//===========================================================================
+
  * 1.54 Changelog;
  * --Added firmware name to targets and firmware version to main
  * --added two more dshot to beacons 1-3 currently working
@@ -120,9 +123,46 @@
 #include "functions.h"
 #include "peripherals.h"
 
+//===========================================================================
+//============================= EEPROM Defaults =============================
+//===========================================================================
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 74
+char dir_reversed = 0;
+char comp_pwm = 1;
+char VARIABLE_PWM = 1;
+char bi_direction = 0;
+char stuck_rotor_protection = 1;	// Turn off for Crawlers
+char brake_on_stop = 0;
+char stall_protection = 0;
+char use_sin_start = 0;
+char THIRTY_TWO_MS_TLM = 0;
+
+char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
+uint16_t motor_kv = 2000;
+char motor_poles = 14;
+//add Startup Power
+//Add PWM Frequency
+//Add Beep Volume
+char drag_brake_strength = 10;		// Drag Brake Power
+char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
+
+char USE_HALL_SENSOR = 0;
+
+//============================= Servo Settings ==============================
+uint16_t servo_low_threshold = 1100;	// anything below this point considered 0
+uint16_t servo_high_threshold = 1900;	// anything above this point considered 2000 (max)
+uint16_t servo_neutral = 1500;
+uint8_t servo_dead_band = 100;
+
+//========================= Battery Cuttoff Settings ========================
+char LOW_VOLTAGE_CUTOFF = 0;		// Turn Low Voltage CUTOFF on or off
+uint16_t low_cell_volt_cutoff = 330;	// 3.3volts per cell
+
+//Add Car/basher mode
+
+//=========================== END EEPROM Defaults ===========================
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -142,7 +182,6 @@ uint8_t EEPROM_VERSION;
 char BRUSHED_MODE = 0;         // overrides everything else
 char RC_CAR_REVERSE = 0;         // have to set bidirectional, comp_pwm off and stall protection off, no sinusoidal startup
 char GIMBAL_MODE = 0;     // also sinusoidal_startup needs to be on.
-char USE_HALL_SENSOR = 0;
 //move these to targets folder or peripherals for each mcu
 
 
@@ -158,33 +197,23 @@ uint16_t armed_timeout_count;
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
-char sine_mode_changeover_thottle_level = 5; 
-char drag_brake_strength = 10;
+
 
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
 uint16_t velocity_count_threshold = 50;
 
-uint16_t servo_low_threshold = 1100; // anything below this point considered 0
-uint16_t servo_high_threshold = 1900;  // anything above this point considered 2000 (max)
-uint16_t servo_neutral = 1500;
-uint8_t servo_dead_band = 100;
-
-char brake_on_stop = 0;
-char dir_reversed = 0;
-char bi_direction = 0;
-char use_sin_start = 0;
 char low_rpm_throttle_limit = 1;
 
 uint16_t low_voltage_count = 0;
 
-char THIRTY_TWO_MS_TLM = 0;
+
 uint16_t thirty_two_ms_count;
-char LOW_VOLTAGE_CUTOFF = 0;
+
 char VOLTAGE_DIVIDER = TARGET_VOLTAGE_DIVIDER;     // 100k upper and 10k lower resistor in divider
 
 uint16_t battery_voltage;  // scale in volts * 10.  1260 is a battery voltage of 12.60
-uint16_t low_cell_volt_cutoff = 330; // 3.3volts per cell
+
 char cell_count = 0;
 
 char brushed_direction_set = 0;
@@ -195,18 +224,13 @@ float consumed_current = 0;
 uint16_t smoothed_raw_current = 0;
 uint16_t actual_current = 0;
 
-uint16_t motor_kv = 2000;
-char motor_poles = 14;
-char VARIABLE_PWM = 1;
 char lowkv = 0;
-char comp_pwm = 1;
+
 int min_startup_duty = 120;
 int sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
-char advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
-char stuck_rotor_protection = 1;
+
 char startup_boost = 35;
-char stall_protection = 0;
 char reversing_dead_band = 1;
 
 uint16_t oneKhz_timer = 0;
