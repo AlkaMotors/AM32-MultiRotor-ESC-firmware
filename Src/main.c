@@ -133,34 +133,36 @@ char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
 char bi_direction = 0;
-char stuck_rotor_protection = 1;
+char stuck_rotor_protection = 1;	// Turn off for Crawlers
 char brake_on_stop = 0;
 char stall_protection = 0;
 char use_sin_start = 0;
 char THIRTY_TWO_MS_TLM = 0;
 
-char advance_level = 2;                // 7.5 degree increments 0 , 7.5, 15, 22.5)
+char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
 uint16_t motor_kv = 2000;
 char motor_poles = 14;
 //add Startup Power
 //Add PWM Frequency
 //Add Beep Volume
-//Add Drag Brake Power
-//Add Sine Startup Range
+char drag_brake_strength = 10;		// Drag Brake Power
+char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
 
 char USE_HALL_SENSOR = 0;
 
-uint16_t servo_low_threshold = 1100; // anything below this point considered 0
-uint16_t servo_high_threshold = 1900;  // anything above this point considered 2000 (max)
+//============================= Servo Settings ==============================
+uint16_t servo_low_threshold = 1100;	// anything below this point considered 0
+uint16_t servo_high_threshold = 1900;	// anything above this point considered 2000 (max)
 uint16_t servo_neutral = 1500;
 uint8_t servo_dead_band = 100;
 
-char LOW_VOLTAGE_CUTOFF = 0;
-uint16_t low_cell_volt_cutoff = 330; // 3.3volts per cell
+//========================= Battery Cuttoff Settings ========================
+char LOW_VOLTAGE_CUTOFF = 0;		// Turn Low Voltage CUTOFF on or off
+uint16_t low_cell_volt_cutoff = 330;	// 3.3volts per cell
 
 //Add Car/basher mode
 
-//===========================================================================
+//=========================== END EEPROM Defaults ===========================
 
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
@@ -195,8 +197,7 @@ uint16_t armed_timeout_count;
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
-char sine_mode_changeover_thottle_level = 5; 
-char drag_brake_strength = 10;
+
 
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
