@@ -5,7 +5,9 @@
  *      Author: Alka
  */
 
+#include "functions.h"
 #include "dshot.h"
+#include "targets.h"
 
 int dpulse[16] = {0} ;
 
@@ -38,7 +40,7 @@ int dshot_full_number;
 extern char play_tone_flag;
 uint8_t command_count = 0;
 uint8_t last_command = 0;
-
+uint8_t high_pin_count = 0;
 
 
 void computeDshotDMA(){
@@ -46,10 +48,19 @@ void computeDshotDMA(){
 
 int j = 0;
 dshot_frametime = dma_buffer[31]- dma_buffer[0];
+
+#ifdef MCU_F051
 	         if((dshot_frametime < 1270)&&(dshot_frametime > 1210)){
 				for (int i = 0; i < 16; i++){
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>5) ;
 				}
+#endif
+#if defined(MCU_G071) || defined(MCU_GD32)
+				if((dshot_frametime < 1690)&&(dshot_frametime > 1600)){
+				for (int i = 0; i < 16; i++){
+					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>6) ;
+				}
+#endif
 
 				uint8_t calcCRC = ((dpulse[0]^dpulse[4]^dpulse[8])<<3
 						|(dpulse[1]^dpulse[5]^dpulse[9])<<2
@@ -60,8 +71,11 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
 				if(!armed){
 					if (dshot_telemetry == 0){
-						 if(calcCRC == ~checkCRC+16){
-							 dshot_telemetry = 1;
+						 if(INPUT_PIN_PORT->IDR & INPUT_PIN){  // if the pin is high for 100 checks between signal pulses its inverted
+							 high_pin_count++;
+							 if(high_pin_count > 100){
+								 dshot_telemetry = 1;
+							 }
 						 }
 					}
 				}
@@ -123,10 +137,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					break;
 					case 7:
 						dir_reversed = 0;
+						forward = 1 - dir_reversed;
 						play_tone_flag = 1;
 				    break;
 				    case 8:
 				    	dir_reversed = 1;
+				    	forward = 1 - dir_reversed;
 				    	play_tone_flag = 2;
 				    break;
 					case 9:
@@ -141,7 +157,8 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 				    break;
 					case 12:
 					saveEEpromSettings();
-					NVIC_SystemReset();
+					//delayMillis(100);
+				//	NVIC_SystemReset();
 				    break;
 					case 20:
 						forward = 1 - dir_reversed;
@@ -198,27 +215,27 @@ for (int i = 15; i >= 9 ; i--){
 		  | gcr_encode_table[(((1 << 4) - 1) & (dshot_full_number >> 4))] << 5  //3rd set of four digits
 		  | gcr_encode_table[(((1 << 4) - 1) & (dshot_full_number >> 0))];  //last four digits
 //GCR RLL encode 20 to 21bit output
-
-//	  gcrnumber = 0b1000000000000000001;
-//		  gcr[0] = 0;
-//		  lastnumber = 0;
-//		  for( int i= 21; i >= 0; i--){
-//						if((gcrnumber & ( 1 << (i-1)))){   // if the bit is a 1
-//							lastnumber = !lastnumber; // invert the bit
-//							gcr[22-i] = (!lastnumber * high_bit_length); // since the output is inverted electrical a 0 becomes period + 1
-//						}else{ // if the bit is zero
-//						//	gcr[20-i] = (max_duty)- lastnumber*(max_duty); // output same as last one
-//							gcr[22-i] = (!lastnumber * high_bit_length);
-//						}
-//		  }
-//		  gcr[1] = high_bit_length;        //  since pwm is inverted
-//          gcr[22] = 0;
-
+#ifdef MCU_F051
 		  gcr[1+7] = 64;
 		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
 			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) << 6;        // exclusive ored with number before it multiplied by 64 to match output timer.
 		  }
           gcr[7] = 0;
+#endif
+#ifdef MCU_G071
+		  gcr[1+7] = 94;
+		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
+			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) *94;        // exclusive ored with number before it multiplied by 64 to match output timer.
+		  }
+          gcr[7] = 0;
+#endif
+#ifdef MCU_GD32
+		  gcr[1+7] = 84;
+		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
+			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) *84;        // exclusive ored with number before it multiplied by 64 to match output timer.
+		  }
+          gcr[7] = 0;
+#endif
 
 
 }
