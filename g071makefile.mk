@@ -67,7 +67,7 @@ clean :
 $(TARGETS) :
 	$(MAKE) TARGET=$@ binary
 
-binary : AM32_$(TARGET_BASENAME).bin
+binary : $(TARGET_BASENAME).bin
 
 $(TARGET_BASENAME).bin : $(SRC)
 	mkdir -p $(dir $@)
