@@ -37,12 +37,13 @@ TARGETS := GD32TEST
 # Working directories
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
 
+IDENTIFIER    := AM32
 VERSION_MAJOR := $(shell grep " VERSION_MAJOR" Src/main.c | awk '{print $$3}' )
 VERSION_MINOR := $(shell grep " VERSION_MINOR" Src/main.c | awk '{print $$3}' )
 
 FIRMWARE_VERSION := $(VERSION_MAJOR).$(VERSION_MINOR)
 
-TARGET_BASENAME = $(BIN_DIR)/$(TARGET)_$(FIRMWARE_VERSION)
+TARGET_BASENAME = $(BIN_DIR)/$(IDENTIFIER)_$(TARGET)_$(FIRMWARE_VERSION)
 
 # Build tools, so we all share the same versions
 # import macros common to all supported build systems
