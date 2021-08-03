@@ -2,7 +2,7 @@ CC = $(ARM_SDK_PREFIX)gcc
 CP = $(ARM_SDK_PREFIX)objcopy
 MCU := -mcpu=cortex-m0 -mthumb
 LDSCRIPT := Mcu/f051/STM32F051K6TX_FLASH.ld
-LIBS := -lc -lm -lnosys 
+LIBS := -lc -lm -lnosys
 LDFLAGS := -specs=nano.specs -T$(LDSCRIPT) $(LIBS) -Wl,--gc-sections -Wl,--print-memory-usage
 MAIN_SRC_DIR := Src
 SRC_DIR := Mcu/f051/Startup \
@@ -15,7 +15,7 @@ INCLUDES :=  \
 	-IMcu/f051/Inc \
 	-IMcu/f051/Drivers/STM32F0xx_HAL_Driver/Inc \
 	-IMcu/f051/Drivers/CMSIS/Include \
-	-IMcu/f051/Drivers/CMSIS/Device/ST/STM32F0xx/Include 
+	-IMcu/f051/Drivers/CMSIS/Device/ST/STM32F0xx/Include
 VALUES :=  \
 	-DUSE_MAKE \
 	-DHSE_VALUE=8000000 \
