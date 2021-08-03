@@ -24,7 +24,6 @@ extern int input;
 extern int newinput;
 extern char inputSet;
 extern char dshot;
-extern char oneshot125;
 extern char servoPwm;
 extern uint32_t gcr[];
 extern int armed_count_threshold;
