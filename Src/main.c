@@ -3,7 +3,7 @@
 //===========================================================================
 //=============================== Changelog =================================
 //===========================================================================
-
+/*
  * 1.54 Changelog;
  * --Added firmware name to targets and firmware version to main
  * --added two more dshot to beacons 1-3 currently working
