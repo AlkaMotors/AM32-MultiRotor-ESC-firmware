@@ -155,10 +155,6 @@ void sendDshotDma(){
 void detectInput(){
 	smallestnumber = 20000;
 	dshot = 0;
-//	proshot = 0;
-//	multishot = 0;
-//	oneshot42 = 0;
-//	oneshot125 = 0;
 	servoPwm = 0;
 	int lastnumber = dma_buffer[0];
 	for ( int j = 1 ; j < 31; j++){
