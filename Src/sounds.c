@@ -93,9 +93,9 @@ void playBlueJayTune(){
 				TIM1->CCR3 = 0;
 				delayMillis(duration);
 			}else{
-			frequency = getBlueJayNoteFrequency(blueJayTuneBuffer[i+1]);
-			duration= (full_time_count * 254 + blueJayTuneBuffer[i])  * (float)(1000 / frequency);
-			playBJNote(frequency, duration);
+				frequency = getBlueJayNoteFrequency(blueJayTuneBuffer[i+1]);
+				duration= (full_time_count * 254 + blueJayTuneBuffer[i])  * (float)(1000 / frequency);
+				playBJNote(frequency, duration);
 			}
 			full_time_count = 0;
 		}
@@ -111,26 +111,26 @@ void playStartupTune(){
 	__disable_irq();
 
 	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
-		if(value != 0xFF){
+	if(value != 0xFF){
 		playBlueJayTune();
-		}else{
+	}else{
 
-	setCaptureCompare();
-	comStep(3);       // activate a pwm channel
+		setCaptureCompare();
+		comStep(3);       // activate a pwm channel
 
-	TIM1->PSC = 55;        // frequency of beep
-    delayMillis(200);         // duration of beep
-    comStep(5);
+		TIM1->PSC = 55;        // frequency of beep
+		delayMillis(200);         // duration of beep
+		comStep(5);
 
-    TIM1->PSC = 40;            // next beep is higher frequency
-	delayMillis(200);
+		TIM1->PSC = 40;            // next beep is higher frequency
+		delayMillis(200);
 
-	comStep(6);
-	TIM1->PSC = 25;         // higher again..
-	delayMillis(200);
-	allOff();                // turn all channels low again
-	TIM1->PSC = 0;           // set prescaler back to 0.
-	signaltimeout = 0;
+		comStep(6);
+		TIM1->PSC = 25;         // higher again..
+		delayMillis(200);
+		allOff();                // turn all channels low again
+		TIM1->PSC = 0;           // set prescaler back to 0.
+		signaltimeout = 0;
 	}
 	__enable_irq();
 }
@@ -140,7 +140,7 @@ void playBrushedStartupTune(){
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 	TIM1->PSC = 25;        // frequency of beep
-    delayMillis(300);         // duration of beep
+	delayMillis(300);         // duration of beep
 	comStep(6);
 	TIM1->PSC = 55;         // higher again..
 	delayMillis(300);
@@ -154,13 +154,13 @@ void playDuskingTune(){
 	setCaptureCompare();
 	comStep(2);       // activate a pwm channel
 	TIM1->PSC = 60;        // frequency of beep
-    delayMillis(200);         // duration of beep
+	delayMillis(200);         // duration of beep
 	TIM1->PSC = 55;            // next beep is higher frequency
 	delayMillis(150);
 	TIM1->PSC = 50;         // higher again..
 	delayMillis(150);
 	TIM1->PSC = 45;        // frequency of beep
-    delayMillis(100);         // duration of beep
+	delayMillis(100);         // duration of beep
 	TIM1->PSC = 50;            // next beep is higher frequency
 	delayMillis(100);
 	TIM1->PSC = 55;         // higher again..
@@ -177,7 +177,7 @@ void playDuskingTune(){
 void playInputTune2(){
 
 	__disable_irq();
-    LL_IWDG_ReloadCounter(IWDG);
+	LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 60;
 	setCaptureCompare();
 	comStep(1);
@@ -198,7 +198,7 @@ void playInputTune2(){
 
 void playInputTune(){
 	__disable_irq();
-	 LL_IWDG_ReloadCounter(IWDG);
+	LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 80;
 	setCaptureCompare();
 	comStep(3);
@@ -214,7 +214,7 @@ void playInputTune(){
 }
 
 void playDefaultTone(){
-	 LL_IWDG_ReloadCounter(IWDG);
+	LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 50;
 	setCaptureCompare();
 	comStep(2);
@@ -228,7 +228,7 @@ void playDefaultTone(){
 }
 
 void playChangedTone(){
-	 LL_IWDG_ReloadCounter(IWDG);
+	LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 40;
 	setCaptureCompare();
 	comStep(2);
