@@ -33,22 +33,22 @@ void computeMSInput(){
 void computeServoInput(){
 
 
-		if(((dma_buffer[1] - dma_buffer[0]) >900 ) && ((dma_buffer[1] - dma_buffer[0]) < 2150)){
+	if(((dma_buffer[1] - dma_buffer[0]) >900 ) && ((dma_buffer[1] - dma_buffer[0]) < 2150)){
 
-			if(bi_direction){
-				if(dma_buffer[1] - dma_buffer[0] <= servo_neutral){
+		if(bi_direction){
+			if(dma_buffer[1] - dma_buffer[0] <= servo_neutral){
 				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_neutral, 0, 1000);
-				}else{
-				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_neutral+1, servo_high_threshold, 1001, 2000);
-				}
 			}else{
-			servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_high_threshold, 0, 2000);
+				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_neutral+1, servo_high_threshold, 1001, 2000);
 			}
-			signaltimeout = 0;
-
 		}else{
-			zero_input_count = 0;      // reset if out of range
+			servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_high_threshold, 0, 2000);
 		}
+		signaltimeout = 0;
+
+	}else{
+		zero_input_count = 0;      // reset if out of range
+	}
 
 	if (servorawinput - newinput > max_servo_deviation){
 		newinput += max_servo_deviation;
@@ -62,67 +62,67 @@ void computeServoInput(){
 
 void transfercomplete(){
 	if(armed && dshot_telemetry){
-	    if(out_put){
+		if(out_put){
 
 
-	  	receiveDshotDma();
-	   	return;
-	    }else{
+			receiveDshotDma();
+			return;
+		}else{
 
 			sendDshotDma();
 			make_dshot_package();
 			computeDshotDMA();
-	    return;
-	    }
+			return;
+		}
 	}
 
-	  if (inputSet == 0){
-	 	 detectInput();
-	 	receiveDshotDma();
-	 return;
-	  }
+	if (inputSet == 0){
+		detectInput();
+		receiveDshotDma();
+		return;
+	}
 
 	if (inputSet == 1){
 
 
 
-if(dshot_telemetry){
-    if(out_put){
-//    	TIM17->CNT = 0;
-    	make_dshot_package();          // this takes around 10us !!
-  	computeDshotDMA();             //this is slow too..
-  	receiveDshotDma();             //holy smokes.. reverse the line and set up dma again
-   	return;
-    }else{
-		sendDshotDma();
-    return;
-    }
-}else{
-
-		if (dshot == 1){
-			computeDshotDMA();
-			if(send_telemetry){
-            // done in 10khz routine
+		if(dshot_telemetry){
+			if(out_put){
+				//    	TIM17->CNT = 0;
+				make_dshot_package();          // this takes around 10us !!
+				computeDshotDMA();             //this is slow too..
+				receiveDshotDma();             //holy smokes.. reverse the line and set up dma again
+				return;
+			}else{
+				sendDshotDma();
+				return;
 			}
-			receiveDshotDma();
-		}
-		if  (servoPwm == 1){
-			computeServoInput();
-			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
-     		receiveDshotDma();
-     	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
-		}
+		}else{
 
-	}
-if(!armed){
-	if (adjusted_input < 0){
-		adjusted_input = 0;
+			if (dshot == 1){
+				computeDshotDMA();
+				if(send_telemetry){
+					// done in 10khz routine
+				}
+				receiveDshotDma();
+			}
+			if  (servoPwm == 1){
+				computeServoInput();
+				LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
+				receiveDshotDma();
+				LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
+			}
+
 		}
-	 if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
-	 	zero_input_count++;
-	 		}else{
-	 	zero_input_count = 0;
-	 	}
-	}
+		if(!armed){
+			if (adjusted_input < 0){
+				adjusted_input = 0;
+			}
+			if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
+				zero_input_count++;
+			}else{
+				zero_input_count = 0;
+			}
+		}
 	}
 }
