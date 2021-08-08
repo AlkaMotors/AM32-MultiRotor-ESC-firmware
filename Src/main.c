@@ -1248,7 +1248,7 @@ int main(void)
 	if(BRUSHED_MODE){
 		playBrushedStartupTune();
 	}else{
-		playdDixie();
+		playDixie();
 //		playStartupTune();
 	}
 	zero_input_count = 0;
