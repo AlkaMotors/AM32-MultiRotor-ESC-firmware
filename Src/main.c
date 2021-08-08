@@ -5,13 +5,13 @@
 //===========================================================================
 /*
  * 1.54 Changelog;
- * --Added firmware name to targets and firmware version to main
- * --added two more dshot to beacons 1-3 currently working
- * --added KV option to firmware, low rpm power protection is based on KV
- * --start power now controls minimum idle power as well as startup strength.
- * --change default timing to 22.5
- * --Lowered default minimum idle setting to 1.5 percent duty cycle, slider range from 1-2.
- * --Added dshot commands to save settings and reset ESC.
+ * -- Added firmware name to targets and firmware version to main
+ * -- added two more dshot to beacons 1-3 currently working
+ * -- added KV option to firmware, low rpm power protection is based on KV
+ * -- start power now controls minimum idle power as well as startup strength.
+ * -- change default timing to 22.5
+ * -- Lowered default minimum idle setting to 1.5 percent duty cycle, slider range from 1-2.
+ * -- Added dshot commands to save settings and reset ESC.
  *
  *1.56 Changelog.
  * -- added check to stall protection to wait until after 40 zero crosses to fix high startup throttle hiccup.
@@ -29,12 +29,13 @@
  *
  * 1.58
  * -- move signal timeout to 10khz routine and set armed timeout to one quarter second 2500 / 10000
+ *
  * 1.59
  * -- moved comp order definitions to target.h
  * -- fixed update version number if older than new version
  * -- cleanup, moved all input and output to IO.c
  * -- moved comparator functions to comparator.c
- * -- removed ALOT of useless variables
+ * -- removed A LOT of useless variables
  * -- added siskin target
  * -- moved pwm changes to 10khz routine
  * -- moved basic functions to functions.c
@@ -56,57 +57,58 @@
  * -- added check in interrupt for early zero cross
  *
  * 1.62
- * --moved control to 10khz loop
- * --changed condition for low rpm filter for duty cycle from || to &&
- * --introduced max deceleration and set it to 20ms to go from 100 to 0
- * --added configurable servo throttle ranges
- *
+ * -- moved control to 10khz loop
+ * -- changed condition for low rpm filter for duty cycle from || to &&
+ * -- introduced max deceleration and set it to 20ms to go from 100 to 0
+ * -- added configurable servo throttle ranges
  *
  *1.63
- *-- increase time for zero cross error detection below 250us commutation interval
- *-- increase max change a low rpm x10
- *-- set low limit of throttle ramp to a lower point and increase upper range
- *-- change desync event from full restart to just lower throttle.
-
+ * -- increase time for zero cross error detection below 250us commutation interval
+ * -- increase max change a low rpm x10
+ * -- set low limit of throttle ramp to a lower point and increase upper range
+ * -- change desync event from full restart to just lower throttle.
+ *
  *1.64
- * --added startup check for continuous high signal, reboot to enter bootloader.
- *-- added brake on stop from eeprom
- *-- added stall protection from eeprom
- *-- added motor pole divider for sinusoidal and low rpm power protection
- *-- fixed dshot commands, added confirmation beeps and removed blocking behavior
- *--
+ * -- added startup check for continuous high signal, reboot to enter bootloader.
+ * -- added brake on stop from eeprom
+ * -- added stall protection from eeprom
+ * -- added motor pole divider for sinusoidal and low rpm power protection
+ * -- fixed dshot commands, added confirmation beeps and removed blocking behavior
+ *
  *1.65
- *-- Added 32 millisecond telemetry output
- *-- added low voltage cutoff , divider value and cutoff voltage needs to be added to eeprom
- *-- added beep to indicate cell count if low voltage active
- *-- added current reading on pa3 , conversion factor needs to be added to eeprom
- *-- fixed servo input capture to only read positive pulse to handle higher refresh rates.
- *-- disabled oneshot 125.
- *-- extended servo range to match full output range of receivers
- *-- added RC CAR style reverse, proportional brake on first reverse , double tap to change direction
- *-- added brushed motor control mode
- *-- added settings to EEPROM version 1
- *-- add gimbal control option.
- *--
+ * -- Added 32 millisecond telemetry output
+ * -- added low voltage cutoff , divider value and cutoff voltage needs to be added to eeprom
+ * -- added beep to indicate cell count if low voltage active
+ * -- added current reading on pa3 , conversion factor needs to be added to eeprom
+ * -- fixed servo input capture to only read positive pulse to handle higher refresh rates.
+ * -- disabled oneshot 125.
+ * -- extended servo range to match full output range of receivers
+ * -- added RC CAR style reverse, proportional brake on first reverse , double tap to change direction
+ * -- added brushed motor control mode
+ * -- added settings to EEPROM version 1
+ * -- add gimbal control option.
+ *
  *1.66
- *-- move idwg init to after input tune
- *-- remove reset after save command -- dshot
- *-- added wraith32 target
- *-- added average pulse check for signal detection
- *--
+ * -- move idwg init to after input tune
+ * -- remove reset after save command -- dshot
+ * -- added wraith32 target
+ * -- added average pulse check for signal detection
+ *
  *1.67
- *-- Rework file structure for multiple MCU support
- *-- Add g071 mcu
- *--
+ * -- Rework file structure for multiple MCU support
+ * -- Add g071 mcu
+ *
  *1.68
- *--increased allowed average pulse length to avoid double startup
+ * -- increased allowed average pulse length to avoid double startup
+ *
  *1.69
- *--removed line re-enabling comparator after disabling.
+ * -- removed line re-enabling comparator after disabling.
+ *
  *1.70 fix dshot for Kiss FC
  *1.71 fix dshot for Ardupilot / Px4 FC
  *1.72 Fix telemetry output and add 1 second arming.
  *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
- *1.74 Add Sine Mode range and drake brake strength adjustment
+ *1.74 Add Sine Mode range and drag brake strength adjustment
  */
 #include <stdint.h>
 #include "main.h"
