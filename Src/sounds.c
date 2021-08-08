@@ -257,3 +257,72 @@ void playBeaconTune3(){
 	signaltimeout = 0;
 	__enable_irq();
 }
+
+void playDixie() {
+	__disable_irq();
+	setCaptureCompare();
+	comStep(3);
+
+// E
+	TIM1->PSC = 61;
+	delayMillis(145);
+	pause(50);
+
+// Db
+	TIM1->PSC = 72;
+	delayMillis(100);
+	pause(50);
+
+// A
+	TIM1->PSC = 90;
+	delayMillis(180);
+	pause(75);
+
+// A
+	TIM1->PSC = 90;
+	delayMillis(170);
+	pause(35);
+
+// A
+	TIM1->PSC = 90;
+	delayMillis(145);
+	pause(50);
+
+// B
+	TIM1->PSC = 81;
+	delayMillis(145);
+	pause(45);
+
+// Db
+	TIM1->PSC = 72;
+	delayMillis(130);
+	pause(15);
+
+// D
+	TIM1->PSC = 68;
+	delayMillis(170);
+	pause(25);
+
+// E
+	TIM1->PSC = 61;
+	delayMillis(240);
+	pause(55);
+
+// E
+	TIM1->PSC = 61;
+	delayMillis(240);
+	pause(55);
+
+// E
+	TIM1->PSC = 61;
+	delayMillis(240);
+	pause(25);
+
+// Db
+	TIM1->PSC = 72;
+	delayMillis(250);
+
+	allOff();                // turn all channels low again
+	TIM1->PSC = 0;           // set prescaler back to 0.
+	__enable_irq();
+	}
