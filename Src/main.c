@@ -1249,7 +1249,7 @@ int main(void)
 		playBrushedStartupTune();
 	}else{
 		playDixie();
-//		playStartupTune();
+		//		playStartupTune();
 	}
 	zero_input_count = 0;
 	MX_IWDG_Init();
@@ -1502,17 +1502,17 @@ int main(void)
 				bemf_timout_happened = 0;
 			}
 
-//			if(crawler_mode){
-//				if (adjusted_input < 400){
-//					bemf_timout_happened = 0;
-//				}
-//			}else{
-				if (adjusted_input < 150){              // startup duty cycle should be low enough to not burn motor
-					bemf_timeout = 100;
-				}else{
-					bemf_timeout = 10;
-				}
-//			}
+			//			if(crawler_mode){
+			//				if (adjusted_input < 400){
+			//					bemf_timout_happened = 0;
+			//				}
+			//			}else{
+			if (adjusted_input < 150){              // startup duty cycle should be low enough to not burn motor
+				bemf_timeout = 100;
+			}else{
+				bemf_timeout = 10;
+			}
+			//			}
 			if(bemf_timout_happened > bemf_timeout /* * ( 1 + (crawler_mode*100))*/ && stuck_rotor_protection){
 				allOff();
 				maskPhaseInterrupts();
@@ -1596,13 +1596,13 @@ int main(void)
 					old_routine = 1;
 					running = 0;
 					zero_crosses = 0;
-//					if(crawler_mode&&stall_protection){
-//						min_startup_duty = 110;
-//						minimum_duty_cycle = minimum_duty_cycle + 10;
-//						if(minimum_duty_cycle > 80){
-//							minimum_duty_cycle = 80;
-//						}
-//					}
+					//					if(crawler_mode&&stall_protection){
+					//						min_startup_duty = 110;
+					//						minimum_duty_cycle = minimum_duty_cycle + 10;
+					//						if(minimum_duty_cycle > 80){
+					//							minimum_duty_cycle = 80;
+					//						}
+					//					}
 				}
 			}else{            // stepper sine = 1
 
