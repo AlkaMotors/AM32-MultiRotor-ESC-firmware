@@ -1,6 +1,6 @@
 #ifndef USE_MAKE
 
-#define FD6288
+//#define FD6288
 //#define IFLIGHT
 //#define MP6531
 //#define TMOTOR55     // like iflight but with leds
@@ -8,7 +8,7 @@
 //#define HGLRC
 //#define SISKIN
 //#define MAMBA_F50PRO
-//#define WRAITH32
+#define WRAITH32
 //#define AIKON20X20
 //#define AIKONSINGLE
 
