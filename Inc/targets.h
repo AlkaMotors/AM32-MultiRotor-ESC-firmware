@@ -213,7 +213,7 @@
 
 #ifndef  	MILLIVOLT_PER_AMP
 #define     MILLIVOLT_PER_AMP           20
-#endif 
+#endif
 
 #ifndef 	CURRENT_OFFSET
 #define     CURRENT_OFFSET              0
@@ -581,7 +581,7 @@
 
 #ifdef MCU_F051
 #define CPU_FREQUENCY_MHZ   48
-#define EEPROM_START_ADD  (uint32_t)0x08007C00
+#define EEPROM_START_ADDRESS   ((void*)0x08007C00)
 #define INTERVAL_TIMER     TIM2
 #define TEN_KHZ_TIMER      TIM6
 #define UTILITY_TIMER      TIM17
@@ -597,9 +597,9 @@
 #ifdef MCU_G071
 #define CPU_FREQUENCY_MHZ   64
 #ifdef  SIXTY_FOUR_KB_MEMORY
-#define EEPROM_START_ADD  (uint32_t)0x0800F800
+#define EEPROM_START_ADDRESS ((void*)0x0801F800)
 #else
-#define EEPROM_START_ADD  (uint32_t)0x0801F800
+#define EEPROM_START_ADDRESS ((void*)0x0801F800
 #endif
 #define INTERVAL_TIMER     TIM2
 #define TEN_KHZ_TIMER      TIM6
@@ -612,15 +612,3 @@
 //#define USE_SERIAL_TELEMETRY // moved to individual ESCs
 #define USE_ADC
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

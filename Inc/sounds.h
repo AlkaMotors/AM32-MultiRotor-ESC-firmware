@@ -8,7 +8,7 @@
 #ifndef SOUNDS_H_
 #define SOUNDS_H_
 
-#include "main.h"
+#include "mcu_main.h"
 
 void playStartupTune(void);
 void playInputTune(void);
@@ -22,13 +22,4 @@ void playChangedTone(void);
 void saveEEpromSettings(void);
 void setVolume(uint8_t volume);
 
-extern void delayMillis();
-
-
-
-
 #endif /* SOUNDS_H_ */
-
-
-
-

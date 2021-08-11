@@ -8,6 +8,7 @@
 #include "targets.h"
 #include "IO.h"
 #include "dshot.h"
+#include "../../../Src/main.h"
 #include "serial_telemetry.h"
 #include "functions.h"
 
@@ -212,27 +213,3 @@ void detectInput(){
 	}
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

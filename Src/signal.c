@@ -7,7 +7,8 @@
 
 #include "targets.h"
 #include "signal.h"
-#include  "IO.h"
+#include "IO.h"
+#include "main.h"
 #include "dshot.h"
 #include "serial_telemetry.h"
 #include "functions.h"
@@ -35,7 +36,7 @@ void computeServoInput(){
 
 		if(((dma_buffer[1] - dma_buffer[0]) >850 ) && ((dma_buffer[1] - dma_buffer[0]) < 2175)){
 
-			if(bi_direction){
+			if(settings.hardware.bidir){
 				if(dma_buffer[1] - dma_buffer[0] <= servo_neutral){
 				servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_neutral, 0, 1000);
 				}else{
@@ -44,7 +45,7 @@ void computeServoInput(){
 			}else{
 			servorawinput = map((dma_buffer[1] - dma_buffer[0]), servo_low_threshold, servo_high_threshold, 0, 2000);
 			}
-			signaltimeout = 0;
+			input_signal_missing = 0;
 
 		}else{
 			zero_input_count = 0;      // reset if out of range

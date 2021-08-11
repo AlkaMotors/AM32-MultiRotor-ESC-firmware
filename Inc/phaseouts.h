@@ -8,7 +8,7 @@
 #ifndef INC_PHASEOUTS_H_
 #define INC_PHASEOUTS_H_
 
-#include "main.h"
+#include "mcu_main.h"
 
 void allOff();
 void comStep (int newStep);

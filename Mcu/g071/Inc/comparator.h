@@ -12,11 +12,8 @@
 
 #endif /* COMPARATOR_H_ */
 
-#include "main.h"
+#include "mcu_main.h"
 
 void maskPhaseInterrupts();
 void changeCompInput();
 void enableCompInterrupts();
-
-extern char rising;
-extern char step;

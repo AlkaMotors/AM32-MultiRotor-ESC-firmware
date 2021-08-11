@@ -7,6 +7,7 @@
 
 #include "functions.h"
 #include "dshot.h"
+#include "main.h"
 #include "targets.h"
 
 int dpulse[16] = {0} ;
@@ -31,13 +32,7 @@ const char gcr_encode_table[16] = { 0b11001,
 
 int shift_amount = 0;
 uint32_t gcrnumber;
-extern int e_com_time;
-extern int zero_crosses;
-extern char send_telemetry;
-extern int smoothedinput;
-extern uint8_t max_duty_cycle_change;
 int dshot_full_number;
-extern char play_tone_flag;
 uint8_t command_count = 0;
 uint8_t last_command = 0;
 uint8_t high_pin_count = 0;
@@ -89,7 +84,7 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 						| dpulse[8]<<2 | dpulse[9]<<1 | dpulse[10]);
 
 				if(calcCRC == checkCRC){
-					signaltimeout = 0;
+					input_signal_missing = 0;
 					dshot_goodcounts++;
 					if(dpulse[11]==1){
                     send_telemetry=1;
@@ -136,35 +131,35 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 						playBeaconTune3();
 					break;
 					case 7:
-						dir_reversed = 0;
-						forward = 1 - dir_reversed;
+						settings.common.reversed = 0;
+						forward = 1 - settings.common.reversed;
 						play_tone_flag = 1;
 				    break;
 				    case 8:
-				    	dir_reversed = 1;
-				    	forward = 1 - dir_reversed;
+				    	settings.common.reversed = 1;
+				    	forward = 1 - settings.common.reversed;
 				    	play_tone_flag = 2;
 				    break;
 					case 9:
-						bi_direction = 0;
+						settings.hardware.bidir = 0;
    					    armed = 0;
 						zero_input_count = 0;
 				    break;
 					case 10:
-						bi_direction = 1;
+						settings.hardware.bidir = 1;
 						zero_input_count = 0;
 						armed = 0;
 				    break;
 					case 12:
-					saveEEpromSettings();
+					saveParameters();
 					//delayMillis(100);
 				//	NVIC_SystemReset();
 				    break;
 					case 20:
-						forward = 1 - dir_reversed;
+						forward = 1 - settings.common.reversed;
 					break;
 					case 21:
-						forward = dir_reversed;
+						forward = settings.common.reversed;
 					break;
 
 					}

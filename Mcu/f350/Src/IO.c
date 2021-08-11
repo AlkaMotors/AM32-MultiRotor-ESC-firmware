@@ -5,6 +5,7 @@
  *      Author: Alka
  */
 
+#include "../../../Src/main.h"
 #include "targets.h"
 #include "IO.h"
 #include "dshot.h"
@@ -224,7 +225,7 @@ void detectInput(){
 
 		//if(((dma_buffer[j] - lastnumber) >1000 ) && ((dma_buffer[j] - lastnumber) < 2010)){ // blank space
 
-			//if(bi_direction){
+			//if(settings.hardware.bidir){
 				//if(dma_buffer[j] - lastnumber <= servo_neutral){
 				//servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_neutral, 0, 1000);
 				//}else{
@@ -271,7 +272,7 @@ void detectInput(){
 
 	//if (inputSet == 1){
 	//if(!armed){
-		//signaltimeout = 0;
+		//input_signal_missing = 0;
 		//if (input < 0){
 			  						//input = 0;
 			  					//}
@@ -312,30 +313,10 @@ void detectInput(){
 		//if  (servoPwm == 1){
 			//computeServoInput();
 			//IC_TIMER_REGISTER->CNT = 0;
-			//signaltimeout = 0;
+			//input_signal_missing = 0;
 			//receiveDshotDma();
 		//}
 
 	//}
 	//}
 //}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -4,6 +4,7 @@
  *  Created on: May 20, 2020
  *      Author: Alka
  */
+#include "../../../Src/main.h"
 #include "ADC.h"
 
 #ifdef USE_ADC_INPUT
@@ -11,12 +12,6 @@ uint16_t ADCDataDMA[4];
 #else
 uint16_t ADCDataDMA[3];
 #endif
-
-
-extern uint16_t ADC_raw_temp;
-extern uint16_t ADC_raw_volts;
-extern uint16_t ADC_raw_current;
-extern uint16_t ADC_raw_input;
 
 void ADC_DMA_Callback(){  // read dma buffer and set extern variables
 

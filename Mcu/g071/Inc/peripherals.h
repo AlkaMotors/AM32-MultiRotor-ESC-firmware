@@ -12,7 +12,7 @@
 
 #endif /* PERIPHERALS_H_ */
 
-#include "main.h"
+#include "mcu_main.h"
 
 void initAfterJump(void);
 void initCorePeripherals(void);
@@ -29,4 +29,3 @@ void MX_TIM17_Init(void);
 void MX_TIM16_Init(void);
 void MX_IWDG_Init(void);
 void MX_TIM6_Init(void);
-

@@ -5,6 +5,7 @@
  *      Author: Alka
  */
 
+#include "../../../Src/main.h"
 #include "targets.h"
 #include "IO.h"
 #include "dshot.h"
@@ -217,7 +218,7 @@ void detectInput(){
 
 	//if (inputSet == 1){
 	//if(!armed){
-		//signaltimeout = 0;
+		//input_signal_missing = 0;
 		//if (input < 0){
 			  						//input = 0;
 			  					//}
@@ -260,11 +261,10 @@ void detectInput(){
 			//IC_TIMER_REGISTER->CNT = 0;
 			//LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
      		//receiveDshotDma();
-     		//signaltimeout = 0;
+     		//input_signal_missing = 0;
      	    //LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
 		//}
 
 	//}
 	//}
 //}
-

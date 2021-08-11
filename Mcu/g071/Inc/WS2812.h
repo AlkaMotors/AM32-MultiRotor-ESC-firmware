@@ -8,7 +8,7 @@
 #ifndef INC_WS2812_H_
 #define INC_WS2812_H_
 
-#include "main.h"
+#include "mcu_main.h"
 
 
 

@@ -6,7 +6,7 @@
  */
 
 
-#include "main.h"
+#include "mcu_main.h"
 
 #ifndef SERIAL_TELEMETRY_H_
 #define SERIAL_TELEMETRY_H_

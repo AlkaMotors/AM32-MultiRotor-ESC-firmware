@@ -12,7 +12,7 @@
 
 #endif /* PERIPHERALS_H_ */
 
-#include "main.h"
+#include "mcu_main.h"
 
 
 void SystemClock_Config(void);
@@ -31,4 +31,3 @@ void initAfterJump(void);
 //static void MX_USART1_UART_Init(void);
 void initCorePeripherals(void);
 void UN_TIM_Init(void);
-

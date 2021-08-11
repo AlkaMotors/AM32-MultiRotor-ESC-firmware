@@ -19,7 +19,8 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
+#include "mcu_main.h"
+#include "../../../Src/main.h"
 #include "stm32f0xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -34,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,13 +69,10 @@ extern void tenKhzRoutine();
 extern void sendDshotDma();
 extern void receiveDshotDma();
 
-extern char send_telemetry;
-extern char telemetry_done;
-extern char servoPwm;
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M0 Processor Interruption and Exception Handlers          */ 
+/*           Cortex-M0 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
@@ -138,7 +136,7 @@ void SysTick_Handler(void)
   /* USER CODE BEGIN SysTick_IRQn 0 */
 
   /* USER CODE END SysTick_IRQn 0 */
-  
+
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -175,7 +173,7 @@ void DMA1_Channel2_3_IRQHandler(void)
 
 
   /* USER CODE END DMA1_Channel2_3_IRQn 0 */
-  
+
   /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
 
   /* USER CODE END DMA1_Channel2_3_IRQn 1 */
@@ -229,7 +227,7 @@ void DMA1_Channel4_5_IRQHandler(void)
 
 
   /* USER CODE END DMA1_Channel4_5_IRQn 0 */
-  
+
   /* USER CODE BEGIN DMA1_Channel4_5_IRQn 1 */
 #ifdef USE_TIMER_3_CHANNEL_1
 		if(LL_DMA_IsActiveFlag_HT4(DMA1)){
@@ -296,7 +294,7 @@ void TIM6_DAC_IRQHandler(void)
 	  }
 
   /* USER CODE END TIM6_DAC_IRQn 0 */
-  
+
   /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
 
   /* USER CODE END TIM6_DAC_IRQn 1 */

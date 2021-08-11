@@ -5,19 +5,13 @@
  *      Author: Alka
  */
 #include "ADC.h"
-
+#include "../../../Src/main.h"
 
 #ifdef USE_ADC_INPUT
 uint16_t ADCDataDMA[4];
 #else
 uint16_t ADCDataDMA[3];
 #endif
-
-
-extern uint16_t ADC_raw_temp;
-extern uint16_t ADC_raw_volts;
-extern uint16_t ADC_raw_current;
-extern uint16_t ADC_raw_input;
 
 #define ADC_DELAY_CALIB_ENABLE_CPU_CYCLES  (LL_ADC_DELAY_CALIB_ENABLE_ADC_CYCLES * 64)
 
@@ -216,4 +210,3 @@ void ADC_Init(void)
   /* USER CODE END ADC1_Init 2 */
 
 }
-

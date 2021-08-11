@@ -5,7 +5,7 @@
  *      Author: Alka
  */
 
-#include "main.h"
+#include "mcu_main.h"
 #include "targets.h"
 
 

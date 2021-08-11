@@ -13,11 +13,9 @@
 #define COMP_PA4 0b1000001
 #define COMP_PA5 0b1010001
 
-#include "main.h"
+#include "mcu_main.h"
+#include "../../../Src/main.h"
 
 void maskPhaseInterrupts();
 void changeCompInput();
 void enableCompInterrupts();
-
-extern char rising;
-extern char step;

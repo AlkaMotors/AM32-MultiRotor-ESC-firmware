@@ -12,7 +12,7 @@
 
 #endif /* FUNCTIONS_H_ */
 
-#include "main.h"
+#include "mcu_main.h"
 
 
 int getAbsDif(int number1, int number2);
