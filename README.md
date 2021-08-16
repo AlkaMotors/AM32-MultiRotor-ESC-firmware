@@ -7,8 +7,6 @@ Firmware for STM32F051 based speed controllers for use with multirotors
 The AM32 firmware is designed for STM32 ARM processors to control a brushless motor (BLDC).
 The firmware is intended to be safe and fast with smooth fast startups and linear throttle. It is meant for use with multirotor aircraft and a flight controller. The firmware can also be built with support for crawlers.
 
-A note for manufacturers : There have been an increasing number of request for support for commercial ESC's . New targets can be added to the targets.h file. Sending ESC's will NOT get your target supported. I have no intention of trying to reverse engineer a schematic. Full schematics and a cash donation are required to get proper commerical support. Without this do not even ask.. You are more than welcome to add the target to the firmware on your own.  
-
 ## Features
 
 AM32 has the following features:
@@ -26,7 +24,7 @@ The latest release of the firmware can be found [here](https://github.com/AlkaMo
 
 To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-[WINDOWS](https://drive.google.com/file/d/1H2Ks_TOZGshxZ2eOfaa94-t4zi-acqGg/view?usp=sharing),
+[WINDOWS](https://drive.google.com/file/d/1XACXV4w1ldtp71KJtZOjKVYttHv50o5C/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/164mF-7khqH822kLzF8sP5VAckHecoKGG/view?usp=sharing)
 
 Alternately you can use the [Online-ESC Configurator](https://esc-configurator.com/) to flash or change settings with any web browser that supports web serial.
