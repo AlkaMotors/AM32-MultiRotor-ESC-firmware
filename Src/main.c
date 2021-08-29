@@ -107,6 +107,11 @@
  *1.72 Fix telemetry output and add 1 second arming.
  *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
  *1.74 Add Sine Mode range and drake brake strength adjustment
+ *1.75 Disable brake on stop for PWM_ENABLE_BRIDGE 
+	   Removed automatic brake on stop on neutral for RC car proportional brake.
+	   Adjust sine speed and stall protection speed to more closely match
+	   makefile fixes from Cruwaller 
+	   Removed gd32 build, until firmware is functional
  */
 #include <stdint.h>
 #include "main.h"
@@ -128,7 +133,7 @@
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 74
+#define VERSION_MINOR 75
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
@@ -198,7 +203,7 @@ char maximum_throttle_change_ramp = 1;
   
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
-uint16_t velocity_count_threshold = 50;
+uint16_t velocity_count_threshold = 100;
 
 char low_rpm_throttle_limit = 1;
 
@@ -484,6 +489,7 @@ void loadEEpromSettings(){
 	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
 		   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD ,TIM1_AUTORELOAD/2);
 		   TIM1->ARR = TIMER1_MAX_ARR;
+		   
 	    }else{
 	    	tim1_arr = TIM1_AUTORELOAD;
 	    	TIM1->ARR = tim1_arr;
@@ -863,6 +869,8 @@ if(!armed){
 				zero_crosses = 0;
 				  if(brake_on_stop){
 					  fullBrake();
+				  }else{
+					  allOff();
 				  }
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
@@ -881,9 +889,13 @@ if(!armed){
 		  bad_count = 0;
 		  if(brake_on_stop){
 			if(!use_sin_start){
-			duty_cycle = 1980 + drag_brake_strength*2;
+#ifndef PWM_ENABLE_BRIDGE				
+			duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 			proportionalBrake();
 	        prop_brake_active = 1;
+#else
+	//todo add proportional braking for pwm/enable style bridge.
+#endif
 			}
 		  }else{
          allOff();
@@ -914,17 +926,17 @@ if (running){
 		 min_startup_duty = eepromBuffer[25];
 		 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
-					 if(commutation_interval > 10000){
+					 if(commutation_interval > 9000){
 						    	// duty_cycle = duty_cycle + map(commutation_interval, 10000, 12000, 1, 100);
-						    	 minimum_duty_cycle++;
+						    	 minimum_duty_cycle ++;
 						     }else{
 						    	 minimum_duty_cycle--;
 						     }
 					 if(minimum_duty_cycle > 200){
 						 minimum_duty_cycle = 200;
 					 }
-					 if(minimum_duty_cycle < eepromBuffer[25]/4){
-						 minimum_duty_cycle= eepromBuffer[25]/4;
+					 if(minimum_duty_cycle < (DEAD_TIME/2) + (eepromBuffer[25]/2)){        // boost minimum duty cycle by a small amount permanently too
+						 minimum_duty_cycle= (DEAD_TIME/2) + (eepromBuffer[25]/2);
 					 }
 
 				velocity_count = 0;
@@ -1020,7 +1032,7 @@ if(desync_check && zero_crosses > 10){
 	}
 
 		signaltimeout++;
-		if(signaltimeout > 2500) { // quarter second timeout when armed;
+		if(signaltimeout > 2500 * (servoPwm+1)) { // quarter second timeout when armed half second for servo;
 			if(armed){
 				allOff();
 				armed = 0;
@@ -1038,7 +1050,7 @@ if(desync_check && zero_crosses > 10){
 				NVIC_SystemReset();
 			}
 
-		if (signaltimeout > 25000){     // 1.5 second
+		if (signaltimeout > 25000){     // 2.5 second
 			allOff();
 			armed = 0;
 			input = 0;
@@ -1637,7 +1649,7 @@ if(input > 48 && armed){
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 7000/motor_poles, 780/motor_poles);
+             step_delay = map (input, 48, 137, 7000/motor_poles, 810/motor_poles);
 	 		 delayMicros(step_delay);
 
 	 		  }else{
@@ -1668,14 +1680,17 @@ if(input > 48 && armed){
 
 }else{
 	if(brake_on_stop){
-	duty_cycle = 1980 + drag_brake_strength*2;
+	#ifndef PWM_ENABLE_BRIDGE
+	duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 	adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
-	TIM1->ARR = tim1_arr;
 	TIM1->CCR1 = adjusted_duty_cycle;
 	TIM1->CCR2 = adjusted_duty_cycle;
 	TIM1->CCR3 = adjusted_duty_cycle;
 	proportionalBrake();
 	prop_brake_active = 1;
+	#else
+		// todo add braking for PWM /enable style bridges.
+	#endif 
 	}else{
 	TIM1->CCR1 = 0;
 	TIM1->CCR2 = 0;

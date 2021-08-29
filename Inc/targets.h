@@ -16,6 +16,8 @@
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
 //#define G071_OPEN_DRAIN_B
+//define  G071_64K
+//define  DT120_G071
 #endif
 
 //GLOBAL
@@ -131,11 +133,40 @@
 //#define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef FLYCOLOR
+#define FIRMWARE_NAME           "Flycolor Gen"
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_A
+//#define USE_SERIAL_TELEMETRY
+#define PA6_VOLTAGE
+#endif
+
+
 /*******************************   G071 Targets *********************************/
 
-#ifdef  G072ESC
+#ifdef G071_64K
+#define FIRMWARE_NAME  			    "G071 64kESC "
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       15
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_A
+#define USE_SERIAL_TELEMETRY
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
+
+#ifdef  G071ESC
 #define FIRMWARE_NAME  			    "G071 DevESC "
 #define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       15
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_A
+#define USE_SERIAL_TELEMETRY
+#endif
+
+#ifdef  DT120_G071
+#define FIRMWARE_NAME  			    "G071 120 DT "
+#define DEAD_TIME               120
 #define MILLIVOLT_PER_AMP       15
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_A
@@ -565,7 +596,11 @@
 
 #ifdef MCU_G071
 #define CPU_FREQUENCY_MHZ   64
+#ifdef  SIXTY_FOUR_KB_MEMORY
+#define EEPROM_START_ADD  (uint32_t)0x0800F800
+#else
 #define EEPROM_START_ADD  (uint32_t)0x0801F800
+#endif
 #define INTERVAL_TIMER     TIM2
 #define TEN_KHZ_TIMER      TIM6
 #define UTILITY_TIMER      TIM17
