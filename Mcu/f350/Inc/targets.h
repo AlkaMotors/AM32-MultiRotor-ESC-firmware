@@ -20,6 +20,9 @@
 #define SINE_DIVIDER 3
 
 
+#define     MILLIVOLT_PER_AMP           20
+#define     CURRENT_OFFSET              0
+
 
 
 #ifdef GD32TEST
