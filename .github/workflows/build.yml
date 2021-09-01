@@ -37,7 +37,7 @@ jobs:
       - name: Make artifact name
         id: make_artifactname
         run: |
-          ARTIFACT_NAME="AM32-F051-${{ github.run_number }}"
+          ARTIFACT_NAME="AM32-BUILD-${{ github.run_number }}"
           echo "${ARTIFACT_NAME}"
           echo "ARTIFACT_NAME=${ARTIFACT_NAME}" >> $GITHUB_ENV
 
