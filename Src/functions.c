@@ -6,6 +6,7 @@
  */
 
 #include "functions.h"
+#include "targets.h"
 
 long map(long x, long in_min, long in_max, long out_min, long out_max)
 {
@@ -30,19 +31,19 @@ int getAbsDif(int number1, int number2){
 
 
 void delayMicros(uint32_t micros){
-	TIM17->CNT = 0;
-	while (TIM17->CNT < micros){
+	UTILITY_TIMER->CNT = 0;
+	while (UTILITY_TIMER->CNT < micros){
 
 	}
 }
 
 void delayMillis(uint32_t millis){
-	TIM17->CNT = 0;
-	TIM17->PSC = 47999;
-	LL_TIM_GenerateEvent_UPDATE(TIM17);
-	while (TIM17->CNT < millis){
+	UTILITY_TIMER->CNT = 0;
+	UTILITY_TIMER->PSC = CPU_FREQUENCY_MHZ*1000;
+	LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
+	while (UTILITY_TIMER->CNT < millis){
 
 	}
-	TIM17->PSC = 47;
-	LL_TIM_GenerateEvent_UPDATE(TIM17);
+	UTILITY_TIMER->PSC = CPU_FREQUENCY_MHZ;      // back to micros
+	LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
 }
