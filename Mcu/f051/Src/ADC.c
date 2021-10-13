@@ -29,8 +29,13 @@ void ADC_DMA_Callback(){  // read dma buffer and set extern variables
 
 #else
 ADC_raw_temp =    ADCDataDMA[2];
+#ifdef PA6_VOLTAGE
+ADC_raw_volts  = ADCDataDMA[1];
+ADC_raw_current =ADCDataDMA[0];
+#else
 ADC_raw_volts  = ADCDataDMA[0];
 ADC_raw_current =ADCDataDMA[1];
+#endif
 #endif
 }
 

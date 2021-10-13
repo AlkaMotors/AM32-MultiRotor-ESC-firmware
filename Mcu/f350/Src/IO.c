@@ -13,7 +13,7 @@
 
 char ic_timer_prescaler = 1;
 char output_timer_prescaler;
-//int servorawinput;
+int servorawinput;
 int buffersize = 32;
 int smallestnumber = 20000;
 uint32_t dma_buffer[64];

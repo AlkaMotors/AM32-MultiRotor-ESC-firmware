@@ -112,6 +112,9 @@
 	   Adjust sine speed and stall protection speed to more closely match
 	   makefile fixes from Cruwaller 
 	   Removed gd32 build, until firmware is functional
+ *1.76 Adjust g071 PWM frequency, and startup power to be same frequency as f051. 
+       Reduce number of polling back emf checks for g071
+	   
  */
 #include <stdint.h>
 #include "main.h"
@@ -129,11 +132,11 @@
 #include "peripherals.h"
 
 //===========================================================================
-//============================= EEPROM Defaults =============================
+//=============================  Defaults =============================
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 75
+#define VERSION_MINOR 76
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
@@ -203,7 +206,7 @@ char maximum_throttle_change_ramp = 1;
   
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
-uint16_t velocity_count_threshold = 100;
+uint16_t velocity_count_threshold = 75;
 
 char low_rpm_throttle_limit = 1;
 
@@ -232,7 +235,7 @@ int min_startup_duty = 120;
 int sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
 
-char startup_boost = 35;
+char startup_boost = 50;
 char reversing_dead_band = 1;
 
 int checkcount = 0;
@@ -250,6 +253,7 @@ typedef enum
 }GPIO_PinState;
 
 uint16_t minimum_duty_cycle = DEAD_TIME;
+uint16_t stall_protect_minimum_duty = DEAD_TIME;
 char desync_check = 0;
 char low_kv_filter_level = 20;
 
@@ -410,8 +414,13 @@ int zero_crosses;
 int zcfound = 0;
 
 int bemfcounter;
-int min_bemf_counts_up = 7;
-int min_bemf_counts_down = 7;
+#ifdef MCU_G071
+int min_bemf_counts_up = 4;
+int min_bemf_counts_down = 4;
+#else
+int min_bemf_counts_up = 6;
+int min_bemf_counts_down = 6;	
+#endif
 int adc_timer = 600;
 int lastzctime;
 uint16_t thiszctime;
@@ -496,12 +505,11 @@ void loadEEpromSettings(){
 	    }
 
 	   if(eepromBuffer[25] < 151 && eepromBuffer[25] > 49){
-		   min_startup_duty = eepromBuffer[25]/ 2 + 10 + startup_boost;
-		   minimum_duty_cycle = eepromBuffer[25]/ 2 + DEAD_TIME/3;
-//		   if (use_sin_start){
-//			   min_startup_duty = eepromBuffer[25];
-//			   minimum_duty_cycle = eepromBuffer[25]/ 4;
-//		   }
+
+		   min_startup_duty = (eepromBuffer[25] + DEAD_TIME) * TIM1_AUTORELOAD / 2000;
+		   minimum_duty_cycle = (eepromBuffer[25]/ 2 + DEAD_TIME/3) * TIM1_AUTORELOAD / 2000 ;
+		   stall_protect_minimum_duty = minimum_duty_cycle + 20;
+
 	    }else{
 	    	min_startup_duty = 150;
 	    	minimum_duty_cycle = (min_startup_duty / 2) + 10;
@@ -582,7 +590,7 @@ void loadEEpromSettings(){
 
 }
 
-void saveEEpromSettings(){
+void saveEEpromSettings(){    
 
 
    if(dir_reversed == 1){
@@ -917,26 +925,26 @@ if(!prop_brake_active){
 	   duty_cycle = min_startup_duty;
 
 	   }
-	   if (duty_cycle > 200<<stall_protection){
-		   duty_cycle = 200<<stall_protection;
+	   if (duty_cycle > 300){
+		   duty_cycle = 300;
 	   }
  }
 if (running){
-	 if(stall_protection){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
-		 min_startup_duty = eepromBuffer[25];
+	 if(stall_protection ){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
+		// min_startup_duty = stall_protect_minimum_duty;
 		 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
 					 if(commutation_interval > 9000){
 						    	// duty_cycle = duty_cycle + map(commutation_interval, 10000, 12000, 1, 100);
 						    	 minimum_duty_cycle ++;
 						     }else{
-						    	 minimum_duty_cycle--;
+						    	 minimum_duty_cycle --;
 						     }
 					 if(minimum_duty_cycle > 200){
 						 minimum_duty_cycle = 200;
 					 }
-					 if(minimum_duty_cycle < (DEAD_TIME/2) + (eepromBuffer[25]/2)){        // boost minimum duty cycle by a small amount permanently too
-						 minimum_duty_cycle= (DEAD_TIME/2) + (eepromBuffer[25]/2);
+					 if(minimum_duty_cycle < stall_protect_minimum_duty){        
+						 minimum_duty_cycle = stall_protect_minimum_duty;
 					 }
 
 				velocity_count = 0;
@@ -975,7 +983,6 @@ if (running){
 		if (armed && running && (input > 47)){
 		if(VARIABLE_PWM){
 	    tim1_arr = map(commutation_interval, 96, 200, TIMER1_MAX_ARR/2, TIMER1_MAX_ARR);
-		advance_level = eepromBuffer[23];
 		}
 	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 		}else{
@@ -1246,11 +1253,12 @@ int main(void)
 		use_sin_start = 0;
 		low_rpm_throttle_limit = 1;
 		VARIABLE_PWM = 0;
-		stall_protection = 1;
+		//stall_protection = 1;
 		comp_pwm = 0;
       	stuck_rotor_protection = 0;
-		minimum_duty_cycle = 100;
-		min_startup_duty = 180;
+		minimum_duty_cycle = minimum_duty_cycle + 50;
+		stall_protect_minimum_duty = stall_protect_minimum_duty + 50;
+		min_startup_duty = min_startup_duty + 50;
 
 	}
 
@@ -1566,7 +1574,7 @@ if (zero_crosses < 100 || commutation_interval > 500) {
 
 	} else {
 
-		filter_level = map(average_interval, 100 , 500, 3 , 8);
+		filter_level = map(average_interval, 100 , 500, 4 , 11);
 
 
 	}
@@ -1607,13 +1615,13 @@ if (old_routine && running){
 	 		  old_routine = 1;
 	 		   running = 0;
 	 		   zero_crosses = 0;
-	 		   if(crawler_mode&&stall_protection){
-	 			   min_startup_duty = 110;
-	 				 minimum_duty_cycle = minimum_duty_cycle + 10;
-	 				 if(minimum_duty_cycle > 80){
-	 					 minimum_duty_cycle = 80;
-	 				 }
-	 		   }
+	 		   // if(stall_protection){
+	 			   // min_startup_duty = 130;
+	 				 // minimum_duty_cycle = minimum_duty_cycle + 10;
+	 				 // if(minimum_duty_cycle > 80){
+	 					 // minimum_duty_cycle = 80;
+	 				 // }
+	 		   // }
 	 	  }
 	 	  }else{            // stepper sine
 
@@ -1672,9 +1680,13 @@ if(input > 48 && armed){
 				  zero_crosses = 0;
 				  prop_brake_active = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
-		 		 comStep(step);// rising bemf on a same as position 0.
-	 			LL_TIM_GenerateEvent_UPDATE(TIM1);
-	 			  zcfoundroutine();
+		 		// comStep(step);// rising bemf on a same as position 0.
+				if(stall_protection){
+				minimum_duty_cycle = stall_protect_minimum_duty;
+				}
+	 			commutate();
+				LL_TIM_GenerateEvent_UPDATE(TIM1);
+	 		//	  zcfoundroutine();
 	 			  }
 	 		  }
 
