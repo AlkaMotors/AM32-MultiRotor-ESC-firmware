@@ -1,5 +1,5 @@
 # AM32-MultiRotor-ESC-firmware
-Firmware for STM32F051 based speed controllers for use with mutirotors
+Firmware for STM32F051 based speed controllers for use with multirotors
 <p align="left">
   <a href="/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-brightgreen" alt="GitHub license" /></a>
 </p>
@@ -11,7 +11,7 @@ The firmware is intended to be safe and fast with smooth fast startups and linea
 
 AM32 has the following features:
 
-- Firmware upgradable via betaflight passthrough - only support G4, F4 and F7 FCs, and make sure your betaflight firmware is up to date when you trying to use passthrough
+- Firmware upgradable via betaflight passthrough - only support G4, F4 and F7 FCs, and make sure your betaflight firmware is up to date when you try to use passthrough
 - Servo PWM, Dshot(300, 600) motor protocol support
 - Bi-directional Dshot
 - KISS standard ESC telemetry
@@ -24,23 +24,26 @@ The latest release of the firmware can be found [here](https://github.com/AlkaMo
 
 To configure AM32 and upload firmware you can use the Multi_ESC config tool using Betaflight passthrough. They can be downloaded from here:
 
-[WINDOWS](https://drive.google.com/file/d/1o5XP8kSecdH3bPRClUwI7150Od7UdhkG/view?usp=sharing),
+[WINDOWS](https://drive.google.com/file/d/1XACXV4w1ldtp71KJtZOjKVYttHv50o5C/view?usp=sharing),
 [LINUX](https://drive.google.com/file/d/164mF-7khqH822kLzF8sP5VAckHecoKGG/view?usp=sharing)
 
-Alternately you can use the [BlHeli-Configurator](https://github.com/blheli-configurator/blheli-configurator-nightlies/releases/tag/v20201229.20) to flash or change settings. Currently only nightly builds support AM32.
+Alternately you can use the [Online-ESC Configurator](https://esc-configurator.com/) to flash or change settings with any web browser that supports web serial.
 
 
 
 ## Hardware
-Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/List-of-Supported-Hardware) (DEC 2020)
+Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/List-of-Supported-Hardware) (APR 2021)
 
 
-## Installation & Documentation
+## Installation & Bootloader
 
-To use AM32 firmware on a blank ESC, a bootloader must first be installed using a ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
+To use AM32 firmware on a blank ESC, a bootloader must first be installed using an ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
-Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases/tag/V6).
+Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases).
 
+After the bootloader has been installed the main firmware from can be installed either with the configuration tools and a Betaflight flight controller or a direct connection with a usb serial adapter modified for one wire.
+
+To update an existing AM32 bootloader an update tool can be found [here](https://github.com/AlkaMotors/F051_Bootloader_Updater/releases).
 
 ## Support and Developers Channel
 
