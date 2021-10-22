@@ -28,6 +28,7 @@ void pause(uint16_t ms){
 	TIM1->CCR3 = beep_volume;
 }
 
+
 void setVolume(uint8_t volume){
 	if(volume > 11){
 		volume = 11;

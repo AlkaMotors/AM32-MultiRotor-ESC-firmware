@@ -3,7 +3,7 @@
 //===========================================================================
 //=============================== Changelog =================================
 //===========================================================================
-
+/*
  * 1.54 Changelog;
  * --Added firmware name to targets and firmware version to main
  * --added two more dshot to beacons 1-3 currently working
@@ -67,7 +67,7 @@
  *-- increase max change a low rpm x10
  *-- set low limit of throttle ramp to a lower point and increase upper range
  *-- change desync event from full restart to just lower throttle.
- 
+
  *1.64
  * --added startup check for continuous high signal, reboot to enter bootloader.
  *-- added brake on stop from eeprom
@@ -107,6 +107,14 @@
  *1.72 Fix telemetry output and add 1 second arming.
  *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
  *1.74 Add Sine Mode range and drake brake strength adjustment
+ *1.75 Disable brake on stop for PWM_ENABLE_BRIDGE 
+	   Removed automatic brake on stop on neutral for RC car proportional brake.
+	   Adjust sine speed and stall protection speed to more closely match
+	   makefile fixes from Cruwaller 
+	   Removed gd32 build, until firmware is functional
+ *1.76 Adjust g071 PWM frequency, and startup power to be same frequency as f051. 
+       Reduce number of polling back emf checks for g071
+	   
  */
 #include <stdint.h>
 #include "main.h"
@@ -124,11 +132,11 @@
 #include "peripherals.h"
 
 //===========================================================================
-//============================= EEPROM Defaults =============================
+//=============================  Defaults =============================
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 74
+#define VERSION_MINOR 77
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
@@ -191,17 +199,14 @@ uint16_t desired_angle = 90;
 uint32_t MCU_Id = 0;
 uint32_t REV_Id = 0;
 
-uint16_t loop_time = 0;
-uint16_t last_loop_time = 0;
 uint16_t armed_timeout_count;
 
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
-
-
+  
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
-uint16_t velocity_count_threshold = 50;
+uint16_t velocity_count_threshold = 75;
 
 char low_rpm_throttle_limit = 1;
 
@@ -230,10 +235,9 @@ int min_startup_duty = 120;
 int sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
 
-char startup_boost = 35;
+char startup_boost = 50;
 char reversing_dead_band = 1;
 
-uint16_t oneKhz_timer = 0;
 int checkcount = 0;
 uint16_t low_pin_count = 0;
 
@@ -249,6 +253,7 @@ typedef enum
 }GPIO_PinState;
 
 uint16_t minimum_duty_cycle = DEAD_TIME;
+uint16_t stall_protect_minimum_duty = DEAD_TIME;
 char desync_check = 0;
 char low_kv_filter_level = 20;
 
@@ -323,9 +328,7 @@ int filter_level = 5;
 int running = 0;
 int advance = 0;
 int advancedivisor = 6;
-//int START_ARR=800;
 char rising = 1;
-int count = 0;
 
 ////Space Vector PWM ////////////////
 //const int pwmSin[] ={128, 132, 136, 140, 143, 147, 151, 155, 159, 162, 166, 170, 174, 178, 181, 185, 189, 192, 196, 200, 203, 207, 211, 214, 218, 221, 225, 228, 232, 235, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 248, 249, 250, 250, 251, 252, 252, 253, 253, 253, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 253, 253, 253, 252, 252, 251, 250, 250, 249, 248, 248, 247, 246, 245, 244, 243, 242, 241, 240, 239, 238, 235, 232, 228, 225, 221, 218, 214, 211, 207, 203, 200, 196, 192, 189, 185, 181, 178, 174, 170, 166, 162, 159, 155, 151, 147, 143, 140, 136, 132, 128, 124, 120, 116, 113, 109, 105, 101, 97, 94, 90, 86, 82, 78, 75, 71, 67, 64, 60, 56, 53, 49, 45, 42, 38, 35, 31, 28, 24, 21, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 8, 7, 6, 6, 5, 4, 4, 3, 3, 3, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 6, 7, 8, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 21, 24, 28, 31, 35, 38, 42, 45, 49, 53, 56, 60, 64, 67, 71, 75, 78, 82, 86, 90, 94, 97, 101, 105, 109, 113, 116, 120, 124};
@@ -405,18 +408,19 @@ int input = 0;
 int newinput =0;
 char inputSet = 0;
 char dshot = 0;
-char proshot = 0;
-char multishot = 0;
-char oneshot42 = 0;
-char oneshot125 = 0;
 char servoPwm = 0;
 int zero_crosses;
 
 int zcfound = 0;
 
 int bemfcounter;
-int min_bemf_counts_up = 7;
-int min_bemf_counts_down = 7;
+#ifdef MCU_G071
+int min_bemf_counts_up = 4;
+int min_bemf_counts_down = 4;
+#else
+int min_bemf_counts_up = 6;
+int min_bemf_counts_down = 6;	
+#endif
 int adc_timer = 600;
 int lastzctime;
 uint16_t thiszctime;
@@ -491,21 +495,30 @@ void loadEEpromSettings(){
 	    	advance_level = 2;  // * 7.5 increments
 	    }
 
-	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
-		   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD ,TIM1_AUTORELOAD/2);
+	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 7){
+		   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD,TIM1_AUTORELOAD/2);
+		   }
+		   if(eepromBuffer[24] < 24 && eepromBuffer[24] > 11){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 12, 24, TIM1_AUTORELOAD *2 ,TIM1_AUTORELOAD);
+		   }
+		   if(eepromBuffer[24] < 12 && eepromBuffer[24] > 7){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 7, 16, TIM1_AUTORELOAD *3 ,TIM1_AUTORELOAD/2*3);
+		   }
 		   TIM1->ARR = TIMER1_MAX_ARR;
+		   throttle_max_at_high_rpm = TIMER1_MAX_ARR;
+		   duty_cycle_maximum = TIMER1_MAX_ARR;
 	    }else{
 	    	tim1_arr = TIM1_AUTORELOAD;
 	    	TIM1->ARR = tim1_arr;
 	    }
 
 	   if(eepromBuffer[25] < 151 && eepromBuffer[25] > 49){
-		   min_startup_duty = eepromBuffer[25]/ 2 + 10 + startup_boost;
-		   minimum_duty_cycle = eepromBuffer[25]/ 2 + DEAD_TIME/3;
-//		   if (use_sin_start){
-//			   min_startup_duty = eepromBuffer[25];
-//			   minimum_duty_cycle = eepromBuffer[25]/ 4;
-//		   }
+
+		   min_startup_duty = (eepromBuffer[25] + DEAD_TIME) * TIMER1_MAX_ARR / 2000;
+		   minimum_duty_cycle = (eepromBuffer[25]/ 2 + DEAD_TIME/3) * TIMER1_MAX_ARR / 2000 ;
+		   stall_protect_minimum_duty = minimum_duty_cycle + 20;
+
 	    }else{
 	    	min_startup_duty = 150;
 	    	minimum_duty_cycle = (min_startup_duty / 2) + 10;
@@ -513,7 +526,7 @@ void loadEEpromSettings(){
 
        motor_kv = (eepromBuffer[26] * 40) + 20;
        motor_poles = eepromBuffer[27];
-       
+
 	   if(eepromBuffer[28] == 0x01){
 		   brake_on_stop = 1;
 	    }else{
@@ -555,7 +568,7 @@ void loadEEpromSettings(){
 			   RC_CAR_REVERSE = 0;
 		   }
 		   if(eepromBuffer[39] == 0x01){
-#ifdef HAS_HALL_SENSORS              
+#ifdef HAS_HALL_SENSORS
 			   USE_HALL_SENSOR = 1;
 #else
 			   USE_HALL_SENSOR = 0;
@@ -577,7 +590,7 @@ void loadEEpromSettings(){
 	   }
 	   low_rpm_level  = motor_kv / 200 / (16 / motor_poles);
 	   high_rpm_level = (40 + (motor_kv / 100)) / (16/motor_poles);
-	   
+
 	if(!comp_pwm){
 		bi_direction = 0;
 	}
@@ -586,7 +599,7 @@ void loadEEpromSettings(){
 
 }
 
-void saveEEpromSettings(){
+void saveEEpromSettings(){    
 
 
    if(dir_reversed == 1){
@@ -873,13 +886,15 @@ if(!armed){
 				zero_crosses = 0;
 				  if(brake_on_stop){
 					  fullBrake();
+				  }else{
+					  allOff();
 				  }
 			}
 			if (RC_CAR_REVERSE && prop_brake_active) {
-#ifndef PWM_ENABLE_BRIDGE						
+#ifndef PWM_ENABLE_BRIDGE
 					duty_cycle = getAbsDif(1000, newinput) + 1000;
 				    proportionalBrake();
-#endif					
+#endif
 			}
 
 
@@ -890,10 +905,14 @@ if(!armed){
 		  zero_crosses = 0;
 		  bad_count = 0;
 		  if(brake_on_stop){
-			if(!use_sin_start){ 
-			duty_cycle = 1980 + drag_brake_strength*2;  
+			if(!use_sin_start){
+#ifndef PWM_ENABLE_BRIDGE				
+			duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 			proportionalBrake();
 	        prop_brake_active = 1;
+#else
+	//todo add proportional braking for pwm/enable style bridge.
+#endif
 			}
 		  }else{
          allOff();
@@ -915,26 +934,26 @@ if(!prop_brake_active){
 	   duty_cycle = min_startup_duty;
 
 	   }
-	   if (duty_cycle > 200<<stall_protection){
-		   duty_cycle = 200<<stall_protection;
+	   if (duty_cycle > 300){
+		   duty_cycle = 300;
 	   }
  }
 if (running){
-	 if(stall_protection){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
-		 min_startup_duty = eepromBuffer[25];
+	 if(stall_protection ){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
+		// min_startup_duty = stall_protect_minimum_duty;
 		 velocity_count++;
 				 if (velocity_count > velocity_count_threshold){
-					 if(commutation_interval > 10000){
+					 if(commutation_interval > 9000){
 						    	// duty_cycle = duty_cycle + map(commutation_interval, 10000, 12000, 1, 100);
-						    	 minimum_duty_cycle++;
+						    	 minimum_duty_cycle ++;
 						     }else{
-						    	 minimum_duty_cycle--;
+						    	 minimum_duty_cycle --;
 						     }
 					 if(minimum_duty_cycle > 200){
 						 minimum_duty_cycle = 200;
 					 }
-					 if(minimum_duty_cycle < eepromBuffer[25]/4){
-						 minimum_duty_cycle= eepromBuffer[25]/4;
+					 if(minimum_duty_cycle < stall_protect_minimum_duty){        
+						 minimum_duty_cycle = stall_protect_minimum_duty;
 					 }
 
 				velocity_count = 0;
@@ -973,7 +992,6 @@ if (running){
 		if (armed && running && (input > 47)){
 		if(VARIABLE_PWM){
 	    tim1_arr = map(commutation_interval, 96, 200, TIMER1_MAX_ARR/2, TIMER1_MAX_ARR);
-		advance_level = eepromBuffer[23];
 		}
 	    adjusted_duty_cycle = ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 		}else{
@@ -1010,7 +1028,7 @@ if(desync_check && zero_crosses > 10){
 	last_average_interval = average_interval;
 	}
 	if(send_telemetry){
-#ifdef	USE_SERIAL_TELEMETRY 	
+#ifdef	USE_SERIAL_TELEMETRY
 	  makeTelemPackage(degrees_celsius,
 			           battery_voltage,
 					   actual_current,
@@ -1030,7 +1048,7 @@ if(desync_check && zero_crosses > 10){
 	}
 
 		signaltimeout++;
-		if(signaltimeout > 2500) { // quarter second timeout when armed;
+		if(signaltimeout > 2500 * (servoPwm+1)) { // quarter second timeout when armed half second for servo;
 			if(armed){
 				allOff();
 				armed = 0;
@@ -1048,7 +1066,7 @@ if(desync_check && zero_crosses > 10){
 				NVIC_SystemReset();
 			}
 
-		if (signaltimeout > 25000){     // 1.5 second
+		if (signaltimeout > 25000){     // 2.5 second
 			allOff();
 			armed = 0;
 			input = 0;
@@ -1097,13 +1115,13 @@ if (!forward){
 		}
 }
     if(GIMBAL_MODE){
-    TIM1->CCR1 = ((2*pwmSin[phase_A_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     }else{
-    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     }
 }
 
@@ -1146,8 +1164,6 @@ int main(void)
 
  initCorePeripherals();
 
-//
- 
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
@@ -1164,7 +1180,7 @@ int main(void)
 #ifdef USE_ADC_INPUT
 
 #else
-//  
+//
   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);  // input capture and output compare
   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
 #endif
@@ -1201,7 +1217,7 @@ int main(void)
 
    __IO uint32_t wait_loop_index = 0;
     /* Enable comparator */
-  
+
    LL_COMP_Enable(MAIN_COMP);
 
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
@@ -1246,11 +1262,12 @@ int main(void)
 		use_sin_start = 0;
 		low_rpm_throttle_limit = 1;
 		VARIABLE_PWM = 0;
-		stall_protection = 1;
+		//stall_protection = 1;
 		comp_pwm = 0;
       	stuck_rotor_protection = 0;
-		minimum_duty_cycle = 100;
-		min_startup_duty = 180;
+		minimum_duty_cycle = minimum_duty_cycle + 50;
+		stall_protect_minimum_duty = stall_protect_minimum_duty + 50;
+		min_startup_duty = min_startup_duty + 50;
 
 	}
 
@@ -1280,11 +1297,11 @@ if (GIMBAL_MODE){
  checkForHighSignal();     // will reboot if signal line is high for 10ms
  receiveDshotDma();
 #endif
- 
+
 #ifdef MCU_F051
  MCU_Id = DBGMCU->IDCODE &= 0xFFF;
  REV_Id = DBGMCU->IDCODE >> 16;
- 
+
  if(REV_Id >= 4096){
 	 temperature_offset = 0;
  }else{
@@ -1295,17 +1312,7 @@ if (GIMBAL_MODE){
   {
 
 LL_IWDG_ReloadCounter(IWDG);
-	count++;
 
-//	if(count>10){
-//
-//
-//		if(loop_time>=last_loop_time){
-//	loop_time = (10*loop_time + (UTILITY_TIMER->CNT - last_loop_time))/11;
-//		}
-//    last_loop_time = UTILITY_TIMER->CNT;
-//    count = 0;
-//	}
 	  adc_counter++;
 	  if(adc_counter>100){   // for testing adc and telemetry
 		  ADC_raw_temp = ADC_raw_temp - (temperature_offset);
@@ -1342,8 +1349,8 @@ LL_IWDG_ReloadCounter(IWDG);
 		  }
 #endif
 	  }
-  
-	  
+
+
 #ifdef USE_ADC_INPUT
 
 signaltimeout = 0;
@@ -1354,8 +1361,8 @@ if(newinput > 2000){
 }
 #endif
 	  stuckcounter = 0;
-	  
-  		  if (bi_direction == 1 && proshot == 0 && dshot == 0){
+
+  		  if (bi_direction == 1 && dshot == 0){
   			  if(RC_CAR_REVERSE){
   				  if (newinput > (1000 + (servo_dead_band<<1))) {
   					  if (forward == dir_reversed) {
@@ -1426,7 +1433,7 @@ if(newinput > 2000){
   					brushed_direction_set = 0;
   				  }
   			  }
- 		  }else if ((proshot || dshot) && bi_direction) {
+ 		  }else if (dshot && bi_direction) {
   			  if (newinput > 1047) {
 
   				  if (forward == dir_reversed) {
@@ -1576,7 +1583,7 @@ if (zero_crosses < 100 || commutation_interval > 500) {
 
 	} else {
 
-		filter_level = map(average_interval, 100 , 500, 3 , 8);
+		filter_level = map(average_interval, 100 , 500, 4 , 11);
 
 
 	}
@@ -1617,13 +1624,13 @@ if (old_routine && running){
 	 		  old_routine = 1;
 	 		   running = 0;
 	 		   zero_crosses = 0;
-	 		   if(crawler_mode&&stall_protection){
-	 			   min_startup_duty = 110;
-	 				 minimum_duty_cycle = minimum_duty_cycle + 10;
-	 				 if(minimum_duty_cycle > 80){
-	 					 minimum_duty_cycle = 80;
-	 				 }
-	 		   }
+	 		   // if(stall_protection){
+	 			   // min_startup_duty = 130;
+	 				 // minimum_duty_cycle = minimum_duty_cycle + 10;
+	 				 // if(minimum_duty_cycle > 80){
+	 					 // minimum_duty_cycle = 80;
+	 				 // }
+	 		   // }
 	 	  }
 	 	  }else{            // stepper sine
 
@@ -1655,11 +1662,11 @@ if (old_routine && running){
 if(input > 48 && armed){
 
 	 		  if (input > 48 && input < 137){// sine wave stepper
-	 			
+
 	 			 maskPhaseInterrupts();
 	 			 allpwm();
 	 		 advanceincrement();
-             step_delay = map (input, 48, 137, 7000/motor_poles, 780/motor_poles);
+             step_delay = map (input, 48, 137, 7000/motor_poles, 810/motor_poles);
 	 		 delayMicros(step_delay);
 
 	 		  }else{
@@ -1676,28 +1683,35 @@ if(input > 48 && armed){
 				  old_routine = 1;
 		 		  commutation_interval = 9000;
 		 		  average_interval = 9000;
-				  last_average_interval = average_interval; 
+				  last_average_interval = average_interval;
 		 		//  minimum_duty_cycle = ;
 		 		  INTERVAL_TIMER->CNT = 9000;
 				  zero_crosses = 0;
 				  prop_brake_active = 0;
 	 			  step = changeover_step;                    // rising bemf on a same as position 0.
-		 		 comStep(step);// rising bemf on a same as position 0.
-	 			LL_TIM_GenerateEvent_UPDATE(TIM1);
-	 			  zcfoundroutine();
+		 		// comStep(step);// rising bemf on a same as position 0.
+				if(stall_protection){
+				minimum_duty_cycle = stall_protect_minimum_duty;
+				}
+	 			commutate();
+				LL_TIM_GenerateEvent_UPDATE(TIM1);
+	 		//	  zcfoundroutine();
 	 			  }
 	 		  }
 
 }else{
 	if(brake_on_stop){
-	duty_cycle = 1980 + drag_brake_strength*2;   
+	#ifndef PWM_ENABLE_BRIDGE
+	duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 	adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
-	TIM1->ARR = tim1_arr;
 	TIM1->CCR1 = adjusted_duty_cycle;
 	TIM1->CCR2 = adjusted_duty_cycle;
 	TIM1->CCR3 = adjusted_duty_cycle;
 	proportionalBrake();
 	prop_brake_active = 1;
+	#else
+		// todo add braking for PWM /enable style bridges.
+	#endif 
 	}else{
 	TIM1->CCR1 = 0;
 	TIM1->CCR2 = 0;
@@ -1730,7 +1744,7 @@ void Error_Handler(void)
   * @retval None
   */
 void assert_failed(uint8_t *file, uint32_t line)
-{ 
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */

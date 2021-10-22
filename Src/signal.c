@@ -33,7 +33,7 @@ void computeMSInput(){
 void computeServoInput(){
 
 
-		if(((dma_buffer[1] - dma_buffer[0]) >900 ) && ((dma_buffer[1] - dma_buffer[0]) < 2150)){
+		if(((dma_buffer[1] - dma_buffer[0]) >850 ) && ((dma_buffer[1] - dma_buffer[0]) < 2175)){
 
 			if(bi_direction){
 				if(dma_buffer[1] - dma_buffer[0] <= servo_neutral){
@@ -57,7 +57,7 @@ void computeServoInput(){
 	}else{
 		newinput = servorawinput;
 	}
-
+    
 }
 
 void transfercomplete(){
@@ -126,24 +126,3 @@ if(!armed){
 	}
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
