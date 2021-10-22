@@ -136,7 +136,7 @@
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 76
+#define VERSION_MINOR 77
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
@@ -495,10 +495,19 @@ void loadEEpromSettings(){
 	    	advance_level = 2;  // * 7.5 increments
 	    }
 
-	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
-		   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD ,TIM1_AUTORELOAD/2);
+	   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 7){
+		   if(eepromBuffer[24] < 49 && eepromBuffer[24] > 23){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 24, 48, TIM1_AUTORELOAD,TIM1_AUTORELOAD/2);
+		   }
+		   if(eepromBuffer[24] < 24 && eepromBuffer[24] > 11){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 12, 24, TIM1_AUTORELOAD *2 ,TIM1_AUTORELOAD);
+		   }
+		   if(eepromBuffer[24] < 12 && eepromBuffer[24] > 7){
+			   TIMER1_MAX_ARR = map (eepromBuffer[24], 7, 16, TIM1_AUTORELOAD *3 ,TIM1_AUTORELOAD/2*3);
+		   }
 		   TIM1->ARR = TIMER1_MAX_ARR;
-		   
+		   throttle_max_at_high_rpm = TIMER1_MAX_ARR;
+		   duty_cycle_maximum = TIMER1_MAX_ARR;
 	    }else{
 	    	tim1_arr = TIM1_AUTORELOAD;
 	    	TIM1->ARR = tim1_arr;
@@ -506,8 +515,8 @@ void loadEEpromSettings(){
 
 	   if(eepromBuffer[25] < 151 && eepromBuffer[25] > 49){
 
-		   min_startup_duty = (eepromBuffer[25] + DEAD_TIME) * TIM1_AUTORELOAD / 2000;
-		   minimum_duty_cycle = (eepromBuffer[25]/ 2 + DEAD_TIME/3) * TIM1_AUTORELOAD / 2000 ;
+		   min_startup_duty = (eepromBuffer[25] + DEAD_TIME) * TIMER1_MAX_ARR / 2000;
+		   minimum_duty_cycle = (eepromBuffer[25]/ 2 + DEAD_TIME/3) * TIMER1_MAX_ARR / 2000 ;
 		   stall_protect_minimum_duty = minimum_duty_cycle + 20;
 
 	    }else{
@@ -1106,13 +1115,13 @@ if (!forward){
 		}
 }
     if(GIMBAL_MODE){
-    TIM1->CCR1 = ((2*pwmSin[phase_A_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     }else{
-    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
-    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIM1_AUTORELOAD/2000;
+    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     }
 }
 
