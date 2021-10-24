@@ -10,12 +10,13 @@
 #include "functions.h"
 #include "eeprom.h"
 #include "targets.h"
+#include "common.h"
 
 extern int signaltimeout;
 extern char play_tone_flag;
 uint8_t beep_volume;
 
-uint8_t blueJayTuneBuffer[128] = {};
+//uint8_t blueJayTuneBuffer[128] = {};
 
 void pause(uint16_t ms){
 	TIM1->CCR1 = 0; // volume of the beep, (duty cycle) don't go above 25
@@ -69,24 +70,24 @@ void playBlueJayTune(){
 	uint16_t duration;
 	float frequency;
 	comStep(3);
-	read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
-	for(int i = 4 ; i < 128 ; i+=2){
+	//read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
+	for(int i = 52 ; i < 176 ; i+=2){
 		LL_IWDG_ReloadCounter(IWDG);
 		signaltimeout = 0;
 
-		if(blueJayTuneBuffer[i] == 255){
+		if(eepromBuffer[i] == 255){
 			full_time_count++;
 
 		}else{
-			if(blueJayTuneBuffer[i+1] == 0){
-				duration = full_time_count * 254 + blueJayTuneBuffer[i];
+			if(eepromBuffer[i+1] == 0){
+				duration = full_time_count * 254 + eepromBuffer[i];
 				TIM1->CCR1 = 0 ; //
 				TIM1->CCR2 = 0;
 				TIM1->CCR3 = 0;
 				delayMillis(duration);
 			}else{
-			frequency = getBlueJayNoteFrequency(blueJayTuneBuffer[i+1]);
-			duration= (full_time_count * 254 + blueJayTuneBuffer[i])  * (float)(1000 / frequency);
+			frequency = getBlueJayNoteFrequency(eepromBuffer[i+1]);
+			duration= (full_time_count * 254 + eepromBuffer[i])  * (float)(1000 / frequency);
 			playBJNote(frequency, duration);
 			}
 			full_time_count = 0;

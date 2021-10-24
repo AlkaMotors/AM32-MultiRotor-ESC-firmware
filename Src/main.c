@@ -135,6 +135,7 @@
 #include "comparator.h"
 #include "functions.h"
 #include "peripherals.h"
+#include "common.h"
 
 //===========================================================================
 //=============================  Defaults =============================
@@ -290,7 +291,7 @@ char send_telemetry = 0;
 char telemetry_done = 0;
 char prop_brake_active = 0;
 
-uint8_t eepromBuffer[48] ={0};
+uint8_t eepromBuffer[176] ={0};
 uint32_t gcr[30] =  {0,0,0,0,0,0,0,0,0,0,0,64,0,0,0,0,64,0,0,0,0,64,0,0,0,64,64,0,64,0};
 uint8_t gcr_size;
 uint16_t process_time = 0;
@@ -465,7 +466,7 @@ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
 }
 
 void loadEEpromSettings(){
-	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 48);
+	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 176);
 
 	   if(eepromBuffer[17] == 0x01){
 	 	  dir_reversed =  1;
@@ -645,7 +646,7 @@ void saveEEpromSettings(){
 
    eepromBuffer[23] = advance_level;
 
-   save_flash_nolib(eepromBuffer, 48, EEPROM_START_ADD);
+   save_flash_nolib(eepromBuffer, 176, EEPROM_START_ADD);
 }
 
 
