@@ -114,6 +114,11 @@
 	   Removed gd32 build, until firmware is functional
  *1.76 Adjust g071 PWM frequency, and startup power to be same frequency as f051. 
        Reduce number of polling back emf checks for g071
+ *1.77 increase PWM frequency range to 8-48khz
+ *1.78 Fix bluejay tunes frequency and speed. 
+	   Fix g071 Dead time 	
+	   Increment eeprom version
+	   
 	   
  */
 #include <stdint.h>
@@ -136,7 +141,9 @@
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 77
+#define VERSION_MINOR 78
+
+char eeprom_layout_version = 2;
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
@@ -601,6 +608,7 @@ void loadEEpromSettings(){
 
 void saveEEpromSettings(){    
 
+   eepromBuffer[1] = eeprom_layout_version;
 
    if(dir_reversed == 1){
 	   eepromBuffer[17] = 0x01;

@@ -28,6 +28,7 @@ void pause(uint16_t ms){
 	TIM1->CCR3 = beep_volume;
 }
 
+
 void setVolume(uint8_t volume){
 	if(volume > 11){
 		volume = 11;
@@ -46,19 +47,10 @@ void setCaptureCompare(){
 
 void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
 	uint16_t timerOne_reload = TIM1_AUTORELOAD;
-	if(freq < 523){
-		TIM1->PSC = 92*CPU_FREQUENCY_MHZ/48;
-		timerOne_reload = map(freq, 261, 523, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
-	}
-	if(freq > 523 && freq < 1046){
-		TIM1->PSC = 46*CPU_FREQUENCY_MHZ/48;
-		timerOne_reload = map(freq, 523, 1046, TIM1_AUTORELOAD, TIM1_AUTORELOAD/2);
-	}
-	if(freq > 1046){
-		TIM1->PSC = 23*CPU_FREQUENCY_MHZ/48;
-		timerOne_reload = map(freq, 1046, 4186, TIM1_AUTORELOAD, TIM1_AUTORELOAD/4);
-	}
-
+ 
+	TIM1->PSC = 10;
+	timerOne_reload = 4800000 / freq;
+	
 	TIM1->ARR = timerOne_reload;
 	TIM1->CCR1 = beep_volume * timerOne_reload /TIM1_AUTORELOAD ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
 	TIM1->CCR2 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
@@ -75,7 +67,7 @@ uint16_t getBlueJayNoteFrequency(uint8_t bjarrayfreq){
 void playBlueJayTune(){
 	uint8_t full_time_count = 0;
 	uint16_t duration;
-	uint16_t frequency;
+	float frequency;
 	comStep(3);
 	read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
 	for(int i = 4 ; i < 128 ; i+=2){
