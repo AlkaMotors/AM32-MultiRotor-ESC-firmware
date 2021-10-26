@@ -1,11 +1,11 @@
 #ifndef USE_MAKE
 
-#define FD6288
+//#define FD6288
 //#define IFLIGHT
 //#define MP6531
 //#define TMOTOR55     // like iflight but with leds
 //#define TMOTOR45
-//#define HGLRC
+#define HGLRC
 //#define SISKIN
 //#define MAMBA_F50PRO
 //#define WRAITH32
@@ -246,9 +246,9 @@
 #define DMA_HANDLE_TYPE_DEF     hdma_tim15_ch1
 #define IC_DMA_IRQ_NAME         DMA1_Channel4_5_IRQn
 
-#define PHASE_A_GPIO_LOW        LL_GPIO_PIN_1
-#define PHASE_A_GPIO_PORT_LOW   GPIOB
-#define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+#define PHASE_A_GPIO_LOW        LL_GPIO_PIN_7
+#define PHASE_A_GPIO_PORT_LOW   GPIOA
+#define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_8
 #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
 #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
@@ -256,14 +256,14 @@
 #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
 #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-#define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
-#define PHASE_C_GPIO_PORT_LOW   GPIOA
-#define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+#define PHASE_C_GPIO_LOW        LL_GPIO_PIN_1
+#define PHASE_C_GPIO_PORT_LOW   GPIOB
+#define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
 #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-#define PHASE_A_COMP COMP_PA5
+#define PHASE_A_COMP COMP_PA0
 #define PHASE_B_COMP COMP_PA4
-#define PHASE_C_COMP COMP_PA0
+#define PHASE_C_COMP COMP_PA5
 
 #endif
 
