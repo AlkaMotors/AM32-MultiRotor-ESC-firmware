@@ -184,6 +184,15 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef  DT120_G071_64K
+#define FIRMWARE_NAME  			    "G071 120 64K"
+#define DEAD_TIME               120
+#define MILLIVOLT_PER_AMP       15
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_A
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
 #ifdef  G071ENABLE
 #define FIRMWARE_NAME           "G071 PWM_EN "
 #define DEAD_TIME               60

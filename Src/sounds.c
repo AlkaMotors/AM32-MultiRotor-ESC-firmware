@@ -207,13 +207,13 @@ void playInputTune(){
 }
 
 void playDefaultTone(){
-	 LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 50;
 	setCaptureCompare();
 	comStep(2);
-	delayMillis(100);
+	delayMillis(150);
+	 LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 30;
-	delayMillis(100);
+	delayMillis(150);
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
@@ -221,13 +221,13 @@ void playDefaultTone(){
 }
 
 void playChangedTone(){
-	 LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 40;
 	setCaptureCompare();
 	comStep(2);
-	delayMillis(100);
+	delayMillis(150);
+	LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 80;
-	delayMillis(100);
+	delayMillis(150);
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;

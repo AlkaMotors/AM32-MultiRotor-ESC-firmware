@@ -118,7 +118,8 @@
  *1.78 Fix bluejay tunes frequency and speed. 
 	   Fix g071 Dead time 	
 	   Increment eeprom version
-	   
+ *1.79 Add calibration routine  
+	   Add variable for telemetry interval
 	   
  */
 #include <stdint.h>
@@ -142,7 +143,7 @@
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 78
+#define VERSION_MINOR 79
 
 char eeprom_layout_version = 2;
 char dir_reversed = 0;
@@ -153,7 +154,8 @@ char stuck_rotor_protection = 1;	// Turn off for Crawlers
 char brake_on_stop = 0;
 char stall_protection = 0;
 char use_sin_start = 0;
-char THIRTY_TWO_MS_TLM = 0;
+char TLM_ON_INTERVAL = 0;
+uint8_t telemetry_interval_ms = 30;
 
 char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
 uint16_t motor_kv = 2000;
@@ -221,7 +223,7 @@ char low_rpm_throttle_limit = 1;
 uint16_t low_voltage_count = 0;
 
 
-uint16_t thirty_two_ms_count;
+uint16_t telem_ms_count;
 
 char VOLTAGE_DIVIDER = TARGET_VOLTAGE_DIVIDER;     // 100k upper and 10k lower resistor in divider
 
@@ -554,9 +556,9 @@ void loadEEpromSettings(){
 			   setVolume(eepromBuffer[30]);
 		   }
 		   if(eepromBuffer[31] == 0x01){
-			   THIRTY_TWO_MS_TLM = 1;
+			   TLM_ON_INTERVAL = 1;
 		   }else{
-			   THIRTY_TWO_MS_TLM = 0;
+			   TLM_ON_INTERVAL = 0;
 		   }
 		   servo_low_threshold = (eepromBuffer[32]*2) + 750; // anything below this point considered 0
 		   servo_high_threshold = (eepromBuffer[33]*2) + 1750;;  // anything above this point considered 2000 (max)
@@ -844,11 +846,11 @@ if(!armed){
 	}
 }
 
-	if(THIRTY_TWO_MS_TLM){
-		thirty_two_ms_count++;
-		if(thirty_two_ms_count>320){
+	if(TLM_ON_INTERVAL){
+		telem_ms_count++;
+		if(telem_ms_count>telemetry_interval_ms*10){
 			send_telemetry = 1;
-			thirty_two_ms_count = 0;
+			telem_ms_count = 0;
 		}
 	}
 
