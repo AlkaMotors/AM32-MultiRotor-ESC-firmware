@@ -120,6 +120,8 @@
 	   Increment eeprom version
  *1.79 Add calibration routine  
 	   Add variable for telemetry interval
+ *1.80 Enable Comparator blanking for g071
+	   -add hardware group F for Iflight Blitz
 	   
  */
 #include <stdint.h>
@@ -811,6 +813,7 @@ void tenKhzRoutine(){
 		consumed_current = (float)actual_current/3600 + consumed_current;
 		consumption_timer = 0;
 	}
+
 if(!armed){
 	if(inputSet){
 		if(adjusted_input == 0){
@@ -1181,6 +1184,10 @@ int main(void)
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1N);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2N);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3N);
+  
+  #ifdef MCU_G071
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);
+  #endif
 
   /* Enable counter */
   LL_TIM_EnableCounter(TIM1);
@@ -1517,12 +1524,7 @@ if(newinput > 2000){
   			//	fullBrake();
   			}
 
-
-
   		}else{
-
-
-
 
 	 	 if ((zero_crosses > 1000) || (adjusted_input == 0)){
  	 		bemf_timout_happened = 0;
@@ -1589,14 +1591,16 @@ if(newinput > 2000){
 
 
 if (zero_crosses < 100 || commutation_interval > 500) {
-
+#ifdef MCU_G071
+		TIM1->CCR4 = 100;
+#endif
 		filter_level = 12;
 
 	} else {
-
+#ifdef MCU_G071
+		TIM1->CCR4 = 5;
+#endif
 		filter_level = map(average_interval, 100 , 500, 4 , 11);
-
-
 	}
 	if (commutation_interval < 100){
 		filter_level = 2;
