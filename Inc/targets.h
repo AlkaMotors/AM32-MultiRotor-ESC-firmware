@@ -108,7 +108,6 @@
 #define FIRMWARE_NAME           "Wraith_32   "
 #define DEAD_TIME               45
 #define TARGET_VOLTAGE_DIVIDER  75
-//#define SINE_DIVIDER 			4
 #define HARDWARE_GROUP_F0_C
 #define USE_SERIAL_TELEMETRY
 #endif
@@ -138,7 +137,6 @@
 #define FIRMWARE_NAME           "Flycolor Gen"
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_A
-#define SINE_DIVIDER 			4
 //#define USE_SERIAL_TELEMETRY
 #define PA6_VOLTAGE
 #endif
@@ -240,7 +238,7 @@
 #endif
 
 #ifndef 	SINE_DIVIDER
-#define 	SINE_DIVIDER 				3
+#define 	SINE_DIVIDER 				2
 #endif
 
 #ifndef  	MILLIVOLT_PER_AMP

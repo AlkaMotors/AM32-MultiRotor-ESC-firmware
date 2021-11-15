@@ -95,7 +95,7 @@ void playBlueJayTune(){
 	}
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
-	TIM1->ARR = TIM1_AUTORELOAD;
+	TIM1->ARR = TIMER1_MAX_ARR;
 	signaltimeout = 0;
 	LL_IWDG_ReloadCounter(IWDG);
 }
@@ -107,7 +107,7 @@ void playStartupTune(){
 		if(value != 0xFF){
 		playBlueJayTune();
 		}else{
-
+	TIM1->ARR = TIM1_AUTORELOAD;
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 
@@ -125,11 +125,14 @@ void playStartupTune(){
 	TIM1->PSC = 0;           // set prescaler back to 0.
 	signaltimeout = 0;
 	}
+	
+	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }
 
 void playBrushedStartupTune(){
 	__disable_irq();
+	TIM1->ARR = TIM1_AUTORELOAD;
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
 	TIM1->PSC = 25;        // frequency of beep
@@ -140,11 +143,13 @@ void playBrushedStartupTune(){
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }
 
 void playDuskingTune(){
 	setCaptureCompare();
+	TIM1->ARR = TIM1_AUTORELOAD;
 	comStep(2);       // activate a pwm channel
 	TIM1->PSC = 60;        // frequency of beep
     delayMillis(200);         // duration of beep
@@ -164,11 +169,12 @@ void playDuskingTune(){
 	delayMillis(150);
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
+	TIM1->ARR = TIMER1_MAX_ARR;
 }
 
 
 void playInputTune2(){
-
+    TIM1->ARR = TIM1_AUTORELOAD;
 	__disable_irq();
     LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 60;
@@ -183,6 +189,7 @@ void playInputTune2(){
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }
 
@@ -191,6 +198,7 @@ void playInputTune2(){
 
 void playInputTune(){
 	__disable_irq();
+	TIM1->ARR = TIM1_AUTORELOAD;
 	 LL_IWDG_ReloadCounter(IWDG);
 	TIM1->PSC = 80;
 	setCaptureCompare();
@@ -203,10 +211,12 @@ void playInputTune(){
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }
 
 void playDefaultTone(){
+	TIM1->ARR = TIM1_AUTORELOAD;
 	TIM1->PSC = 50;
 	setCaptureCompare();
 	comStep(2);
@@ -217,10 +227,12 @@ void playDefaultTone(){
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 
 }
 
 void playChangedTone(){
+	TIM1->ARR = TIM1_AUTORELOAD;
 	TIM1->PSC = 40;
 	setCaptureCompare();
 	comStep(2);
@@ -231,12 +243,13 @@ void playChangedTone(){
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 
 }
 
 
 void playBeaconTune3(){
-
+	TIM1->ARR = TIM1_AUTORELOAD;
 	__disable_irq();
 	setCaptureCompare();
 	for(int i = 119 ; i > 0 ; i = i- 2){
@@ -248,5 +261,6 @@ void playBeaconTune3(){
 	allOff();
 	TIM1->PSC = 0;
 	signaltimeout = 0;
+	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }

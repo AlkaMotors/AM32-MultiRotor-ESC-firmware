@@ -118,10 +118,14 @@
  *1.78 Fix bluejay tunes frequency and speed. 
 	   Fix g071 Dead time 	
 	   Increment eeprom version
- *1.79 Add calibration routine  
+ *1.79 Add stick throttle calibration routine  
 	   Add variable for telemetry interval
- *1.80 Enable Comparator blanking for g071
+ *1.80 -Enable Comparator blanking for g071 on timer 1 channel 4
 	   -add hardware group F for Iflight Blitz
+	   -adjust parameters for pwm frequency
+	   -add sine mode power variable and eeprom setting
+	   -fix telemetry rpm during sine mode
+	   -fix sounds for extended pwm range
 	   
  */
 #include <stdint.h>
@@ -145,7 +149,7 @@
 //===========================================================================
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 79
+#define VERSION_MINOR 80
 
 char eeprom_layout_version = 2;
 char dir_reversed = 0;
@@ -158,14 +162,15 @@ char stall_protection = 0;
 char use_sin_start = 0;
 char TLM_ON_INTERVAL = 0;
 uint8_t telemetry_interval_ms = 30;
-
+uint8_t TEMPERATURE_LIMIT = 255;  // degrees 255 to disable
 char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
 uint16_t motor_kv = 2000;
 char motor_poles = 14;
-//add Startup Power
-//Add PWM Frequency
-//Add Beep Volume
-char drag_brake_strength = 10;		// Drag Brake Power
+uint16_t CURRENT_LIMIT = 202;
+uint8_t sine_mode_power = 5;
+char drag_brake_strength = 10;		// Drag Brake Power when brake on stop is enabled
+uint8_t driving_brake_strength = 10;
+uint8_t dead_time_override = DEAD_TIME;
 char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
 
 char USE_HALL_SENSOR = 0;
@@ -264,6 +269,7 @@ typedef enum
   GPIO_PIN_SET
 }GPIO_PinState;
 
+uint16_t startup_max_duty_cycle = 300 + DEAD_TIME;
 uint16_t minimum_duty_cycle = DEAD_TIME;
 uint16_t stall_protect_minimum_duty = DEAD_TIME;
 char desync_check = 0;
@@ -401,7 +407,7 @@ int phase_C_position;
 int step_delay  = 100;
 char stepper_sine = 0;
 int forward = 1;
-int gate_drive_offset = 60;
+int gate_drive_offset = DEAD_TIME;
 
 int stuckcounter = 0;
 int k_erpm;
@@ -530,6 +536,7 @@ void loadEEpromSettings(){
 		   min_startup_duty = (eepromBuffer[25] + DEAD_TIME) * TIMER1_MAX_ARR / 2000;
 		   minimum_duty_cycle = (eepromBuffer[25]/ 2 + DEAD_TIME/3) * TIMER1_MAX_ARR / 2000 ;
 		   stall_protect_minimum_duty = minimum_duty_cycle + 20;
+		   
 
 	    }else{
 	    	min_startup_duty = 150;
@@ -591,18 +598,44 @@ void loadEEpromSettings(){
 	   if(eepromBuffer[40] > 4 && eepromBuffer[40] < 26){            // sine mode changeover 5-25 percent throttle
        sine_mode_changeover_thottle_level = eepromBuffer[40];
 	   }
-	   if(eepromBuffer[41] > 0 && eepromBuffer[41] < 11){        // drag brake 0-10
+	   if(eepromBuffer[41] > 0 && eepromBuffer[41] < 11){        // drag brake 1-10
        drag_brake_strength = eepromBuffer[41];
 	   }
+	   
+	   if(eepromBuffer[42] > 0 && eepromBuffer[42] < 10){        // motor brake 1-9
+       driving_brake_strength = eepromBuffer[42];
+	   dead_time_override = DEAD_TIME + (150 - (driving_brake_strength * 10));
+	   if(dead_time_override > 200){
+	   dead_time_override = 200;
+	   }
+	   min_startup_duty = eepromBuffer[25] + dead_time_override;
+	   minimum_duty_cycle = eepromBuffer[25]/2 + dead_time_override;
+	   throttle_max_at_low_rpm  = throttle_max_at_low_rpm + dead_time_override;
+	   startup_max_duty_cycle = startup_max_duty_cycle  + dead_time_override;
+	   TIM1->BDTR |= dead_time_override;
+	   }
+	   
+	   if(eepromBuffer[43] >= 70 && eepromBuffer[43] <= 140){ 
+	   TEMPERATURE_LIMIT = eepromBuffer[43];
+	   
+	   }
+	   
+	   if(eepromBuffer[44] > 1 && eepromBuffer[44] < 100){ 
+	   CURRENT_LIMIT = eepromBuffer[44] * 2;
+	   
+	   }
+	   
+	   if(eepromBuffer[45] > 0 && eepromBuffer[45] < 11){ 
+	   sine_mode_power = eepromBuffer[45];
+	   
 	   }
 
-
-	   if(motor_kv < 300){
+       if(motor_kv < 300){
 		   low_rpm_throttle_limit = 0;
 	   }
 	   low_rpm_level  = motor_kv / 200 / (16 / motor_poles);
 	   high_rpm_level = (40 + (motor_kv / 100)) / (16/motor_poles);
-
+	   }
 	if(!comp_pwm){
 		bi_direction = 0;
 	}
@@ -771,7 +804,6 @@ thiszctime = INTERVAL_TIMER->CNT;
 				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
 							return;
 					}
-
 				}
 			}else{
 				for (int i = 0; i < filter_level; i++){
@@ -941,6 +973,7 @@ if(!armed){
 		 	  }
 
 		  }
+
 		  }
 if(!prop_brake_active){
  if (zero_crosses < (20 >> stall_protection)){
@@ -948,8 +981,8 @@ if(!prop_brake_active){
 	   duty_cycle = min_startup_duty;
 
 	   }
-	   if (duty_cycle > 300){
-		   duty_cycle = 300;
+	   if (duty_cycle > startup_max_duty_cycle){
+		   duty_cycle = startup_max_duty_cycle;
 	   }
  }
 if (running){
@@ -1012,7 +1045,7 @@ if (running){
 				if(prop_brake_active){
 					adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
 				}else{
-				adjusted_duty_cycle = 0;
+				adjusted_duty_cycle = DEAD_TIME * running;
 				}
 	    }
 		last_duty_cycle = duty_cycle;
@@ -1133,9 +1166,9 @@ if (!forward){
     TIM1->CCR2 = ((2*pwmSin[phase_B_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     TIM1->CCR3 = ((2*pwmSin[phase_C_position])+gate_drive_offset)*TIMER1_MAX_ARR/2000;
     }else{
-    TIM1->CCR1 = ((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
-    TIM1->CCR2 = ((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
-    TIM1->CCR3 = ((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000;
+    TIM1->CCR1 = (((2*pwmSin[phase_A_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000)*sine_mode_power / 10;
+    TIM1->CCR2 = (((2*pwmSin[phase_B_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000)*sine_mode_power / 10;
+    TIM1->CCR3 = (((2*pwmSin[phase_C_position]/SINE_DIVIDER)+gate_drive_offset)*TIMER1_MAX_ARR/2000)*sine_mode_power / 10;
     }
 }
 
@@ -1244,8 +1277,7 @@ int main(void)
      wait_loop_index--;
    }
 
-
-  loadEEpromSettings();
+loadEEpromSettings();
 //  EEPROM_VERSION = *(uint8_t*)(0x08000FFC);
   if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
 	  eepromBuffer[3] = firmware_info.version_major;
@@ -1269,9 +1301,15 @@ int main(void)
 		}else{
 			forward = 1;
 		}
-	tim1_arr = TIMER1_MAX_ARR;
+	tim1_arr = TIMER1_MAX_ARR;       
+	startup_max_duty_cycle = startup_max_duty_cycle * TIMER1_MAX_ARR / 2000  + dead_time_override;  // adjust for pwm frequency
+	throttle_max_at_low_rpm  = throttle_max_at_low_rpm * TIMER1_MAX_ARR / 2000;  // adjust to new pwm frequency
+    throttle_max_at_high_rpm = TIMER1_MAX_ARR;  // adjust to new pwm frequency
+
+	
+	
 	if(!comp_pwm){
-		use_sin_start = 0;
+		use_sin_start = 0;  // sine start requires complementary pwm.
 	}
 
 	if (RC_CAR_REVERSE) {         // overrides a whole lot of things!
@@ -1289,14 +1327,17 @@ int main(void)
 
 	}
 
-	if(BRUSHED_MODE){bi_direction = 1;
-	 	 	 	 	  commutation_interval = 5000;}
-
+	if(BRUSHED_MODE){
+		bi_direction = 1;
+	 	commutation_interval = 5000;
+		}
 	   if(BRUSHED_MODE){
 		   playBrushedStartupTune();
 	   }else{
+		   
 		   playStartupTune();
 	   }
+
 	   zero_input_count = 0;
 	   MX_IWDG_Init();
 	   LL_IWDG_ReloadCounter(IWDG);
@@ -1582,12 +1623,17 @@ if(newinput > 2000){
 	 	  }
 		  if ( stepper_sine == 0){
 
-  e_rpm = running * (100000/ e_com_time) * 6;
+  e_rpm = running * (100000/ e_com_time) * 6;       // in tens of rpm
   k_erpm =  e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
-   if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
+  if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
 
   duty_cycle_maximum = map(k_erpm, low_rpm_level, high_rpm_level, throttle_max_at_low_rpm, throttle_max_at_high_rpm);   // for more performance lower the high_rpm_level, set to a consvervative number in source.
    }
+
+   if(degrees_celsius > TEMPERATURE_LIMIT){
+	   duty_cycle_maximum = map(degrees_celsius, TEMPERATURE_LIMIT, TEMPERATURE_LIMIT+50, throttle_max_at_high_rpm, 1);
+   }
+
 
 
 if (zero_crosses < 100 || commutation_interval > 500) {
@@ -1605,9 +1651,6 @@ if (zero_crosses < 100 || commutation_interval > 500) {
 	if (commutation_interval < 100){
 		filter_level = 2;
 	}
-
-
-
 
 if(lowkv){
 
@@ -1683,6 +1726,8 @@ if(input > 48 && armed){
 	 		 advanceincrement();
              step_delay = map (input, 48, 137, 7000/motor_poles, 810/motor_poles);
 	 		 delayMicros(step_delay);
+			 
+			  e_rpm =   100000/ step_delay * 6 ;         // in tens so 33 e_rpm is 330 actual erpm
 
 	 		  }else{
 	 			 advanceincrement();
