@@ -149,7 +149,12 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
-
+#ifdef SKYSTARS
+#define FIRMWARE_NAME           "SkyStars K55"
+#define DEAD_TIME               40
+#define HARDWARE_GROUP_F0_B
+#define USE_SERIAL_TELEMETRY
+#endif
 
 /*******************************   G071 Targets *********************************/
 
