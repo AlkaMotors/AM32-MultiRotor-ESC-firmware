@@ -10,6 +10,7 @@
 #include "dshot.h"
 #include "serial_telemetry.h"
 #include "functions.h"
+#include "common.h"
 
 //int max_servo_deviation = 250;
 //int servorawinput;
@@ -17,7 +18,7 @@ char ic_timer_prescaler = 1;
 char output_timer_prescaler;
 int buffersize = 32;
 int smallestnumber = 20000;
-uint32_t dma_buffer[64];
+uint32_t dma_buffer[64] = {0};
 char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;

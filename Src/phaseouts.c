@@ -7,7 +7,6 @@
 #include "phaseouts.h"
 #include "targets.h"
 
-
 extern char comp_pwm;
 extern char prop_brake_active;
 

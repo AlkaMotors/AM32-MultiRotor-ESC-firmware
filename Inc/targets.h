@@ -1,6 +1,6 @@
 #ifndef USE_MAKE
 
-#define FD6288
+//#define FD6288
 //#define IFLIGHT
 //#define MP6531
 //#define TMOTOR55     // like iflight but with leds
@@ -12,6 +12,10 @@
 //#define AIKON20X20
 //#define AIKONSINGLE
 //#define FLYCOLOR
+//#define HHMICRO
+#define AM32REF
+//#define BLPWR
+//#define HVFLYCOLOR
 
 //#define G072ESC
 //#define G071ENABLE
@@ -156,6 +160,30 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+
+
+#ifdef BLPWR
+#define FIRMWARE_NAME           "BlPwr-ESC"
+#define DEAD_TIME               20
+#define HARDWARE_GROUP_F0_A
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define USE_SERIAL_TELEMETRY
+#endif
+
+
+#ifdef AM32REF
+#define FIRMWARE_NAME           "AM32 Ref-ESC"
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       65
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define PA6_VOLTAGE
+#define USE_SERIAL_TELEMETRY
+
+#endif
 /*******************************   G071 Targets *********************************/
 
 #ifdef G071_64K

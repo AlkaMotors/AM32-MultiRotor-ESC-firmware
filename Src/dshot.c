@@ -8,6 +8,7 @@
 #include "functions.h"
 #include "dshot.h"
 #include "targets.h"
+#include "common.h"
 
 int dpulse[16] = {0} ;
 
@@ -41,6 +42,10 @@ extern char play_tone_flag;
 uint8_t command_count = 0;
 uint8_t last_command = 0;
 uint8_t high_pin_count = 0;
+uint32_t gcr[30] =  {0};
+uint16_t dshot_frametime;
+uint16_t dshot_goodcounts;
+uint16_t dshot_badcounts;
 
 
 void computeDshotDMA(){

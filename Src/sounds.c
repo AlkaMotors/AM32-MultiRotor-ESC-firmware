@@ -12,8 +12,7 @@
 #include "targets.h"
 #include "common.h"
 
-extern int signaltimeout;
-extern char play_tone_flag;
+
 uint8_t beep_volume;
 
 //uint8_t blueJayTuneBuffer[128] = {};
