@@ -46,7 +46,7 @@ void SystemClock_Config(void)
   LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
   if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2)
   {
-    Error_Handler();
+  //  Error_Handler();
   };
 
   /* HSI configuration and activation */

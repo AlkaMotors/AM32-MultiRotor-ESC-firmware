@@ -54,7 +54,7 @@ void computeDshotDMA(){
 int j = 0;
 dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
-#ifdef MCU_F051
+#if defined(MCU_F051) || defined(MCU_F031)
 	         if((dshot_frametime < 1270)&&(dshot_frametime > 1210)){
 				for (int i = 0; i < 16; i++){
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>5) ;
@@ -220,7 +220,7 @@ for (int i = 15; i >= 9 ; i--){
 		  | gcr_encode_table[(((1 << 4) - 1) & (dshot_full_number >> 4))] << 5  //3rd set of four digits
 		  | gcr_encode_table[(((1 << 4) - 1) & (dshot_full_number >> 0))];  //last four digits
 //GCR RLL encode 20 to 21bit output
-#ifdef MCU_F051
+#if defined(MCU_F051) || defined(MCU_F031)
 		  gcr[1+7] = 64;
 		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
 			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) << 6;        // exclusive ored with number before it multiplied by 64 to match output timer.

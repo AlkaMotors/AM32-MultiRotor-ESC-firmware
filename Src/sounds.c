@@ -133,11 +133,17 @@ void playBrushedStartupTune(){
 	__disable_irq();
 	TIM1->ARR = TIM1_AUTORELOAD;
 	setCaptureCompare();
+	comStep(1);       // activate a pwm channel
+	TIM1->PSC = 40;        // frequency of beep
+    delayMillis(300);         // duration of beep
+	comStep(2);       // activate a pwm channel
+	TIM1->PSC = 30;        // frequency of beep
+    delayMillis(300);         // duration of beep
 	comStep(3);       // activate a pwm channel
 	TIM1->PSC = 25;        // frequency of beep
     delayMillis(300);         // duration of beep
-	comStep(6);
-	TIM1->PSC = 55;         // higher again..
+    comStep(4);
+	TIM1->PSC = 20;         // higher again..
 	delayMillis(300);
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.

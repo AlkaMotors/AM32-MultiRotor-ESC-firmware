@@ -32,6 +32,6 @@ void MX_TIM17_Init(void);
 //static void MX_USART1_UART_Init(void);
 
 void UN_TIM_Init(void);
-#ifdef tmotor55
-void LED_GPIO_init();
-#endif
+
+void LED_GPIO_init(void);
+

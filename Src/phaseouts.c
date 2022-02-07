@@ -311,3 +311,17 @@ void allpwm(){                        // for stepper_sine
 	phaseBPWM();
 	phaseCPWM();
 }
+
+#ifdef BRUSHED_MODE
+void twoChannelForward(){
+phaseAPWM();
+phaseBLOW();
+phaseCPWM();
+}
+
+void twoChannelReverse(){
+phaseALOW();
+phaseBPWM();
+phaseCLOW();
+}
+#endif

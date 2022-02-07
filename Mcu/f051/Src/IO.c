@@ -112,7 +112,6 @@ void receiveDshotDma(){
 #endif
 	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
-	//   TIM16->PSC = 1;
 
 }
 
