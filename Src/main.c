@@ -143,7 +143,9 @@
 *1.84  -Change PID value to int for faster calculations
 	   -Enable two channel brushed motor control for dual motors
 	   -Add current limit max duty cycle
- */
+*1.85  -fix current limit not allowing full rpm on g071 or low pwm frequency
+		-remove unused brake on stop conditional 
+ */	    
 
 
 #include <stdint.h>
@@ -164,7 +166,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 84
+#define VERSION_MINOR 85
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -990,11 +992,6 @@ if(!armed){
 			  }
 			  running = 1;
 			  last_duty_cycle = min_startup_duty;
-#ifdef USE_RGB_LED
-//			  GPIOB->BRR = LL_GPIO_PIN_3;  // off red
-//			  GPIOB->BRR = LL_GPIO_PIN_8; // off green
-//			  GPIOB->BSRR = LL_GPIO_PIN_5;  // on blue
-#endif
 
 		  }
 	  if(use_sin_start){
@@ -1013,19 +1010,7 @@ if(!armed){
 			}
 
 	  }
-//			  if(use_speed_control_loop && running){            // moved to commutation
-//	//		  speedPid.Kp = (float)SPEED_MODE_KP * (float)10000/e_com_time * (float)10000/e_com_time ;
-//			  input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time);
-//			  if(input_override > 2000){
-//				  input_override = 2000;
-//			  }
-//			  if(input_override < 0){
-//				  input_override = 0;
-//			  }
-//			  if(zero_crosses < 100){
-//				  speedPid.integral = 0;
-//			  }
-//		  }
+
 		  	 if(stall_protection && running ){  // this boosts throttle as the rpm gets lower, for crawlers and rc cars only, do not use for multirotors.
 		  		 stall_protection_adjust += (doPidCalculations(&stallPid, commutation_interval, stall_protect_target_interval))/10000;
 		  					 if(stall_protection_adjust > 150){
@@ -1067,9 +1052,7 @@ if(!armed){
 			if (RC_CAR_REVERSE && prop_brake_active) {
 #ifndef PWM_ENABLE_BRIDGE
 					duty_cycle = getAbsDif(1000, newinput) + 1000;
-					if(!running && brake_on_stop){
-						fullBrake();
-					}else if(duty_cycle == 2000){
+					if(duty_cycle == 2000){
 						fullBrake();
 					}else{
 						proportionalBrake();
@@ -1130,8 +1113,10 @@ if(!prop_brake_active){
 	 if (duty_cycle > duty_cycle_maximum){
 		 duty_cycle = duty_cycle_maximum;
 	 }
-	 if (duty_cycle > use_current_limit_adjust){
-		 duty_cycle = use_current_limit_adjust;
+	 if(use_current_limit){
+		 if (duty_cycle > use_current_limit_adjust){
+			 duty_cycle = use_current_limit_adjust;
+		 }
 	 }
 
 	 if(stall_protection_adjust > 0){
@@ -1325,7 +1310,7 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
 
     zero_crosses++;
     if(stall_protection || RC_CAR_REVERSE){
-   	 if (zero_crosses >= 20 && commutation_interval <= 1000) {
+   	 if (zero_crosses >= 20 && commutation_interval <= 2000) {
    	    	old_routine = 0;
    	    	enableCompInterrupts();          // enable interrupt
 
