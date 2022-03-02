@@ -166,7 +166,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 85
+#define VERSION_MINOR 87
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -847,8 +847,8 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 	zcfound = 0;
 	  if(use_speed_control_loop && running){
 	  input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
-	  if(input_override > 2000){
-		  input_override = 2000;
+	  if(input_override > 2047){
+		  input_override = 2047;
 	  }
 	  if(input_override < 0){
 		  input_override = 0;
@@ -936,7 +936,7 @@ void startMotor() {
 void tenKhzRoutine(){
 	tenkhzcounter++;
 	if(tenkhzcounter > 10000){      // 1s sample interval
-		consumed_current = (float)actual_current/3600 + consumed_current;
+		consumed_current = (float)actual_current/360 + consumed_current;
 		tenkhzcounter = 0;
 	}
 if(!armed){
@@ -1198,7 +1198,7 @@ if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
 			           battery_voltage,
 					   actual_current,
-	  				   (uint16_t)consumed_current/10,
+	  				   (uint16_t)consumed_current,
 	  					e_rpm);
 	  send_telem_DMA();
 	  send_telemetry = 0;
@@ -1726,7 +1726,7 @@ if(newinput > 2000){
 #endif
 	 	  }else{
 #ifdef FIXED_DUTY_MODE
-  			input = FIXED_DUTY_MODE_POWER * 20;
+  			input = FIXED_DUTY_MODE_POWER * 20 + 47;
 #else
 	  	  	if(use_sin_start){
   				if(adjusted_input < 30){           // dead band ?
@@ -1737,7 +1737,7 @@ if(newinput > 2000){
   					input= map(adjusted_input, 30 , (sine_mode_changeover_thottle_level * 20) , 47 ,160);
   					}
   					if(adjusted_input >= (sine_mode_changeover_thottle_level * 20)){
-  					input = map(adjusted_input , (sine_mode_changeover_thottle_level * 20) ,2000 , 160, 2000);
+  					input = map(adjusted_input , (sine_mode_changeover_thottle_level * 20) ,2047 , 160, 2047);
   					}
   				}else{
   					if(use_speed_control_loop){
@@ -1749,8 +1749,8 @@ if(newinput > 2000){
   		  				    input_override = 0;
   		  				}else{
   	  						input = (uint16_t)input_override;  // speed control pid override
-  	  						if(input_override > 1999){
-  	  							input = 1999;
+  	  						if(input_override > 2047){
+  	  							input = 2047;
   	  						}
   	  						if(input_override < 48){
   	  							input = 48;
@@ -1759,8 +1759,8 @@ if(newinput > 2000){
 					    }else{
 
   						input = (uint16_t)input_override;  // speed control pid override
-  						if(input_override > 1999){
-  							input = 1999;
+  						if(input_override > 2047){
+  							input = 2047;
   						}
   						if(input_override < 48){
   							input = 48;
