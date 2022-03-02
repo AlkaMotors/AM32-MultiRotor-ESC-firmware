@@ -145,6 +145,8 @@
 	   -Add current limit max duty cycle
 *1.85  -fix current limit not allowing full rpm on g071 or low pwm frequency
 		-remove unused brake on stop conditional 
+*1.86  --Change consumption scale
+*1.87  --fix max throttle for single direction servo input		
  */	    
 
 
