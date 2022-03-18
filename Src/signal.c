@@ -114,12 +114,14 @@ void transfercomplete(){
 
 
 	  	receiveDshotDma();
+
 	   	return;
 	    }else{
 
 			sendDshotDma();
 			make_dshot_package();
-			computeDshotDMA();
+		    computeDshotDMA();
+
 	    return;
 	    }
 	}

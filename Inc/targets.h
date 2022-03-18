@@ -1,6 +1,7 @@
 
 
 #ifndef USE_MAKE
+//#define F031_DEV
 //#define FD6288
 //#define IFLIGHT
 //#define MP6531
@@ -8,12 +9,13 @@
 //#define TMOTOR45
 //#define HGLRC
 //#define SISKIN
-//#define MAMBA_F50PRO
+#define MAMBA_F60PRO
 //#define WRAITH32
 //#define AIKON20X20
 //#define AIKONSINGLE
 //#define FLYCOLOR
-#define AM32REF
+//#define HKMICRO
+//#define AM32REF
 //#define BLPWR
 //#define HVFLYCOLOR
 
@@ -43,7 +45,6 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
-#define USE_RGB_LED
 #endif
 
 #ifdef MP6531
@@ -104,7 +105,7 @@
 
 #ifdef MAMBA_F60PRO
 #define FIRMWARE_NAME           "MAMBA F60PRO"
-#define DEAD_TIME               14
+#define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_F
 #define USE_SERIAL_TELEMETRY
 #endif
@@ -160,6 +161,17 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef HKMICRO
+#define FIRMWARE_NAME           "HK Micro    "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define USE_SERIAL_TELEMETRY
+#define USE_RGB_LED
+#endif
+
 
 #ifdef BLPWR
 #define FIRMWARE_NAME           "BlPwr-ESC"
@@ -189,7 +201,7 @@
 #ifdef G071_64K
 #define FIRMWARE_NAME  			    "G071 64kESC "
 #define DEAD_TIME               60
-#define MILLIVOLT_PER_AMP       15
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_A
 #define USE_SERIAL_TELEMETRY
@@ -230,7 +242,7 @@
 #ifdef  DT120_G071_64K
 #define FIRMWARE_NAME  			    "G071 120 64K"
 #define DEAD_TIME               120
-#define MILLIVOLT_PER_AMP       15
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_A
 #define SIXTY_FOUR_KB_MEMORY
@@ -264,6 +276,12 @@
 
 /********************************** F031 Targets ***********************************/
 
+#ifdef 	   F031_DEV
+#define    FIRMWARE_NAME  			"Yellow DEV  "
+#define    DEAD_TIME 				60
+#define    HARDWARE_GROUP_F031_A
+#define    TARGET_STALL_PROTECTION_INTERVAL 9000
+#endif
 
 
 /********************************** defaults if not set ***************************/
