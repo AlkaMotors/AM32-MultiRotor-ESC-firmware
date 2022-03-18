@@ -29,14 +29,14 @@ void changeCompInput() {
 
 	if (step == 1 || step == 4) {   // c floating
 
-		LL_COMP_ConfigInputs(COMP2,LL_COMP_INPUT_MINUS_IO3 , LL_COMP_INPUT_PLUS_IO3);         // pa2
+		LL_COMP_ConfigInputs(COMP2, PHASE_C_COMP , LL_COMP_INPUT_PLUS_IO3);      
 
 
 	}
 
 	if (step == 2 || step == 5) {     // a floating
-                                                   // pb7
-		LL_COMP_ConfigInputs(COMP2, LL_COMP_INPUT_MINUS_IO2, LL_COMP_INPUT_PLUS_IO3);
+                                                   
+		LL_COMP_ConfigInputs(COMP2, PHASE_A_COMP, LL_COMP_INPUT_PLUS_IO3);
 
 
 
@@ -44,7 +44,7 @@ void changeCompInput() {
 
 	if (step == 3 || step == 6) {      // b floating
 
-		LL_COMP_ConfigInputs(COMP2, LL_COMP_INPUT_MINUS_IO1, LL_COMP_INPUT_PLUS_IO3);     //pb3
+		LL_COMP_ConfigInputs(COMP2, PHASE_B_COMP, LL_COMP_INPUT_PLUS_IO3);     
 
 	}
 	//COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO3;

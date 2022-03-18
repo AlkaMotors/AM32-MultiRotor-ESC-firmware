@@ -18,6 +18,7 @@ SRC_DIRS_COMMON := $(MAIN_SRC_DIR)
 # Include processor specific makefiles
 include f051makefile.mk
 include g071makefile.mk
+include f031makefile.mk
 
 # Default MCU type to F051
 MCU_TYPE ?= F051
@@ -56,10 +57,11 @@ BIN_DIR := $(ROOT)/obj
 TOOLS_DIR ?= $(ROOT)/tools
 DL_DIR := $(ROOT)/downloads
 
-.PHONY : clean all binary f051 g071 
-all : $(TARGETS_F051) $(TARGETS_G071) 
+.PHONY : clean all binary f051 g071 f031
+all : $(TARGETS_F051) $(TARGETS_G071) $(TARGETS_F031)
 f051 : $(TARGETS_F051)
 g071 : $(TARGETS_G071)
+f031 : $(TARGETS_F031)
 
 clean :
 	rm -rf $(BIN_DIR)/*
@@ -73,7 +75,8 @@ $(TARGETS_F051) :
 $(TARGETS_G071) :
 	@$(MAKE) -s MCU_TYPE=G071 TARGET=$@ binary
 
-
+$(TARGETS_F031) :
+	@$(MAKE) -s MCU_TYPE=F031 TARGET=$@ binary
 
 # Compile target
 $(TARGET_BASENAME).elf: SRC := $(SRC_COMMON) $(SRC_$(MCU_TYPE))

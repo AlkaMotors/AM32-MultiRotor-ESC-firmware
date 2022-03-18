@@ -46,7 +46,7 @@ void SystemClock_Config(void)
   LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
   if(LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2)
   {
-    Error_Handler();
+  //  Error_Handler();
   };
 
   /* HSI configuration and activation */
@@ -138,7 +138,7 @@ void MX_COMP2_Init(void)
   COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_IO3;
   COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_LOW;
   COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
-  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_NONE;
+  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC4;
   LL_COMP_Init(COMP2, &COMP_InitStruct);
   LL_COMP_SetPowerMode(COMP2, LL_COMP_POWERMODE_HIGHSPEED);
   LL_COMP_SetCommonWindowMode(__LL_COMP_COMMON_INSTANCE(COMP2), LL_COMP_WINDOWMODE_DISABLE);

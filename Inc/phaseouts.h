@@ -15,5 +15,7 @@ void comStep (int newStep);
 void fullBrake();
 void allpwm();
 void proportionalBrake();
+void twoChannelForward();
+void twoChannelReverse();
 
 #endif /* INC_PHASEOUTS_H_ */

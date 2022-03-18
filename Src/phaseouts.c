@@ -7,7 +7,6 @@
 #include "phaseouts.h"
 #include "targets.h"
 
-
 extern char comp_pwm;
 extern char prop_brake_active;
 
@@ -312,3 +311,17 @@ void allpwm(){                        // for stepper_sine
 	phaseBPWM();
 	phaseCPWM();
 }
+
+#ifdef BRUSHED_MODE
+void twoChannelForward(){
+phaseAPWM();
+phaseBLOW();
+phaseCPWM();
+}
+
+void twoChannelReverse(){
+phaseALOW();
+phaseBPWM();
+phaseCLOW();
+}
+#endif

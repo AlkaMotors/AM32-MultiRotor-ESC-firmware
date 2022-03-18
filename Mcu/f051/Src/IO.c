@@ -10,14 +10,13 @@
 #include "dshot.h"
 #include "serial_telemetry.h"
 #include "functions.h"
+#include "common.h"
 
 char ic_timer_prescaler = 10;
 char output_timer_prescaler;
-//int max_servo_deviation = 250;
-//int servorawinput;
 int buffersize = 32;
 int smallestnumber = 0;
-uint32_t dma_buffer[64];
+uint32_t dma_buffer[64] = {0};
 char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
@@ -113,7 +112,6 @@ void receiveDshotDma(){
 #endif
 	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
-	//   TIM16->PSC = 1;
 
 }
 
