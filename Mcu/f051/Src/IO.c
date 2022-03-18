@@ -21,19 +21,13 @@ char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
 uint32_t average_signal_pulse;
+uint8_t  buffer_padding = 0;
 
 void changeToOutput(){
-	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
-
-#ifdef USE_TIMER_2_CHANNEL_3
-
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM2);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM2);
-	  IC_TIMER_REGISTER->CCMR2 = 0x60;
-	  IC_TIMER_REGISTER->CCER = 0x200;
-#endif
+//	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
 
 #ifdef USE_TIMER_3_CHANNEL_1
+	  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
 	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
 	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
 	  IC_TIMER_REGISTER->CCMR1 = 0x60;
@@ -42,7 +36,7 @@ void changeToOutput(){
 #ifdef USE_TIMER_15_CHANNEL_1
 	  LL_APB1_GRP2_ForceReset(LL_APB1_GRP2_PERIPH_TIM15);
 	  LL_APB1_GRP2_ReleaseReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  IC_TIMER_REGISTER->CCMR1 = 0x60;                         // channel 1 tim 15
+	  IC_TIMER_REGISTER->CCMR1 = 0x60;                         // set it all at once.
 	  IC_TIMER_REGISTER->CCER = 0x3;
 #endif
 
@@ -53,16 +47,10 @@ void changeToOutput(){
 }
 
 void changeToInput(){
-	  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-
-#ifdef USE_TIMER_2_CHANNEL_3
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM2);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM2);
-	  IC_TIMER_REGISTER->CCMR2 = 0x1;
-	  IC_TIMER_REGISTER->CCER = 0xa00;
-#endif
+//	  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
 
 #ifdef USE_TIMER_3_CHANNEL_1
+	//  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
 	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
 	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
 	  IC_TIMER_REGISTER->CCMR1 = 0x1;
@@ -84,65 +72,74 @@ void receiveDshotDma(){
 
 	changeToInput();
 	IC_TIMER_REGISTER->CNT = 0;
-#ifdef USE_TIMER_2_CHANNEL_4
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR4, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
 #ifdef USE_TIMER_3_CHANNEL_1
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
+	   DMA1_Channel4->CMAR =(uint32_t)&dma_buffer;
+	   DMA1_Channel4->CPAR =(uint32_t)&IC_TIMER_REGISTER->CCR1;
+	   DMA1_Channel4->CNDTR = buffersize;
+	   DMA1_Channel4->CCR = 0x98b;
+	//   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
 #endif
 #ifdef USE_TIMER_15_CHANNEL_1
-	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
-	   LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, buffersize);
-	   LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
+	   DMA1_Channel5->CMAR =(uint32_t)&dma_buffer;
+	   DMA1_Channel5->CPAR =(uint32_t)&IC_TIMER_REGISTER->CCR1;
+	   DMA1_Channel5->CNDTR = buffersize;
+	   DMA1_Channel5->CCR = 0x98b;
+	//   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
 
-	   LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
-	   LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
-#ifdef USE_TIMER_2_CHANNEL_4
-	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
 #endif
-#ifdef USE_TIMER_3_CHANNEL_1
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
-	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
+	 //  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, buffersize);
+	 // LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
+	 //  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
+	 //  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
+
+		  IC_TIMER_REGISTER->DIER |= TIM_DIER_CC1DE;
+		  IC_TIMER_REGISTER->CCER |= IC_TIMER_CHANNEL;
+		  IC_TIMER_REGISTER->CR1  |= TIM_CR1_CEN;
+
+		  //	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
+		  //	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
 
 }
 
 void sendDshotDma(){
 
 	changeToOutput();
-#ifdef USE_TIMER_2_CHANNEL_4
-	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR4, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
 #ifdef USE_TIMER_3_CHANNEL_1
-	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
+	     //     LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
+
+		   	   DMA1_Channel4->CMAR =(uint32_t)&gcr;
+		   	   DMA1_Channel4->CPAR =(uint32_t)&IC_TIMER_REGISTER->CCR1;
+		   	   DMA1_Channel4->CNDTR = 23+buffer_padding;
+		   	   DMA1_Channel4->CCR = 0x99b;
+
+	          #endif
 #ifdef USE_TIMER_15_CHANNEL_1
-			  LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
+		        //		  LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
+	   	   DMA1_Channel5->CMAR =(uint32_t)&gcr;
+	   	   DMA1_Channel5->CPAR =(uint32_t)&IC_TIMER_REGISTER->CCR1;
+	   	   DMA1_Channel5->CNDTR = 23+buffer_padding;
+	   	   DMA1_Channel5->CCR = 0x99b;
+
+
 #endif
-			  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, 30);
-			  LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
-			  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
-			  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
-#ifdef USE_TIMER_2_CHANNEL_4
-			  LL_TIM_EnableDMAReq_CC4(IC_TIMER_REGISTER);
-#endif
-#ifdef USE_TIMER_3_CHANNEL_1
-			  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-#ifdef USE_TIMER_15_CHANNEL_1
-			  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
-			  LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
-			  LL_TIM_EnableAllOutputs(IC_TIMER_REGISTER);
-			  LL_TIM_EnableCounter(IC_TIMER_REGISTER);
+	//		  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, 30);
+	//		  LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
+	//		  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
+	//		  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
+
+
+	//		  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
+	//		  LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
+	//		  LL_TIM_EnableAllOutputs(IC_TIMER_REGISTER);
+	//		  LL_TIM_EnableCounter(IC_TIMER_REGISTER);
+
+			  IC_TIMER_REGISTER->DIER |= TIM_DIER_CC1DE;
+			  IC_TIMER_REGISTER->CCER |= IC_TIMER_CHANNEL;
+			  IC_TIMER_REGISTER->BDTR |= TIM_BDTR_MOE;
+			  IC_TIMER_REGISTER->CR1  |= TIM_CR1_CEN;
+
+
+
 }
 
 
@@ -173,8 +170,8 @@ void detectInput(){
 		output_timer_prescaler=0;
 		dshot = 1;
 		buffer_divider = 44;
+		buffer_padding = 9;
 		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
 		buffersize = 32;
 	}
 	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
@@ -184,7 +181,7 @@ void detectInput(){
 		IC_TIMER_REGISTER->CNT = 0xffff;
 		buffer_divider = 44;
 		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
+		buffer_padding = 7;
 		buffersize = 32;
 	}
 //	if ((smallestnumber > 100 )&&(smallestnumber < 400)){
@@ -210,6 +207,28 @@ void detectInput(){
 	}
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
