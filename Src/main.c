@@ -145,8 +145,9 @@
 	   -Add current limit max duty cycle
 *1.85  -fix current limit not allowing full rpm on g071 or low pwm frequency
 		-remove unused brake on stop conditional 
-*1.86  --Change consumption scale
-*1.87  --fix max throttle for single direction servo input		
+*1.86  - create do-once in sine mode instead of setting pwm mode each time.
+*1.87  - fix fixed mode max rpm limits
+*1.88  -
  */	    
 
 
@@ -168,7 +169,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 87
+#define VERSION_MINOR 88
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -241,7 +242,7 @@ char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
 uint16_t stall_protect_target_interval = TARGET_STALL_PROTECTION_INTERVAL;
 char USE_HALL_SENSOR = 0;
 uint16_t enter_sine_angle = 180;
-
+char do_once_sinemode= 0;
 //============================= Servo Settings ==============================
 uint16_t servo_low_threshold = 1100;	// anything below this point considered 0
 uint16_t servo_high_threshold = 1900;	// anything above this point considered 2000 (max)
@@ -936,6 +937,8 @@ void startMotor() {
 }
 
 void tenKhzRoutine(){
+
+
 	tenkhzcounter++;
 	if(tenkhzcounter > 10000){      // 1s sample interval
 		consumed_current = (float)actual_current/360 + consumed_current;
@@ -1744,7 +1747,7 @@ if(newinput > 2000){
   				}else{
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
- 						target_e_com_time = map(adjusted_input , 47 ,2000 , target_e_com_time_low, target_e_com_time_high);
+ 						target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
   		  				if(adjusted_input < 47){           // dead band ?
   		  					input= 0;
   		  					speedPid.error = 0;
@@ -1787,7 +1790,7 @@ if(newinput > 2000){
    }
 
    if(degrees_celsius > TEMPERATURE_LIMIT){
-	   duty_cycle_maximum = map(degrees_celsius, TEMPERATURE_LIMIT, TEMPERATURE_LIMIT+20, throttle_max_at_high_rpm/2, 1);
+	   duty_cycle_maximum = map(degrees_celsius, TEMPERATURE_LIMIT-10, TEMPERATURE_LIMIT+10, throttle_max_at_high_rpm/2, 1);
    }
 
 
@@ -1803,13 +1806,13 @@ if (zero_crosses < 100 || commutation_interval > 500) {
 #ifdef MCU_G071
 		TIM1->CCR4 = 5;
 #endif
-		filter_level = map(average_interval, 100 , 500, 4 , 12);
+		filter_level = map(average_interval, 100 , 500, 3, 10);
 	}
 	if (commutation_interval < 100){
 		filter_level = 2;
 	}
 
-if(motor_kv < 900){
+if(motor_kv < 500){
 
 	filter_level = filter_level * 2;
 }
@@ -1881,14 +1884,21 @@ if(input > 48 && armed){
 
 	 		  if (input > 48 && input < 137){// sine wave stepper
 
-	 			 maskPhaseInterrupts();
-	 			 allpwm();
+	   	 	if(do_once_sinemode){
+	   	 		maskPhaseInterrupts();
+	   	 		TIM1->CCR1 = 0;
+	   	 		TIM1->CCR2 = 0;
+	   	 		TIM1->CCR3 = 0;
+	   	 		allpwm();
+	   	 		do_once_sinemode = 0;
+	   	 	}
 	 		 advanceincrement();
              step_delay = map (input, 48, 120, 7000/motor_poles, 810/motor_poles);
 	 		 delayMicros(step_delay);
 			 e_rpm =   600/ step_delay ;         // in hundreds so 33 e_rpm is 3300 actual erpm
 
 	 		  }else{
+				   do_once_sinemode = 1;
 	 			 advanceincrement();
 	 			  if(input > 200){
 	 				 phase_A_position = 0;
@@ -1919,14 +1929,16 @@ if(input > 48 && armed){
 	 		  }
 
 }else{
+	do_once_sinemode = 1;
 	if(brake_on_stop){
 #ifndef PWM_ENABLE_BRIDGE
 	duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 	adjusted_duty_cycle = TIMER1_MAX_ARR - ((duty_cycle * tim1_arr)/TIMER1_MAX_ARR)+1;
+proportionalBrake();
 	TIM1->CCR1 = adjusted_duty_cycle;
 	TIM1->CCR2 = adjusted_duty_cycle;
 	TIM1->CCR3 = adjusted_duty_cycle;
-	proportionalBrake();
+	
 	prop_brake_active = 1;
 #else
 		// todo add braking for PWM /enable style bridges.

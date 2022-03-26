@@ -1,6 +1,7 @@
 
 
 #ifndef USE_MAKE
+
 //#define FD6288
 //#define IFLIGHT
 //#define MP6531
@@ -8,12 +9,13 @@
 //#define TMOTOR45
 //#define HGLRC
 //#define SISKIN
-//#define MAMBA_F50PRO
+#define MAMBA_F60PRO
 //#define WRAITH32
 //#define AIKON20X20
 //#define AIKONSINGLE
 //#define FLYCOLOR
-#define AM32REF
+//#define HKMICRO
+//#define AM32REF
 //#define BLPWR
 //#define HVFLYCOLOR
 
@@ -43,7 +45,6 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
-#define USE_RGB_LED
 #endif
 
 #ifdef MP6531
@@ -104,7 +105,7 @@
 
 #ifdef MAMBA_F60PRO
 #define FIRMWARE_NAME           "MAMBA F60PRO"
-#define DEAD_TIME               14
+#define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_F
 #define USE_SERIAL_TELEMETRY
 #endif
@@ -160,6 +161,17 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef HKMICRO
+#define FIRMWARE_NAME           "HK Micro    "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define USE_SERIAL_TELEMETRY
+#define USE_RGB_LED
+#endif
+
 
 #ifdef BLPWR
 #define FIRMWARE_NAME           "BlPwr-ESC"
@@ -189,7 +201,7 @@
 #ifdef G071_64K
 #define FIRMWARE_NAME  			    "G071 64kESC "
 #define DEAD_TIME               60
-#define MILLIVOLT_PER_AMP       15
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_A
 #define USE_SERIAL_TELEMETRY
@@ -230,7 +242,7 @@
 #ifdef  DT120_G071_64K
 #define FIRMWARE_NAME  			    "G071 120 64K"
 #define DEAD_TIME               120
-#define MILLIVOLT_PER_AMP       15
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_A
 #define SIXTY_FOUR_KB_MEMORY
@@ -263,6 +275,7 @@
 #endif
 
 /********************************** F031 Targets ***********************************/
+
 
 
 
@@ -733,72 +746,7 @@
 
 /************************************ G031 Hardware Groups ************************************************/
 
-#ifdef HARDWARE_GROUP_F031_A
 
-#define    EXTI_TYPE_BAC
-#define    USE_TIMER_2_CHANNEL_3
-#define    MCU_F031
-
-#define    INPUT_PIN               LL_GPIO_PIN_2
-#define    INPUT_PIN_PORT              GPIOA
-#define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH3
-#define    IC_TIMER_REGISTER          TIM2
-#define    IC_TIMER_POINTER           htim2
-
-#define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-#define    DMA_HANDLE_TYPE_DEF     hdma_tim2_ch3
-#define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
-
-#define    PHASE_A_EXTI_PORT          GPIOF
-#define    PHASE_B_EXTI_PORT          GPIOF
-#define    PHASE_C_EXTI_PORT          GPIOA
-
-#define    PHASE_A_EXTI_PIN           LL_GPIO_PIN_0
-#define    PHASE_B_EXTI_PIN           LL_GPIO_PIN_1
-#define    PHASE_C_EXTI_PIN           LL_GPIO_PIN_6
-
-#define    PHASE_A_EXTI_LINE          0
-#define    PHASE_B_EXTI_LINE          1
-#define    PHASE_C_EXTI_LINE          6
-
-#define    SYSCFG_EXTI_PORTA         LL_SYSCFG_EXTI_PORTF
-#define    SYSCFG_EXTI_PORTB         LL_SYSCFG_EXTI_PORTF
-#define    SYSCFG_EXTI_PORTC         LL_SYSCFG_EXTI_PORTA
-
-#define    SYSCFG_EXTI_LINEA         LL_SYSCFG_EXTI_LINE0
-#define    SYSCFG_EXTI_LINEB         LL_SYSCFG_EXTI_LINE1
-#define    SYSCFG_EXTI_LINEC         LL_SYSCFG_EXTI_LINE6
-
-#define    PHASE_A_LL_EXTI_LINE      LL_EXTI_LINE_0
-#define    PHASE_B_LL_EXTI_LINE      LL_EXTI_LINE_1
-#define    PHASE_C_LL_EXTI_LINE      LL_EXTI_LINE_6
-
-#define    EXTI_IRQ1_NAME          EXTI0_1_IRQn
-#define    EXTI_IRQ2_NAME          EXTI4_15_IRQn
-
-#define PHASE_A_GPIO_LOW          LL_GPIO_PIN_14
-#define PHASE_A_GPIO_PORT_LOW         GPIOB
-#define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_9
-#define PHASE_A_GPIO_PORT_HIGH         GPIOA
-
-#define PHASE_B_GPIO_LOW          LL_GPIO_PIN_13
-#define PHASE_B_GPIO_PORT_LOW         GPIOB
-#define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_8
-#define PHASE_B_GPIO_PORT_HIGH         GPIOA
-
-#define PHASE_C_GPIO_LOW          LL_GPIO_PIN_15
-#define PHASE_C_GPIO_PORT_LOW         GPIOB
-#define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_10
-#define PHASE_C_GPIO_PORT_HIGH         GPIOA
-
-#define CURRENT_SENSE_ADC_PIN        LL_GPIO_PIN_5
-#define VOLTAGE_SENSE_ADC_PIN        LL_GPIO_PIN_7
-
-#define CURRENT_ADC_CHANNEL         LL_ADC_CHANNEL_5
-#define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_7
-
-
-#endif
 
 #ifdef    HARDWARE_GROUP_F031_B
 

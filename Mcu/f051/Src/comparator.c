@@ -10,7 +10,7 @@
 
 
 void maskPhaseInterrupts(){
-	EXTI->IMR &= (0 << 21);
+	EXTI->IMR &= ~(1 << 21);
 	LL_EXTI_ClearFlag_0_31(EXTI_LINE);
 }
 

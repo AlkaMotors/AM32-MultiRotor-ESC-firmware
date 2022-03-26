@@ -520,8 +520,6 @@ void UN_TIM_Init(void)
   NVIC_EnableIRQ(TIM15_IRQn);
 #endif
 #ifdef USE_TIMER_3_CHANNEL_1
-  NVIC_SetPriority(TIM3_IRQn, 0);
-   NVIC_EnableIRQ(TIM3_IRQn);
    NVIC_SetPriority(IC_DMA_IRQ_NAME, 1);
    NVIC_EnableIRQ(IC_DMA_IRQ_NAME);
 #endif
