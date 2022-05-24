@@ -55,7 +55,8 @@ int j = 0;
 dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
 #if defined(MCU_F051) || defined(MCU_F031)
-	         if((dshot_frametime < 1275)&&(dshot_frametime > 1210)){
+//	         if((dshot_frametime < 1275)&&(dshot_frametime > 1210)){
+	         if((dshot_frametime < 1325)&&(dshot_frametime > 1210)){
 				for (int i = 0; i < 16; i++){
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>5) ;
 				}
