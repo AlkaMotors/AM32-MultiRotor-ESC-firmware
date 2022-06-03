@@ -107,18 +107,18 @@
  *1.72 Fix telemetry output and add 1 second arming.
  *1.73 Fix false arming if no signal. Remove low rpm throttle protection below 300kv
  *1.74 Add Sine Mode range and drake brake strength adjustment
- *1.75 Disable brake on stop for PWM_ENABLE_BRIDGE 
+ *1.75 Disable brake on stop for PWM_ENABLE_BRIDGE
 	   Removed automatic brake on stop on neutral for RC car proportional brake.
 	   Adjust sine speed and stall protection speed to more closely match
-	   makefile fixes from Cruwaller 
+	   makefile fixes from Cruwaller
 	   Removed gd32 build, until firmware is functional
- *1.76 Adjust g071 PWM frequency, and startup power to be same frequency as f051. 
+ *1.76 Adjust g071 PWM frequency, and startup power to be same frequency as f051.
        Reduce number of polling back emf checks for g071
  *1.77 increase PWM frequency range to 8-48khz
- *1.78 Fix bluejay tunes frequency and speed. 
-	   Fix g071 Dead time 	
+ *1.78 Fix bluejay tunes frequency and speed.
+	   Fix g071 Dead time
 	   Increment eeprom version
- *1.79 Add stick throttle calibration routine  
+ *1.79 Add stick throttle calibration routine
 	   Add variable for telemetry interval
  *1.80 -Enable Comparator blanking for g071 on timer 1 channel 4
 	   -add hardware group F for Iflight Blitz
@@ -144,11 +144,11 @@
 	   -Enable two channel brushed motor control for dual motors
 	   -Add current limit max duty cycle
 *1.85  -fix current limit not allowing full rpm on g071 or low pwm frequency
-		-remove unused brake on stop conditional 
+		-remove unused brake on stop conditional
 *1.86  - create do-once in sine mode instead of setting pwm mode each time.
 *1.87  - fix fixed mode max rpm limits
 *1.88  -
- */	    
+ */
 
 
 #include <stdint.h>
@@ -316,7 +316,7 @@ uint16_t armed_timeout_count;
 uint16_t reverse_speed_threshold = 1500;
 uint8_t desync_happened = 0;
 char maximum_throttle_change_ramp = 1;
-  
+
 char crawler_mode = 0;  // no longer used //
 uint16_t velocity_count = 0;
 uint16_t velocity_count_threshold = 75;
@@ -682,7 +682,7 @@ void loadEEpromSettings(){
 	   if(eepromBuffer[41] > 0 && eepromBuffer[41] < 11){        // drag brake 1-10
        drag_brake_strength = eepromBuffer[41];
 	   }
-	   
+
 	   if(eepromBuffer[42] > 0 && eepromBuffer[42] < 10){        // motor brake 1-9
        driving_brake_strength = eepromBuffer[42];
 	   dead_time_override = DEAD_TIME + (150 - (driving_brake_strength * 10));
@@ -695,18 +695,18 @@ void loadEEpromSettings(){
 	   startup_max_duty_cycle = startup_max_duty_cycle  + dead_time_override;
 	   TIM1->BDTR |= dead_time_override;
 	   }
-	   
-	   if(eepromBuffer[43] >= 70 && eepromBuffer[43] <= 140){ 
+
+	   if(eepromBuffer[43] >= 70 && eepromBuffer[43] <= 140){
 	   TEMPERATURE_LIMIT = eepromBuffer[43];
-	   
+
 	   }
-	   
+
 	   if(eepromBuffer[44] > 0 && eepromBuffer[44] < 100){
 	   CURRENT_LIMIT = eepromBuffer[44] * 2;
 	   use_current_limit = 1;
-	   
+
 	   }
-	   if(eepromBuffer[45] > 0 && eepromBuffer[45] < 11){ 
+	   if(eepromBuffer[45] > 0 && eepromBuffer[45] < 11){
 	   sine_mode_power = eepromBuffer[45];
 	   }
 
@@ -725,7 +725,7 @@ void loadEEpromSettings(){
 
 }
 
-void saveEEpromSettings(){    
+void saveEEpromSettings(){
 
    eepromBuffer[1] = eeprom_layout_version;
    if(dir_reversed == 1){
@@ -1072,7 +1072,7 @@ if(!armed){
 			  bad_count = 0;
 			  	  if(brake_on_stop){
 			  		  if(!use_sin_start){
-#ifndef PWM_ENABLE_BRIDGE				
+#ifndef PWM_ENABLE_BRIDGE
 			  			  duty_cycle = (TIMER1_MAX_ARR-19) + drag_brake_strength*2;
 			  			  proportionalBrake();
 			  			  prop_brake_active = 1;
@@ -1747,7 +1747,9 @@ if(newinput > 2000){
   				}else{
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
- 						target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
+                uint16_t target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
+                target_e_com_time = 60000000 / target_rpm / (motor_poles/2) ;
+ 						//target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
   		  				if(adjusted_input < 47){           // dead band ?
   		  					input= 0;
   		  					speedPid.error = 0;
@@ -1938,7 +1940,7 @@ proportionalBrake();
 	TIM1->CCR1 = adjusted_duty_cycle;
 	TIM1->CCR2 = adjusted_duty_cycle;
 	TIM1->CCR3 = adjusted_duty_cycle;
-	
+
 	prop_brake_active = 1;
 #else
 		// todo add braking for PWM /enable style bridges.
