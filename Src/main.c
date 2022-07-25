@@ -147,7 +147,9 @@
 		-remove unused brake on stop conditional 
 *1.86  - create do-once in sine mode instead of setting pwm mode each time.
 *1.87  - fix fixed mode max rpm limits
-*1.88  -
+*1.88  - Fix stutter on sine mode re-entry due to position reset
+*1.89  - Fix drive by rpm mode scaling.
+ 	   - Fix dshot px4 timings
  */	    
 
 
@@ -169,7 +171,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 88
+#define VERSION_MINOR 89
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -187,8 +189,8 @@
 //===========================================================================
 
 uint8_t drive_by_rpm = 0;
-uint32_t MAXIMUM_RPM_SPEED_CONTROL = 12000;
-uint32_t MINIMUM_RPM_SPEED_CONTROL = 2000;
+uint32_t MAXIMUM_RPM_SPEED_CONTROL = 10000;
+uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
@@ -1493,9 +1495,7 @@ loadEEpromSettings();
  receiveDshotDma();
  if(drive_by_rpm){
 	 use_speed_control_loop = 1;
-	 target_e_com_time_high = 60000000 / MAXIMUM_RPM_SPEED_CONTROL / (motor_poles/2) ;
-	 target_e_com_time_low = 60000000 / MINIMUM_RPM_SPEED_CONTROL / (motor_poles/2) ;
- }
+}
 #endif
 
 #endif      // end fixed duty mode ifdef
@@ -1747,7 +1747,7 @@ if(newinput > 2000){
   				}else{
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
- 						target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
+ 						target_e_com_time = 60000000 / map(adjusted_input , 47 ,2047 , MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL) / (motor_poles/2);
   		  				if(adjusted_input < 47){           // dead band ?
   		  					input= 0;
   		  					speedPid.error = 0;

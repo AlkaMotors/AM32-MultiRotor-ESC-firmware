@@ -1,7 +1,6 @@
 
 
 #ifndef USE_MAKE
-
 //#define FD6288
 //#define IFLIGHT
 //#define MP6531
@@ -9,7 +8,7 @@
 //#define TMOTOR45
 //#define HGLRC
 //#define SISKIN
-#define MAMBA_F60PRO
+//#define MAMBA_F60PRO
 //#define WRAITH32
 //#define AIKON20X20
 //#define AIKONSINGLE
@@ -19,7 +18,7 @@
 //#define BLPWR
 //#define HVFLYCOLOR
 
-//#define G072ESC
+#define G071_64K
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
 //#define G071_OPEN_DRAIN_B
@@ -208,6 +207,29 @@
 #define SIXTY_FOUR_KB_MEMORY
 #endif
 
+#ifdef G071_NEUTRON
+#define FIRMWARE_NAME  			    "Neutron G071"
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define HARDWARE_GROUP_G0_A
+#define USE_SERIAL_TELEMETRY
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
+
+#ifdef G071N_AIKON
+#define FIRMWARE_NAME  			    "Aikon Pro 55"
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define HARDWARE_GROUP_G0_G
+#define USE_SERIAL_TELEMETRY
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
 
 #ifdef  G071ESC
 #define FIRMWARE_NAME  			    "G071 DevESC "
@@ -273,8 +295,6 @@
 #define CURRENT_OFFSET          0
 #define HARDWARE_GROUP_G0_D
 #endif
-
-/********************************** F031 Targets ***********************************/
 
 
 
@@ -745,7 +765,6 @@
 #endif
 
 /************************************ G031 Hardware Groups ************************************************/
-
 
 
 #ifdef    HARDWARE_GROUP_F031_B
