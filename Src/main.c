@@ -195,7 +195,7 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 3000;
                 .Kp = 40, // 10
  		.Ki = 40,
  		.Kd = 100, // 100
- 		.integral_limit = 20000000, //10000,
+ 		.integral_limit = 2000000, //10000,
  		.output_limit = 20000000 //50000
  };
 
@@ -855,7 +855,8 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 	  //input_override = doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
 	  
 	  int rpm = 60000000 / e_com_time / (motor_poles/2);
-	  input_override = - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
+	  
+	  input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
 	  
 	  if(input_override > 2047){
 		  input_override = 2047;
