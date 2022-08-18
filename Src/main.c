@@ -192,11 +192,11 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 3000;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
- 		.Kp = 10,
- 		.Ki = 0,
- 		.Kd = 100,
- 		.integral_limit = 10000,
- 		.output_limit = 50000
+                .Kp = 40, // 10
+ 		.Ki = 40,
+ 		.Kd = 100, // 100
+ 		.integral_limit = 20000000, //10000,
+ 		.output_limit = 20000000 //50000
  };
 
  fastPID currentPid = {   // 1khz loop time
@@ -300,6 +300,8 @@ uint16_t desired_angle = 90;
 //		.integral_limit = 1,
 //		.output_limit = 5
 //};
+
+uint16_t target_rpm = 0;
 
 uint16_t target_e_com_time = 0;
 int16_t Speed_pid_output;
@@ -537,7 +539,7 @@ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
 float doPidCalculations(struct fastPID *pidnow, int actual, int target){
 
 	pidnow->error = actual - target;
-	pidnow->integral = pidnow->integral + pidnow->error*pidnow->Ki + pidnow->last_error*pidnow->Ki;
+	pidnow->integral = pidnow->integral + pidnow->error*pidnow->Ki /*+ pidnow->last_error*pidnow->Ki*/;
 	if(pidnow->integral > pidnow->integral_limit){
 		pidnow->integral = pidnow->integral_limit;
 	}
@@ -849,7 +851,12 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 	bemfcounter = 0;
 	zcfound = 0;
 	  if(use_speed_control_loop && running){
-	  input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
+	  //input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
+	  //input_override = doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
+	  
+	  int rpm = 60000000 / e_com_time / (motor_poles/2);
+	  input_override = - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
+	  
 	  if(input_override > 2047){
 		  input_override = 2047;
 	  }
@@ -1464,6 +1471,7 @@ loadEEpromSettings();
  use_speed_control_loop = 1;
  use_sin_start = 0;
  target_e_com_time = 60000000 / FIXED_SPEED_MODE_RPM / (motor_poles/2) ;
+ target_rpm = FIXED_SPEED_MODE_RPM;
  input = 48;
 #endif
 
@@ -1747,7 +1755,7 @@ if(newinput > 2000){
   				}else{
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
-                uint16_t target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
+		target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
                 target_e_com_time = 60000000 / target_rpm / (motor_poles/2) ;
  						//target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
   		  				if(adjusted_input < 47){           // dead band ?
