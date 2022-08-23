@@ -26,7 +26,7 @@ void initCorePeripherals(void){
   MX_COMP1_Init();
   MX_TIM14_Init();
   MX_TIM6_Init();
-  MX_TIM17_Init();	 
+  MX_TIM17_Init();
   UN_TIM_Init();
   #ifdef USE_SERIAL_TELEMETRY
     telem_UART_Init();
@@ -574,6 +574,3 @@ void LED_GPIO_init(){
 }
 
 #endif
-
-
-

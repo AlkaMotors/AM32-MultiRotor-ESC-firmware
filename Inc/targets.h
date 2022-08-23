@@ -75,6 +75,18 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef HGLRC35
+#define FIRMWARE_NAME           "HGLRC_35A   "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_A
+#define USE_SERIAL_TELEMETRY
+#define PA6_VOLTAGE
+#define TARGET_VOLTAGE_DIVIDER  210
+#endif
+
+
+
+
 #ifdef SISKIN
 #define FIRMWARE_NAME           "SISKIN_PA2  "
 #define DEAD_TIME               45
@@ -291,7 +303,7 @@
 
 #ifndef  	MILLIVOLT_PER_AMP
 #define     MILLIVOLT_PER_AMP           20
-#endif 
+#endif
 
 #ifndef 	CURRENT_OFFSET
 #define     CURRENT_OFFSET              0
@@ -860,15 +872,3 @@
 #define TARGET_MIN_BEMF_COUNTS 4
 #define USE_ADC
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

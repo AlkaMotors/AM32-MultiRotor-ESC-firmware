@@ -392,7 +392,7 @@ char send_telemetry = 0;
 char telemetry_done = 0;
 char prop_brake_active = 0;
 
-uint8_t eepromBuffer[176] ={0};
+uint8_t eepromBuffer[183] ={0};
 
 char dshot_telemetry = 0;
 
@@ -564,7 +564,7 @@ float doPidCalculations(struct fastPID *pidnow, int actual, int target){
 
 
 void loadEEpromSettings(){
-	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 176);
+	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 183);
 
 	   if(eepromBuffer[17] == 0x01){
 	 	  dir_reversed =  1;
@@ -723,8 +723,20 @@ void loadEEpromSettings(){
 		bi_direction = 0;
 	}
 
+   if(eepromBuffer[48]==0)
+   {
+     drive_by_rpm = 0;
+   }else{
+     drive_by_rpm = 1;
 
+     MINIMUM_RPM_SPEED_CONTROL=eepromBuffer[49]*1000;
+     MAXIMUM_RPM_SPEED_CONTROL=eepromBuffer[50]*1000;
 
+     speedPid.Kp = eepromBuffer[51];
+     speedPid.Ki = eepromBuffer[52];
+     speedPid.Kd = eepromBuffer[53];
+     speedPid.integral_limit = eepromBuffer[54]*100000;
+   }
 }
 
 void saveEEpromSettings(){
@@ -762,7 +774,7 @@ void saveEEpromSettings(){
     	  eepromBuffer[22] = 0x00;
       }
    eepromBuffer[23] = advance_level;
-   save_flash_nolib(eepromBuffer, 176, EEPROM_START_ADD);
+   save_flash_nolib(eepromBuffer, 183, EEPROM_START_ADD);
 }
 
 
@@ -853,11 +865,11 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 	  if(use_speed_control_loop && running){
 	  //input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
 	  //input_override = doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
-	  
-	  int rpm = 60000000 / e_com_time / (motor_poles/2);
-	  
+
+	  int rpm = 60000000 / (e_com_time * (motor_poles/2));
+
 	  input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
-	  
+
 	  if(input_override > 2047){
 		  input_override = 2047;
 	  }
@@ -1209,10 +1221,10 @@ if(commutation_interval > 400){
 if(send_telemetry){
 #ifdef	USE_SERIAL_TELEMETRY
 	  makeTelemPackage(degrees_celsius,
-			           battery_voltage,
+			            battery_voltage,
 					   actual_current,
-	  				   (uint16_t)consumed_current,
-	  					e_rpm);
+	  				 (uint16_t)consumed_current,
+             e_rpm); // val*motor_poles/200
 	  send_telem_DMA();
 	  send_telemetry = 0;
 #endif
@@ -1756,7 +1768,7 @@ if(newinput > 2000){
   				}else{
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
-		target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
+		              target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
                 target_e_com_time = 60000000 / target_rpm / (motor_poles/2) ;
  						//target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
   		  				if(adjusted_input < 47){           // dead band ?
