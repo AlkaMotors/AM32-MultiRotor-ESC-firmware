@@ -192,11 +192,11 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 3000;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
-                .Kp = 40, // 10
- 		.Ki = 40,
- 		.Kd = 100, // 100
- 		.integral_limit = 2000000, //10000,
- 		.output_limit = 20000000 //50000
+                .Kp = 31, // 10
+ 		.Ki = 3,
+ 		.Kd = 0, // 100
+ 		.integral_limit = 25500000, //10000,
+ 		.output_limit = 20470000 //50000
  };
 
  fastPID currentPid = {   // 1khz loop time
@@ -1223,7 +1223,7 @@ if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
 			            battery_voltage,
 					   actual_current,
-	  				 (uint16_t)consumed_current,
+	  				 target_rpm, //  (uint16_t)consumed_current,
              e_rpm); // val*motor_poles/200
 	  send_telem_DMA();
 	  send_telemetry = 0;
