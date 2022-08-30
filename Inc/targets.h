@@ -16,6 +16,7 @@
 //#define AM32REF
 //#define BLPWR
 //#define HVFLYCOLOR
+//#define NEUTRONRC70
 
 //#define G071_64K
 //#define G071ENABLE
@@ -173,6 +174,18 @@
 #endif
 
 
+#ifdef NEUTRONRC_F0
+#define FIRMWARE_NAME           "NeutronRC F0"
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  210
+#define USE_SERIAL_TELEMETRY
+#define USE_RGB_LED
+#endif
+
+
 #ifdef AM32REF
 #define FIRMWARE_NAME           "AM32 Ref-ESC"
 #define DEAD_TIME               45
@@ -209,12 +222,12 @@
 #endif
 
 
-#ifdef  NEUTRON_G071
-#define FIRMWARE_NAME  			    "Neutron G071"
+#ifdef NEUTRONRC_G0
+#define FIRMWARE_NAME  			    "NeutronRC G0"
 #define DEAD_TIME               60
-#define MILLIVOLT_PER_AMP       20
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
-#define TARGET_VOLTAGE_DIVIDER  110
+#define TARGET_VOLTAGE_DIVIDER  210
 #define HARDWARE_GROUP_G0_A
 #define USE_SERIAL_TELEMETRY
 #define SIXTY_FOUR_KB_MEMORY
