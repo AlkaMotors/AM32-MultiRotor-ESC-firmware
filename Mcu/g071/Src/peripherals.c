@@ -28,7 +28,15 @@ void initCorePeripherals(void){
   MX_COMP2_Init();
   MX_TIM1_Init();
   MX_TIM2_Init();
+#ifdef USE_TIMER_3_CHANNEL_1
   MX_TIM3_Init();
+#endif
+#ifdef USE_TIMER_16_CHANNEL_1
+  MX_TIM16_Init();
+#endif
+#ifdef N_VARIANT
+  MX_COMP1_Init();
+#endif
   MX_TIM14_Init();
   MX_TIM17_Init();
   MX_TIM6_Init();
@@ -88,6 +96,67 @@ void SystemClock_Config(void)
   LL_RCC_SetADCClockSource(LL_RCC_ADC_CLKSOURCE_SYSCLK);
 }
 
+void MX_COMP1_Init(void)
+{
+
+  /* USER CODE BEGIN COMP2_Init 0 */
+
+  /* USER CODE END COMP2_Init 0 */
+
+  LL_COMP_InitTypeDef COMP_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOB);
+  /**COMP2 GPIO Configuration
+  PA2   ------> COMP2_INM
+  PA3   ------> COMP2_INP
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_1;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+  /* USER CODE BEGIN COMP2_Init 1 */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_SYSCFG);
+  /* USER CODE END COMP2_Init 1 */
+  COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO3;
+  COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_IO3;
+  COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
+  COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
+  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC4;
+  LL_COMP_Init(COMP1, &COMP_InitStruct);
+  LL_COMP_SetPowerMode(COMP1, LL_COMP_POWERMODE_HIGHSPEED);
+  LL_COMP_SetCommonWindowMode(__LL_COMP_COMMON_INSTANCE(COMP1), LL_COMP_WINDOWMODE_DISABLE);
+  LL_COMP_SetCommonWindowOutput(__LL_COMP_COMMON_INSTANCE(COMP1), LL_COMP_WINDOWOUTPUT_EACH_COMP);
+
+  /* Wait loop initialization and execution */
+  /* Note: Variable divided by 2 to compensate partially CPU processing cycles */
+  __IO uint32_t wait_loop_index = 0;
+  wait_loop_index = (LL_COMP_DELAY_VOLTAGE_SCALER_STAB_US * (SystemCoreClock / (1000000 * 2)));
+  while(wait_loop_index != 0)
+  {
+    wait_loop_index--;
+  }
+  LL_EXTI_DisableEvent_0_31(LL_EXTI_LINE_17);
+  LL_EXTI_DisableIT_0_31(LL_EXTI_LINE_17);
+  /* USER CODE BEGIN COMP2_Init 2 */
+  NVIC_SetPriority(ADC1_COMP_IRQn, 0);
+  NVIC_EnableIRQ(ADC1_COMP_IRQn);
+  //__NVIC_EnableIRQ;
+  /* USER CODE END COMP2_Init 2 */
+
+}
+
+
+
 
 void MX_COMP2_Init(void)
 {
@@ -115,20 +184,16 @@ void MX_COMP2_Init(void)
   GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
   GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
   LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
+#ifndef N_VARIANT
   GPIO_InitStruct.Pin = LL_GPIO_PIN_3;
     GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
     LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
+#endif
     GPIO_InitStruct.Pin = LL_GPIO_PIN_7;
        GPIO_InitStruct.Mode = LL_GPIO_MODE_ANALOG;
        GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
        LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
-
-
-       NVIC_SetPriority(ADC1_COMP_IRQn, 0);
-       NVIC_EnableIRQ(ADC1_COMP_IRQn);
 
 
   /* USER CODE BEGIN COMP2_Init 1 */
@@ -136,7 +201,7 @@ void MX_COMP2_Init(void)
   /* USER CODE END COMP2_Init 1 */
   COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO3;
   COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_IO3;
-  COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_LOW;
+  COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
   COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
   COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC4;
   LL_COMP_Init(COMP2, &COMP_InitStruct);
@@ -155,7 +220,9 @@ void MX_COMP2_Init(void)
   LL_EXTI_DisableEvent_0_31(LL_EXTI_LINE_18);
   LL_EXTI_DisableIT_0_31(LL_EXTI_LINE_18);
   /* USER CODE BEGIN COMP2_Init 2 */
-
+  NVIC_SetPriority(ADC1_COMP_IRQn, 0);
+  NVIC_EnableIRQ(ADC1_COMP_IRQn);
+  //__NVIC_EnableIRQ;
   /* USER CODE END COMP2_Init 2 */
 
 }
@@ -458,6 +525,70 @@ void MX_TIM3_Init(void)
   LL_TIM_IC_SetPrescaler(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
   LL_TIM_IC_SetFilter(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
   LL_TIM_IC_SetPolarity(TIM3, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+
+}
+
+void MX_TIM16_Init(void)
+{
+
+  LL_TIM_InitTypeDef TIM_InitStruct = {0};
+
+  LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  /* Peripheral clock enable */
+  LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_TIM16);
+
+  LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
+  /**TIM3 GPIO Configuration
+  PB4   ------> TIM3_CH1
+  */
+  GPIO_InitStruct.Pin = LL_GPIO_PIN_6;
+  GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
+  GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
+  GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
+  GPIO_InitStruct.Alternate = LL_GPIO_AF_5;
+  LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+
+  LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_1, LL_DMAMUX_REQ_TIM16_CH1);
+
+  LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+
+  LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PRIORITY_LOW);
+
+  LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MODE_NORMAL);
+
+  LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PERIPH_NOINCREMENT);
+
+  LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MEMORY_INCREMENT);
+
+  LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PDATAALIGN_HALFWORD);
+
+  LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_WORD);
+
+  /* TIM3 interrupt Init */
+  NVIC_SetPriority(TIM16_IRQn, 0);
+  NVIC_EnableIRQ(TIM16_IRQn);
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  TIM_InitStruct.Prescaler = 0;
+  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
+  TIM_InitStruct.Autoreload = 65535;
+  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
+  LL_TIM_Init(TIM16, &TIM_InitStruct);
+  LL_TIM_DisableARRPreload(TIM16);
+  LL_TIM_SetTriggerOutput(TIM16, LL_TIM_TRGO_RESET);
+  LL_TIM_DisableMasterSlaveMode(TIM16);
+  LL_TIM_IC_SetActiveInput(TIM16, LL_TIM_CHANNEL_CH1, LL_TIM_ACTIVEINPUT_DIRECTTI);
+  LL_TIM_IC_SetPrescaler(TIM16, LL_TIM_CHANNEL_CH1, LL_TIM_ICPSC_DIV1);
+  LL_TIM_IC_SetFilter(TIM16, LL_TIM_CHANNEL_CH1, LL_TIM_IC_FILTER_FDIV1);
+  LL_TIM_IC_SetPolarity(TIM16, LL_TIM_CHANNEL_CH1, LL_TIM_IC_POLARITY_BOTHEDGE);
   /* USER CODE BEGIN TIM3_Init 2 */
 
   /* USER CODE END TIM3_Init 2 */

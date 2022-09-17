@@ -243,13 +243,20 @@ void ADC1_COMP_IRQHandler(void)
 	}
 
 	if(LL_EXTI_IsActiveRisingFlag_0_31(LL_EXTI_LINE_18)){
-
-	    LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_18);
+		LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_18);
 	    interruptRoutine();
-return;
-
+	    return;
 	  }
-
+	if(LL_EXTI_IsActiveFallingFlag_0_31(LL_EXTI_LINE_17)){
+		LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_17);
+		interruptRoutine();
+		return;
+	}
+	if(LL_EXTI_IsActiveRisingFlag_0_31(LL_EXTI_LINE_17)){
+		LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_17);
+	    interruptRoutine();
+	    return;
+	  }
 
   /* USER CODE END ADC1_COMP_IRQn 0 */
   
@@ -275,6 +282,29 @@ void TIM3_IRQHandler(void)
 	  if(LL_TIM_IsActiveFlag_UPDATE(TIM3) == 1)
 	  {
 		  LL_TIM_ClearFlag_UPDATE(TIM3);
+		 // update_interupt++;
+
+	  }
+  /* USER CODE END TIM3_IRQn 0 */
+  /* USER CODE BEGIN TIM3_IRQn 1 */
+
+  /* USER CODE END TIM3_IRQn 1 */
+}
+
+void TIM16_IRQHandler(void)
+{
+
+
+  /* USER CODE BEGIN TIM3_IRQn 0 */
+	  if(LL_TIM_IsActiveFlag_CC1(TIM16) == 1)
+	  {
+
+	    LL_TIM_ClearFlag_CC1(TIM16);
+	  }
+
+	  if(LL_TIM_IsActiveFlag_UPDATE(TIM16) == 1)
+	  {
+		  LL_TIM_ClearFlag_UPDATE(TIM16);
 		 // update_interupt++;
 
 	  }

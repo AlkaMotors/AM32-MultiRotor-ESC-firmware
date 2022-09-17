@@ -150,6 +150,11 @@
 *1.88  - Fix stutter on sine mode re-entry due to position reset
 *1.89  - Fix drive by rpm mode scaling.
  	   - Fix dshot px4 timings
+*1.90  - Disable comp interrupts for brushed mode
+	   - Re-enter polling mode after prop strike or desync
+	   - add G071 "N" variant
+	   - add preliminary Extended Dshot
+	   
  */	    
 
 
@@ -171,7 +176,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 89
+#define VERSION_MINOR 90
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -794,7 +799,7 @@ void getBemfState(){
     	current_state = PHASE_B_EXTI_PORT->IDR & PHASE_B_EXTI_PIN;
 	}
 #else
-    current_state = !LL_COMP_ReadOutputLevel(MAIN_COMP);  // polarity reversed
+    current_state = !LL_COMP_ReadOutputLevel(active_COMP);  // polarity reversed
 #endif
     if (rising){
     	if (current_state){
@@ -877,7 +882,6 @@ void PeriodElapsedCallback(){
 			if(zero_crosses<10000){
 			zero_crosses++;
 			}
-		//	UTILITY_TIMER->CNT = 0;
 
 }
 
@@ -903,7 +907,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 #ifdef MCU_F031
 				if((current_GPIO_PORT->IDR & current_GPIO_PIN) == (uint32_t)GPIO_PIN_RESET){
 #else
-				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
+				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
 #endif
 					return;
 					}
@@ -913,7 +917,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 #ifdef MCU_F031
 				if((current_GPIO_PORT->IDR & current_GPIO_PIN) != (uint32_t)GPIO_PIN_RESET){
 #else
-				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
+				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
 #endif
 					return;
 			    }
@@ -942,11 +946,28 @@ void tenKhzRoutine(){
 
 
 	tenkhzcounter++;
-	if(tenkhzcounter > 10000){      // 1s sample interval
+	if(tenkhzcounter > 10000){      // 1s sample interval 10000
 		consumed_current = (float)actual_current/360 + consumed_current;
+					switch (dshot_extended_telemetry){
+
+					case 1:
+					    send_extended_dshot = 0b0010 << 8 | degrees_celsius;
+					    dshot_extended_telemetry = 2;
+					break;
+					case 2:
+					    send_extended_dshot = 0b0110 << 8 | (uint8_t)actual_current/50;
+					    dshot_extended_telemetry = 3;
+					break;
+					case 3:
+					    send_extended_dshot = 0b0100 << 8 | (uint8_t)(battery_voltage/25);
+					    dshot_extended_telemetry = 1;
+					break;
+
+					}
+
 		tenkhzcounter = 0;
 	}
-if(!armed){
+if(!armed && (cell_count == 0)){
 	if(inputSet){
 		if(adjusted_input == 0){
 			armed_timeout_count++;
@@ -958,8 +979,8 @@ if(!armed){
 				  			GPIOB->BSRR = LL_GPIO_PIN_8;   // turn on green
 				  			GPIOB->BSRR = LL_GPIO_PIN_5;
 				#endif
-				  			if(cell_count == 0 && LOW_VOLTAGE_CUTOFF){
-				  			  cell_count = battery_voltage / 370;
+				  			if((cell_count == 0) && LOW_VOLTAGE_CUTOFF){
+				  			  cell_count = battery_voltage / 310;
 				  			  for (int i = 0 ; i < cell_count; i++){
 				  			  playInputTune();
 				  			  delayMillis(100);
@@ -1178,10 +1199,11 @@ if(desync_check && zero_crosses > 10){
 //
 //	}
 		if((getAbsDif(last_average_interval,average_interval) > average_interval>>1) && (average_interval < 2000)){ //throttle resitricted before zc 20.
-		zero_crosses = 10;
+		zero_crosses = 0;
 		desync_happened ++;
-//running = 0;
-//old_routine = 1;
+running = 0;
+old_routine = 1;
+average_interval = 10000;
 		last_duty_cycle = min_startup_duty/2;
 		}
 		desync_check = 0;
@@ -1375,11 +1397,12 @@ int main(void)
   GPIOB->BSRR = LL_GPIO_PIN_3; //
 #endif
 
+#ifndef BRUSHED_MODE
    LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
    LL_TIM_GenerateEvent_UPDATE(COM_TIMER);
    LL_TIM_EnableIT_UPDATE(COM_TIMER);
    COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
-//
+#endif
    LL_TIM_EnableCounter(UTILITY_TIMER);
    LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
 //
@@ -1400,6 +1423,9 @@ int main(void)
   __IO uint32_t wait_loop_index = 0;
     /* Enable comparator */
   LL_COMP_Enable(MAIN_COMP);
+#ifdef N_VARIANT  // needs comp 1 and 2
+  LL_COMP_Enable(COMP1);
+#endif
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
    while(wait_loop_index != 0)
    {
@@ -1474,6 +1500,7 @@ loadEEpromSettings();
 		//bi_direction = 1;
 	 	commutation_interval = 5000;
 	 	use_sin_start = 0;
+		maskPhaseInterrupts();
 		playBrushedStartupTune();
 #else
 	   playStartupTune();
@@ -1885,6 +1912,7 @@ if(input > 48 && armed){
 	 		  if (input > 48 && input < 137){// sine wave stepper
 
 	   	 	if(do_once_sinemode){
+				COM_TIMER->DIER &= ~((0x1UL << (0U)));  // disable commutation interrupt in case set
 	   	 		maskPhaseInterrupts();
 	   	 		TIM1->CCR1 = 0;
 	   	 		TIM1->CCR2 = 0;
@@ -1958,6 +1986,7 @@ proportionalBrake();
 #ifdef BRUSHED_MODE
 
 	  			if(brushed_direction_set == 0 && adjusted_input > 48){
+					
 	  				if(forward){
 	  					allOff();
 	  					delayMicros(10);
@@ -1979,6 +2008,7 @@ proportionalBrake();
 	  				TIM1->CCR2 = input;
 	  				TIM1->CCR3 = input;
 	  			}else{
+					
 	  				TIM1->CCR1 = 0;												// set duty cycle to 50 out of 768 to start.
 	  				TIM1->CCR2 = 0;
 	  				TIM1->CCR3 = 0;

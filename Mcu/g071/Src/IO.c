@@ -34,6 +34,12 @@ void changeToInput(){
 	  IC_TIMER_REGISTER->CCMR1 = 0x1;
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
+#ifdef USE_TIMER_16_CHANNEL_1
+	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM16);           // de-init timer 2
+	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM16);
+	  IC_TIMER_REGISTER->CCMR1 = 0x1;
+	  IC_TIMER_REGISTER->CCER = 0xa;
+#endif
 
 	  IC_TIMER_REGISTER->PSC = ic_timer_prescaler;
 	  IC_TIMER_REGISTER->ARR = 0xFFFF;
@@ -46,19 +52,14 @@ void changeToInput(){
 void receiveDshotDma(){
 	changeToInput();
 	IC_TIMER_REGISTER->CNT = 0;
-#ifdef USE_TIMER_3_CHANNEL_1
 	   LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&IC_TIMER_REGISTER->CCR1, (uint32_t)&dma_buffer, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
-#endif
 	   LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, buffersize);
 	   LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
 	   LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
 	   LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
 
-#ifdef USE_TIMER_3_CHANNEL_1
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
 	   LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-
-#endif
 
 	   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 	   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
@@ -74,6 +75,14 @@ void changeToOutput(){
 	  IC_TIMER_REGISTER->CCMR1 = 0x60;
 	  IC_TIMER_REGISTER->CCER = 0x3;
 #endif
+#ifdef USE_TIMER_16_CHANNEL_1
+	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM16);           // de-init timer 2
+	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM16);
+	  IC_TIMER_REGISTER->CCMR1 = 0x60;
+	  IC_TIMER_REGISTER->CCER = 0x3;
+#endif
+
+
 	  IC_TIMER_REGISTER->PSC = output_timer_prescaler;
 	  IC_TIMER_REGISTER->ARR = 92;
 	  out_put = 1;
@@ -82,18 +91,16 @@ void changeToOutput(){
 
 void sendDshotDma(){
 	changeToOutput();
-#ifdef USE_TIMER_3_CHANNEL_1
 	          LL_DMA_ConfigAddresses(DMA1, INPUT_DMA_CHANNEL, (uint32_t)&gcr, (uint32_t)&IC_TIMER_REGISTER->CCR1, LL_DMA_GetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL));
 
-#endif
 			  LL_DMA_SetDataLength(DMA1, INPUT_DMA_CHANNEL, 30);
 			  LL_DMA_EnableIT_TC(DMA1, INPUT_DMA_CHANNEL);
 			  LL_DMA_EnableIT_TE(DMA1, INPUT_DMA_CHANNEL);
 			  LL_DMA_EnableChannel(DMA1, INPUT_DMA_CHANNEL);
 
-#ifdef USE_TIMER_3_CHANNEL_1
+
 			  LL_TIM_EnableDMAReq_CC1(IC_TIMER_REGISTER);
-#endif
+
 			  LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);
 			  LL_TIM_EnableAllOutputs(IC_TIMER_REGISTER);
 			  LL_TIM_EnableCounter(IC_TIMER_REGISTER);
@@ -124,7 +131,7 @@ void detectInput(){
 		armed_count_threshold = 10000;
 		buffersize = 32;
 	}
-	if ((smallestnumber > 32 )&&(smallestnumber < 80)){
+	if ((smallestnumber > 32 )&&(smallestnumber < 110)){
 		dshot = 1;
 		ic_timer_prescaler=1;
 		output_timer_prescaler=1;
@@ -134,10 +141,7 @@ void detectInput(){
 		armed_count_threshold = 10000;
 		buffersize = 32;
 	}
-	if ((smallestnumber > 100 )&&(smallestnumber < 400)){
-		armed_count_threshold = 1000;
-		buffersize = 4;
-	}
+
 	if (smallestnumber > 1500){
 		servoPwm = 1;
 		ic_timer_prescaler=63;

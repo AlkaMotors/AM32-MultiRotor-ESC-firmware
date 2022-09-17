@@ -13,12 +13,11 @@
 //#define AIKON20X20
 //#define AIKONSINGLE
 //#define FLYCOLOR
-//#define HKMICRO
 //#define AM32REF
 //#define BLPWR
 //#define HVFLYCOLOR
 
-#define G071_64K
+//#define G071_64K
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
 //#define G071_OPEN_DRAIN_B
@@ -36,6 +35,7 @@
 #define FIRMWARE_NAME           "FD6288_PA2  "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_A
+#define TARGET_VOLTAGE_DIVIDER  65
 #define USE_SERIAL_TELEMETRY
 #endif
 
@@ -44,6 +44,7 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
+//#define USE_RGB_LED
 #endif
 
 #ifdef MP6531
@@ -160,17 +161,6 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
-#ifdef HKMICRO
-#define FIRMWARE_NAME           "HK Micro    "
-#define DEAD_TIME               45
-#define HARDWARE_GROUP_F0_B
-#define MILLIVOLT_PER_AMP       20
-#define CURRENT_OFFSET          0
-#define TARGET_VOLTAGE_DIVIDER  110
-#define USE_SERIAL_TELEMETRY
-#define USE_RGB_LED
-#endif
-
 
 #ifdef BLPWR
 #define FIRMWARE_NAME           "BlPwr-ESC"
@@ -207,7 +197,19 @@
 #define SIXTY_FOUR_KB_MEMORY
 #endif
 
-#ifdef G071_NEUTRON
+#ifdef TMOTORG071
+#define FIRMWARE_NAME  			    "T-Motor G071"
+#define DEAD_TIME               60
+#define MILLIVOLT_PER_AMP       67
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define HARDWARE_GROUP_G0_H
+#define USE_SERIAL_TELEMETRY
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
+
+#ifdef  NEUTRON_G071
 #define FIRMWARE_NAME  			    "Neutron G071"
 #define DEAD_TIME               60
 #define MILLIVOLT_PER_AMP       20
@@ -219,12 +221,11 @@
 #endif
 
 
-#ifdef G071N_AIKON
-#define FIRMWARE_NAME  			    "Aikon Pro 55"
+#ifdef AIKON_PRO_G071
+#define FIRMWARE_NAME  			    "AIKON PRO 50"
 #define DEAD_TIME               60
-#define MILLIVOLT_PER_AMP       20
+#define MILLIVOLT_PER_AMP       67
 #define CURRENT_OFFSET          0
-#define TARGET_VOLTAGE_DIVIDER  110
 #define HARDWARE_GROUP_G0_G
 #define USE_SERIAL_TELEMETRY
 #define SIXTY_FOUR_KB_MEMORY
@@ -269,6 +270,16 @@
 #define HARDWARE_GROUP_G0_A
 #define SIXTY_FOUR_KB_MEMORY
 #endif
+
+#ifdef  DT160_G071_64K
+#define FIRMWARE_NAME  			    "G071 160 64K"
+#define DEAD_TIME               210
+#define MILLIVOLT_PER_AMP       67
+#define CURRENT_OFFSET          0
+#define HARDWARE_GROUP_G0_A
+#define SIXTY_FOUR_KB_MEMORY
+#endif
+
 
 #ifdef  G071ENABLE
 #define FIRMWARE_NAME           "G071 PWM_EN "
@@ -761,6 +772,97 @@
 #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
 #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
 #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+
+#endif
+
+#ifdef     HARDWARE_GROUP_G0_G
+
+#define    MCU_G071
+#define    N_VARIANT
+#define    USE_TIMER_16_CHANNEL_1
+#define    INPUT_PIN               LL_GPIO_PIN_6
+#define    INPUT_PIN_PORT              GPIOA
+#define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
+#define    IC_TIMER_REGISTER          TIM16
+#define    IC_TIMER_POINTER           htim16
+
+#define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+#define    DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
+#define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+
+#define PHASE_A_GPIO_LOW          LL_GPIO_PIN_15
+#define PHASE_A_GPIO_PORT_LOW         GPIOB
+#define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
+#define PHASE_A_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
+#define PHASE_B_GPIO_PORT_LOW         GPIOB
+#define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
+#define PHASE_B_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
+#define PHASE_C_GPIO_PORT_LOW         GPIOA
+#define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
+#define PHASE_C_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
+#define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+#define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa0
+
+#define PHASE_A_EXTI_LINE           LL_EXTI_LINE_18
+#define PHASE_A_COMP_NUMBER         COMP2
+
+#define PHASE_B_EXTI_LINE           LL_EXTI_LINE_18
+#define PHASE_B_COMP_NUMBER         COMP2
+
+#define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
+#define PHASE_C_COMP_NUMBER         COMP1
+
+#endif
+
+
+#ifdef     HARDWARE_GROUP_G0_H
+
+#define    MCU_G071
+#define    N_VARIANT
+#define    USE_TIMER_16_CHANNEL_1
+#define    INPUT_PIN               LL_GPIO_PIN_6
+#define    INPUT_PIN_PORT              GPIOA
+#define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
+#define    IC_TIMER_REGISTER          TIM16
+#define    IC_TIMER_POINTER           htim16
+
+#define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+#define    DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
+#define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+
+#define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
+#define PHASE_B_GPIO_PORT_LOW         GPIOB
+#define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
+#define PHASE_B_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_A_GPIO_LOW          LL_GPIO_PIN_15
+#define PHASE_A_GPIO_PORT_LOW         GPIOB
+#define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
+#define PHASE_A_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
+#define PHASE_C_GPIO_PORT_LOW         GPIOA
+#define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
+#define PHASE_C_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
+#define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+#define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa0
+
+#define PHASE_A_EXTI_LINE           LL_EXTI_LINE_18
+#define PHASE_A_COMP_NUMBER         COMP2
+
+#define PHASE_B_EXTI_LINE           LL_EXTI_LINE_18
+#define PHASE_B_COMP_NUMBER         COMP2
+
+#define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
+#define PHASE_C_COMP_NUMBER         COMP1
 
 #endif
 

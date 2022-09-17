@@ -46,6 +46,8 @@ uint32_t gcr[37] =  {0};
 uint16_t dshot_frametime;
 uint16_t dshot_goodcounts;
 uint16_t dshot_badcounts;
+char dshot_extended_telemetry = 0;
+uint16_t send_extended_dshot = 0;
 
 
 void computeDshotDMA(){
@@ -161,6 +163,16 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					//delayMillis(100);
 				//	NVIC_SystemReset();
 				    break;
+					case 13:
+					dshot_extended_telemetry = 1;
+					send_extended_dshot = 0b111000000000;
+					make_dshot_package();
+					break;
+					case 14:
+					dshot_extended_telemetry = 0;
+					send_extended_dshot = 0b111011111111;
+					make_dshot_package();
+					break;
 					case 20:
 						forward = 1 - dir_reversed;
 					break;
@@ -181,7 +193,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 }
 
 
+
 void make_dshot_package(){
+if(send_extended_dshot > 0){
+  dshot_full_number = send_extended_dshot;
+  send_extended_dshot = 0;
+}else{
   if (!running){
 	  e_com_time = 65535;
   }
@@ -197,6 +214,8 @@ for (int i = 15; i >= 9 ; i--){
 }
 // shift the commutation time to allow for expanded range and put shift amount in first three bits
 	dshot_full_number = ((shift_amount << 9) | (e_com_time >> shift_amount));
+
+}
 //calculate checksum
 	uint16_t  csum = 0;
 	uint16_t csum_data = dshot_full_number;
