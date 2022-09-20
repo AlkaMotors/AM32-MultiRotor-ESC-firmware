@@ -154,6 +154,7 @@
 	   - Re-enter polling mode after prop strike or desync
 	   - add G071 "N" variant
 	   - add preliminary Extended Dshot
+*1.91  - Reset average interval time on desync only after 100 zero crosses 
 	   
  */	    
 
@@ -176,7 +177,7 @@
 
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 90
+#define VERSION_MINOR 91
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -1203,7 +1204,9 @@ if(desync_check && zero_crosses > 10){
 		desync_happened ++;
 running = 0;
 old_routine = 1;
-average_interval = 10000;
+if(zero_crosses > 100){
+average_interval = 5000;
+}
 		last_duty_cycle = min_startup_duty/2;
 		}
 		desync_check = 0;
