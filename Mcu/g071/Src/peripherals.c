@@ -12,6 +12,10 @@
 #include "targets.h"
 #include "serial_telemetry.h"
 
+#ifdef USE_LED_STRIP
+#include "WS2812.h"
+#endif
+
 //extern uint16_t DEAD_TIME;
 
 
@@ -41,6 +45,10 @@ void initCorePeripherals(void){
   MX_TIM17_Init();
   MX_TIM6_Init();
   telem_UART_Init();
+#ifdef USE_LED_STRIP
+WS2812_Init();
+#endif
+
 }
 
 void initAfterJump(){
@@ -131,7 +139,7 @@ void MX_COMP1_Init(void)
   COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_IO3;
   COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
   COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
-  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC4;
+  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC5;
   LL_COMP_Init(COMP1, &COMP_InitStruct);
   LL_COMP_SetPowerMode(COMP1, LL_COMP_POWERMODE_HIGHSPEED);
   LL_COMP_SetCommonWindowMode(__LL_COMP_COMMON_INSTANCE(COMP1), LL_COMP_WINDOWMODE_DISABLE);
@@ -203,7 +211,7 @@ void MX_COMP2_Init(void)
   COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_IO3;
   COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
   COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
-  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC4;
+  COMP_InitStruct.OutputBlankingSource = LL_COMP_BLANKINGSRC_TIM1_OC5;
   LL_COMP_Init(COMP2, &COMP_InitStruct);
   LL_COMP_SetPowerMode(COMP2, LL_COMP_POWERMODE_HIGHSPEED);
   LL_COMP_SetCommonWindowMode(__LL_COMP_COMMON_INSTANCE(COMP2), LL_COMP_WINDOWMODE_DISABLE);
@@ -314,11 +322,19 @@ void MX_TIM1_Init(void)
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
   LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH3, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH3);
+ 
   LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH4);
   TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
   TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
   LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH4, &TIM_OC_InitStruct);
   LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH4);
+
+  LL_TIM_OC_EnablePreload(TIM1, LL_TIM_CHANNEL_CH5);
+  TIM_OC_InitStruct.OCState = LL_TIM_OCSTATE_DISABLE;
+  TIM_OC_InitStruct.OCNState = LL_TIM_OCSTATE_DISABLE;
+  LL_TIM_OC_Init(TIM1, LL_TIM_CHANNEL_CH5, &TIM_OC_InitStruct);
+  LL_TIM_OC_DisableFast(TIM1, LL_TIM_CHANNEL_CH5);
+  
   LL_TIM_SetTriggerOutput(TIM1, LL_TIM_TRGO_RESET);
   LL_TIM_SetTriggerOutput2(TIM1, LL_TIM_TRGO2_RESET);
   LL_TIM_DisableMasterSlaveMode(TIM1);

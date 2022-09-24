@@ -155,9 +155,10 @@
 	   - add G071 "N" variant
 	   - add preliminary Extended Dshot
 *1.91  - Reset average interval time on desync only after 100 zero crosses 
-	   
- */	    
-
+*1.92  - Move g071 comparator blanking to TIM1 OC5
+ 	   - Increase ADC read frequency and current sense filtering 
+	   - Add addressable LED strip for G071 targets
+*/
 
 #include <stdint.h>
 #include "main.h"
@@ -175,9 +176,12 @@
 #include "peripherals.h"
 #include "common.h"
 
+#ifdef USE_LED_STRIP
+#include "WS2812.h"
+#endif
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 91
+#define VERSION_MINOR 92
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -341,8 +345,8 @@ char brushed_direction_set = 0;
 
 uint16_t tenkhzcounter = 0;
 float consumed_current = 0;
-uint16_t smoothed_raw_current = 0;
-uint16_t actual_current = 0;
+uint32_t smoothed_raw_current = 0;
+int16_t actual_current = 0;
 
 char lowkv = 0;
 
@@ -975,6 +979,11 @@ if(!armed && (cell_count == 0)){
 			if(armed_timeout_count > 10000){    // one second
 				if(zero_input_count > 30){
 				armed = 1;
+				#ifdef USE_LED_STRIP
+			//	send_LED_RGB(0,0,0);
+				delayMicros(1000);
+				send_LED_RGB(0,255,0);
+				#endif
 				#ifdef USE_RGB_LED
 				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn on green
 				  			GPIOB->BSRR = LL_GPIO_PIN_8;   // turn on green
@@ -1372,13 +1381,12 @@ int main(void)
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2N);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3N);
 
-  #ifdef MCU_G071
-  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);  // timer used for comparator blanking
-  #endif
-#if defined(MCU_F051) || defined(MCU_F031)
+#ifdef MCU_G071
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH5);  // timer used for comparator blanking
+#endif
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);      // timer used for timing adc read
   TIM1->CCR4 = 100;  // set in 10khz loop to match pwm cycle timed to end of pwm on
-  #endif
+  
 
   /* Enable counter */
   LL_TIM_EnableCounter(TIM1);
@@ -1391,6 +1399,11 @@ int main(void)
 #else
   LL_TIM_CC_EnableChannel(IC_TIMER_REGISTER, IC_TIMER_CHANNEL);  // input capture and output compare
   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
+#endif
+
+
+#ifdef USE_LED_STRIP
+send_LED_RGB(255,0,0);
 #endif
 
 #ifdef USE_RGB_LED
@@ -1549,25 +1562,25 @@ loadEEpromSettings();
 LL_IWDG_ReloadCounter(IWDG);
 
 	  adc_counter++;
-	  if(adc_counter>100){   // for testing adc and telemetry
-#ifdef MCU_F051
+	  if(adc_counter>10){   // for adc and telemetry
+
 		  ADC_CCR = TIM1->CCR3*2/3 + 1;  // sample current at quarter pwm on
-		  if (ADC_CCR > 550){
-			  ADC_CCR = 550;
+		  if (ADC_CCR > tim1_arr){
+			  ADC_CCR = tim1_arr;
 		  }
 		  TIM1->CCR4 = ADC_CCR;
-#endif
+
 		  ADC_raw_temp = ADC_raw_temp - (temperature_offset);
 		  converted_degrees =__LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
 		  degrees_celsius =((7 * degrees_celsius) + converted_degrees) >> 3;
 
           battery_voltage = ((7 * battery_voltage) + ((ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER)/100)) >> 3;
-          smoothed_raw_current = ((7*smoothed_raw_current + (ADC_raw_current) )>> 3);
+          smoothed_raw_current = ((63*smoothed_raw_current + (ADC_raw_current) )>>6);
           actual_current = (smoothed_raw_current * 3300/41) / (MILLIVOLT_PER_AMP)  + CURRENT_OFFSET;
+		  if(actual_current < 0){actual_current = 0;}      
 
-//#ifdef MCU_G071
           LL_ADC_REG_StartConversion(ADC1);
-//#endif
+
 		  if(LOW_VOLTAGE_CUTOFF){
 			  if(battery_voltage < (cell_count * low_cell_volt_cutoff)){
 				  low_voltage_count++;
@@ -1828,13 +1841,13 @@ if(newinput > 2000){
 
 if (zero_crosses < 100 || commutation_interval > 500) {
 #ifdef MCU_G071
-		TIM1->CCR4 = 100;
+		TIM1->CCR5 = 100;  // comparator blanking
 #endif
 		filter_level = 12;
 
 	} else {
 #ifdef MCU_G071
-		TIM1->CCR4 = 5;
+		TIM1->CCR5 = 5;
 #endif
 		filter_level = map(average_interval, 100 , 500, 3, 10);
 	}

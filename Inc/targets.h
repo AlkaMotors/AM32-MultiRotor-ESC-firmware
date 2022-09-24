@@ -16,7 +16,7 @@
 //#define AM32REF
 //#define BLPWR
 //#define HVFLYCOLOR
-
+#define NEUTRON_G071
 //#define G071_64K
 //#define G071ENABLE
 //#define G071_OPEN_DRAIN
@@ -91,7 +91,7 @@
 
 #ifdef MAMBA_F40PRO
 #define FIRMWARE_NAME           "MAMBA F40PRO"
-#define DEAD_TIME               13
+#define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_F
 #define USE_SERIAL_TELEMETRY
 #endif
@@ -172,6 +172,16 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef NEUTRONRC_F051
+#define FIRMWARE_NAME           "NeutronRC F0"
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       33
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  210
+#define USE_SERIAL_TELEMETRY
+#define USE_RGB_LED
+#endif
 
 #ifdef AM32REF
 #define FIRMWARE_NAME           "AM32 Ref-ESC"
@@ -183,7 +193,6 @@
 #define PA6_VOLTAGE
 #define USE_SERIAL_TELEMETRY
 #define TARGET_STALL_PROTECTION_INTERVAL 9000
-
 #endif
 /*******************************   G071 Targets *********************************/
 
@@ -209,13 +218,13 @@
 #endif
 
 
-#ifdef  NEUTRON_G071
-#define FIRMWARE_NAME  			    "Neutron G071"
+#ifdef  NEUTRONRC_G071
+#define FIRMWARE_NAME  			    "NeutronRC G0"
 #define DEAD_TIME               60
-#define MILLIVOLT_PER_AMP       20
+#define MILLIVOLT_PER_AMP       33
 #define CURRENT_OFFSET          0
-#define TARGET_VOLTAGE_DIVIDER  110
-#define HARDWARE_GROUP_G0_A
+#define TARGET_VOLTAGE_DIVIDER  210
+#define HARDWARE_GROUP_G0_N
 #define USE_SERIAL_TELEMETRY
 #define SIXTY_FOUR_KB_MEMORY
 #endif
@@ -818,6 +827,12 @@
 #define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
 #define PHASE_C_COMP_NUMBER         COMP1
 
+#define VOLTAGE_ADC_PIN     LL_GPIO_PIN_5
+#define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_5
+
+#define CURRENT_ADC_PIN     LL_GPIO_PIN_4
+#define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
+
 #endif
 
 
@@ -863,6 +878,54 @@
 
 #define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
 #define PHASE_C_COMP_NUMBER         COMP1
+
+#define VOLTAGE_ADC_PIN     LL_GPIO_PIN_5
+#define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_5
+
+#define CURRENT_ADC_PIN     LL_GPIO_PIN_4
+#define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
+
+#endif
+
+#ifdef     HARDWARE_GROUP_G0_N
+
+#define    USE_LED_STRIP
+#define    MCU_G071
+#define    USE_TIMER_3_CHANNEL_1
+#define    INPUT_PIN               LL_GPIO_PIN_4
+#define    INPUT_PIN_PORT              GPIOB
+#define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
+#define    IC_TIMER_REGISTER          TIM3
+#define    IC_TIMER_POINTER           htim3
+
+#define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+#define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
+#define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+
+#define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
+#define PHASE_A_GPIO_PORT_LOW         GPIOB
+#define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
+#define PHASE_A_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
+#define PHASE_B_GPIO_PORT_LOW         GPIOB
+#define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
+#define PHASE_B_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
+#define PHASE_C_GPIO_PORT_LOW         GPIOA
+#define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
+#define PHASE_C_GPIO_PORT_HIGH         GPIOA
+
+#define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
+#define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
+#define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+
+#define VOLTAGE_ADC_PIN     LL_GPIO_PIN_6
+#define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_6
+
+#define CURRENT_ADC_PIN     LL_GPIO_PIN_4
+#define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
 
 #endif
 
@@ -980,6 +1043,18 @@
 #define EXTI_LINE   LL_EXTI_LINE_18
 #define TARGET_MIN_BEMF_COUNTS 4
 #define USE_ADC
+#ifndef CURRENT_ADC_CHANNEL
+	#define CURRENT_ADC_CHANNEL LL_ADC_CHANNEL_5
+#endif
+#ifndef VOLTAGE_ADC_CHANNEL
+	#define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_6
+#endif
+#ifndef CURRENT_ADC_PIN
+	#define CURRENT_ADC_PIN LL_GPIO_PIN_5
+#endif
+#ifndef VOLTAGE_ADC_PIN
+	#define VOLTAGE_ADC_PIN LL_GPIO_PIN_6
+#endif
 #endif
 
 
