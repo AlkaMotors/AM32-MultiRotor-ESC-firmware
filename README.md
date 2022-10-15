@@ -57,7 +57,7 @@ https://am32-invite.herokuapp.com/
 
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
 
-##Sponsors
+## Sponsors
 The AM32 project would not have made this far without help from the following sponsors
 Holmes Hobbies - https://holmeshobbies.com/ - The project would not be where it is today without the support of HH. Check out the Crawlmaster V2 for the best am32 experience!
 
@@ -83,6 +83,6 @@ Jacob Walser
 And for feedback from pilots and drivers:\
 Jye Smith\
 Markus Gritsch\
-Voodoobrew\
+Voodoobrew
 
 (and many more)
