@@ -46,7 +46,8 @@ After the bootloader has been installed the main firmware from can be installed 
 To update an existing AM32 bootloader an update tool can be found [here](https://github.com/AlkaMotors/F051_Bootloader_Updater/releases).
 
 ## Support and Developers Channel
-There are two ways you get support we have a discord server here
+There are two ways you can get support or participate in improving am32.
+We have a discord server here:
 
 https://discord.gg/h7ddYMmEVV
 
@@ -55,6 +56,22 @@ There's a dedicated Slack chat channel here:
 https://am32-invite.herokuapp.com/
 
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
+
+##Sponsors
+The AM32 project would not have made this far without help from the following sponsors
+Holmes Hobbies - https://holmeshobbies.com/ - The project would not be where it is today without the support of HH. Check out the Crawlmaster V2 for the best am32 experience!
+
+Quaternium - https://www.quaternium.com/ - Firmware development support and hardware donations
+
+Airbot - Many hardware donations\
+
+NeutronRC - For hardware, am32 promotion and schematics \
+
+Aikon - Hardware donations and schematics\
+Skystars  - For hardware and taking a chance on the first commercial am32 esc's\
+Diatone - Hardware donations\
+T-motor - Motor and Hardware donations\
+HLGRC  - Hardaware donations
 
 ## Contributors
 A big thanks to all those who contributed time, advice and code to the AM32 project.\
@@ -66,6 +83,6 @@ Jacob Walser
 And for feedback from pilots and drivers:\
 Jye Smith\
 Markus Gritsch\
-Voodoobrew 
+Voodoobrew\
 
 (and many more)
