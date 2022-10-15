@@ -46,6 +46,9 @@ After the bootloader has been installed the main firmware from can be installed 
 To update an existing AM32 bootloader an update tool can be found [here](https://github.com/AlkaMotors/F051_Bootloader_Updater/releases).
 
 ## Support and Developers Channel
+There are two ways you get support we have a discord server here
+
+https://discord.gg/h7ddYMmEVV
 
 There's a dedicated Slack chat channel here:
 
