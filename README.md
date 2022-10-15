@@ -37,9 +37,9 @@ Target compatibility List can be found [here](https://github.com/AlkaMotors/AM32
 
 ## Installation & Bootloader
 
-To use AM32 firmware on a blank ESC, a bootloader must first be installed using an ST-LINK. Choose the bootloader that matches the signal input pin of the ESC.
+To use AM32 firmware on a blank ESC, a bootloader must first be installed using an ST-LINK, GD-LINK , CMIS-DAP or AT-LINK.  THe bootloader will be dependant on the MCU used ont he esc . Choose the bootloader that matches the MCU type and signal input pin of the ESC.
 The compatibility chart has the bootloader pinouts listed.
-Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/releases).
+Current bootloaders can be found [here](https://github.com/AlkaMotors/AM32_Bootloader_F051/tree/main/Bootloaders).
 
 After the bootloader has been installed the main firmware from can be installed either with the configuration tools and a Betaflight flight controller or a direct connection with a usb serial adapter modified for one wire.
 
@@ -58,14 +58,15 @@ https://am32-invite.herokuapp.com/
 Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
 
 ## Sponsors
-The AM32 project would not have made this far without help from the following sponsors
+The AM32 project would not have made this far without help from the following sponsors:
+
 Holmes Hobbies - https://holmeshobbies.com/ - The project would not be where it is today without the support of HH. Check out the Crawlmaster V2 for the best am32 experience!
 
 Quaternium - https://www.quaternium.com/ - Firmware development support and hardware donations
 
-Airbot - Many hardware donations\
+Airbot - Many hardware donations
 
-NeutronRC - For hardware, am32 promotion and schematics \
+NeutronRC - For hardware, am32 promotion and schematics 
 
 Aikon - Hardware donations and schematics\
 Skystars  - For hardware and taking a chance on the first commercial am32 esc's\
