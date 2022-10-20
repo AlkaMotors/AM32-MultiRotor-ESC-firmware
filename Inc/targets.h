@@ -31,6 +31,17 @@
 
 
 /****************************      F051 Targets ************************************/
+#ifdef Rhino
+#define FIRMWARE_NAME           "Rhino-AM32-ORIG"
+#define DEAD_TIME               20
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       35
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define PA6_VOLTAGE
+#define USE_SERIAL_TELEMETRY
+#endif
+
 #ifdef FD6288
 #define FIRMWARE_NAME           "FD6288_PA2  "
 #define DEAD_TIME               45
