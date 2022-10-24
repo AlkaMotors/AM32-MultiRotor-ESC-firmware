@@ -31,8 +31,8 @@
 
 
 /****************************      F051 Targets ************************************/
-#ifdef Rhino
-#define FIRMWARE_NAME           "Rhino-AM32-ORIG"
+#ifdef Rhino_A3100_F051
+#define FIRMWARE_NAME           "Rhino-A3100-F051-ORG"
 #define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_B
 #define MILLIVOLT_PER_AMP       35
