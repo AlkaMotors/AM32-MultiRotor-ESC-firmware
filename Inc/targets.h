@@ -31,11 +31,12 @@
 
 
 /****************************      F051 Targets ************************************/
-#ifdef Rhino_A3100_F051
-#define FIRMWARE_NAME           "Rhino-A3100-F051-ORG"
+
+#ifdef Rhino_A_F051
+#define FIRMWARE_NAME           "Rhino-A-F051-ORG"
 #define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_B
-#define MILLIVOLT_PER_AMP       35
+#define MILLIVOLT_PER_AMP       34
 #define CURRENT_OFFSET          0
 #define TARGET_VOLTAGE_DIVIDER  110
 #define PA6_VOLTAGE
