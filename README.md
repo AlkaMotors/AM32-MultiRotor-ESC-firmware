@@ -1,11 +1,11 @@
 # AM32-MultiRotor-ESC-firmware
-Firmware for STM32F051 based speed controllers for use with multirotors
+Firmware for ARM based speed controllers
 <p align="left">
   <a href="/LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-brightgreen" alt="GitHub license" /></a>
 </p>
 
 The AM32 firmware is designed for STM32 ARM processors to control a brushless motor (BLDC).
-The firmware is intended to be safe and fast with smooth fast startups and linear throttle. It is meant for use with multirotor aircraft and a flight controller. The firmware can also be built with support for crawlers.
+The firmware is intended to be safe and fast with smooth fast startups and linear throttle. It is meant for use with multiple vehicle types and a flight controller. The firmware can also be built with support for crawlers. For crawler usage please read this wiki page [Crawler Hardware](https://github.com/AlkaMotors/AM32-MultiRotor-ESC-firmware/wiki/Crawler-Hardware-and-AM32)
 
 ## Features
 
