@@ -55,7 +55,12 @@ There's a dedicated Slack chat channel here:
 
 https://am32-invite.herokuapp.com/
 
-Etiquette: Don't ask to ask and please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately.
+Etiquette: Please wait around long enough for a reply - sometimes people are out flying, asleep or at work and can't answer immediately. 
+
+If you wish to support the project please join the Patreon.
+
+https://www.patreon.com/user?u=44228479
+
 
 ## Sponsors
 The AM32 project would not have made this far without help from the following sponsors:
