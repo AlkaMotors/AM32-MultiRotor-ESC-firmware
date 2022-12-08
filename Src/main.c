@@ -195,6 +195,9 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 3000;
                 .Kp = 31, // 10
  		.Ki = 3,
  		.Kd = 0, // 100
+		.integral = 0,
+		.derivative = 0,
+		.last_error = 0,
  		.integral_limit = 25500000, //10000,
  		.output_limit = 20470000 //50000
  };
@@ -306,7 +309,7 @@ uint16_t target_rpm = 0;
 uint16_t target_e_com_time = 0;
 int16_t Speed_pid_output;
 char use_speed_control_loop = 0;
-float input_override = 0;
+int32_t input_override = 0;
 int16_t	use_current_limit_adjust = 2000;
 char use_current_limit = 0;
 float stall_protection_adjust = 0;
@@ -535,9 +538,8 @@ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
 }
 
 
-
-float doPidCalculations(struct fastPID *pidnow, int actual, int target){
-
+// float
+int32_t doPidCalculations(struct fastPID *pidnow, int actual, int target){
 	pidnow->error = actual - target;
 	pidnow->integral = pidnow->integral + pidnow->error*pidnow->Ki /*+ pidnow->last_error*pidnow->Ki*/;
 	if(pidnow->integral > pidnow->integral_limit){
@@ -553,9 +555,9 @@ float doPidCalculations(struct fastPID *pidnow, int actual, int target){
 	pidnow->pid_output = pidnow->error*pidnow->Kp + pidnow->integral + pidnow->derivative;
 
 
-	if (pidnow->pid_output>pidnow->output_limit){
+	if (pidnow->pid_output > pidnow->output_limit){
 		pidnow->pid_output = pidnow->output_limit;
-	}if(pidnow->pid_output <-pidnow->output_limit){
+	}else if(pidnow->pid_output < -pidnow->output_limit){
 		pidnow->pid_output = -pidnow->output_limit;
 	}
 	return pidnow->pid_output;
@@ -866,8 +868,8 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 	  //input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
 	  //input_override = doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
 
-	  int rpm = 60000000 / (e_com_time * (motor_poles/2));
-
+	  uint32_t rpm = 60000000 / (e_com_time * (motor_poles>>1));
+	  
 	  input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
 
 	  if(input_override > 2047){
@@ -1025,6 +1027,7 @@ if(!armed){
 	 	 duty_cycle = map(input, 47, 2047, minimum_duty_cycle, TIMER1_MAX_ARR);
 	  }
 	  if(tenkhzcounter%10 == 0){     // 1khz PID loop
+
 		  if(use_current_limit && running){
 			use_current_limit_adjust -= (int16_t)(doPidCalculations(&currentPid, actual_current, CURRENT_LIMIT*100)/10000);
 			if(use_current_limit_adjust < minimum_duty_cycle){
@@ -1223,7 +1226,7 @@ if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
 			            battery_voltage,
 					   actual_current,
-	  				 target_rpm, //  (uint16_t)consumed_current,
+			   (uint16_t)consumed_current, //target_rpm
              e_rpm); // val*motor_poles/200
 	  send_telem_DMA();
 	  send_telemetry = 0;
@@ -1769,7 +1772,7 @@ if(newinput > 2000){
   					if(use_speed_control_loop){
   					  if (drive_by_rpm){
 		              target_rpm = map(adjusted_input , 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL);
-                target_e_com_time = 60000000 / target_rpm / (motor_poles/2) ;
+			      target_e_com_time = 60000000 / target_rpm / (motor_poles/2) ;
  						//target_e_com_time = map(adjusted_input , 47 ,2047 , target_e_com_time_low, target_e_com_time_high);
   		  				if(adjusted_input < 47){           // dead band ?
   		  					input= 0;

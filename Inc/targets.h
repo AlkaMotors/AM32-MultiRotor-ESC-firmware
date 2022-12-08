@@ -45,6 +45,7 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
+#define SERIAL_PIN_OPENDRAIN
 #endif
 
 #ifdef MP6531
@@ -80,6 +81,7 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_A
 #define USE_SERIAL_TELEMETRY
+#define SERIAL_PIN_OPENDRAIN
 #define PA6_VOLTAGE
 #define TARGET_VOLTAGE_DIVIDER  210
 #endif
