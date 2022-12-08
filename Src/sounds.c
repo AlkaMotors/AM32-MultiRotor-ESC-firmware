@@ -109,17 +109,18 @@ void playStartupTune(){
 	TIM1->ARR = TIM1_AUTORELOAD;
 	setCaptureCompare();
 	comStep(3);       // activate a pwm channel
-
 	TIM1->PSC = 55;        // frequency of beep
     delayMillis(200);         // duration of beep
-    comStep(5);
 
+    comStep(5);
     TIM1->PSC = 40;            // next beep is higher frequency
 	delayMillis(200);
 
 	comStep(6);
 	TIM1->PSC = 25;         // higher again..
 	delayMillis(200);
+
+
 	allOff();                // turn all channels low again
 	TIM1->PSC = 0;           // set prescaler back to 0.
 	signaltimeout = 0;
@@ -128,6 +129,57 @@ void playStartupTune(){
 	TIM1->ARR = TIMER1_MAX_ARR;
 	__enable_irq();
 }
+
+//void playStartupTune(){
+//	__disable_irq();
+//
+//	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
+//		if(value != 0xFF){
+//		playBlueJayTune();
+//		}else{
+//	TIM1->ARR = TIM1_AUTORELOAD;
+//	setCaptureCompare();
+//
+//	comStep(1);       // activate a pwm channel
+//	TIM1->PSC = 80;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	comStep(2);       // activate a pwm channel
+//	TIM1->PSC = 70;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	comStep(3);       // activate a pwm channel
+//	TIM1->PSC = 60;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	comStep(4);       // activate a pwm channel
+//	TIM1->PSC = 50;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	comStep(5);       // activate a pwm channel
+//	TIM1->PSC = 40;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	comStep(6);       // activate a pwm channel
+//	TIM1->PSC = 30;        // frequency of beep
+//    delayMillis(200);         // duration of beep
+//    pause(50);
+//
+//	allOff();                // turn all channels low again
+//	TIM1->PSC = 0;           // set prescaler back to 0.
+//	signaltimeout = 0;
+//	}
+//
+//	TIM1->ARR = TIMER1_MAX_ARR;
+//	__enable_irq();
+//}
+
+
 
 void playBrushedStartupTune(){
 	__disable_irq();

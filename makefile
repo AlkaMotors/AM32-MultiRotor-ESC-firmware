@@ -28,7 +28,7 @@ LIBS := -lc -lm -lnosys
 
 # Compiler options
 CFLAGS_COMMON := -DUSE_MAKE
-CFLAGS_COMMON += -I$(MAIN_INC_DIR) -O2 -Wall -fdata-sections -ffunction-sections
+CFLAGS_COMMON += -I$(MAIN_INC_DIR) -O3 -Wall -fdata-sections -ffunction-sections
 CFLAGS_COMMON += -D$(TARGET)
 
 # Linker options

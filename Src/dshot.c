@@ -46,6 +46,8 @@ uint32_t gcr[37] =  {0};
 uint16_t dshot_frametime;
 uint16_t dshot_goodcounts;
 uint16_t dshot_badcounts;
+char dshot_extended_telemetry = 0;
+uint16_t send_extended_dshot = 0;
 
 
 void computeDshotDMA(){
@@ -55,8 +57,7 @@ int j = 0;
 dshot_frametime = dma_buffer[31]- dma_buffer[0];
 
 #if defined(MCU_F051) || defined(MCU_F031)
-//	         if((dshot_frametime < 1275)&&(dshot_frametime > 1210)){
-	         if((dshot_frametime < 1325)&&(dshot_frametime > 1210)){
+	         if((dshot_frametime < 1350 ) &&(dshot_frametime > 1150)){
 				for (int i = 0; i < 16; i++){
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>5) ;
 				}
@@ -153,19 +154,25 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 				    break;
 					case 9:
 						bi_direction = 0;
-   					    armed = 0;
-						zero_input_count = 0;
 				    break;
 					case 10:
 						bi_direction = 1;
-						zero_input_count = 0;
-						armed = 0;
 				    break;
 					case 12:
 					saveEEpromSettings();
 					//delayMillis(100);
 				//	NVIC_SystemReset();
 				    break;
+					case 13:
+					dshot_extended_telemetry = 1;
+					send_extended_dshot = 0b111000000000;
+					make_dshot_package();
+					break;
+					case 14:
+					dshot_extended_telemetry = 0;
+					send_extended_dshot = 0b111011111111;
+					make_dshot_package();
+					break;
 					case 20:
 						forward = 1 - dir_reversed;
 					break;
@@ -186,7 +193,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 }
 
 
+
 void make_dshot_package(){
+if(send_extended_dshot > 0){
+  dshot_full_number = send_extended_dshot;
+  send_extended_dshot = 0;
+}else{
   if (!running){
 	  e_com_time = 65535;
   }
@@ -202,6 +214,8 @@ for (int i = 15; i >= 9 ; i--){
 }
 // shift the commutation time to allow for expanded range and put shift amount in first three bits
 	dshot_full_number = ((shift_amount << 9) | (e_com_time >> shift_amount));
+
+}
 //calculate checksum
 	uint16_t  csum = 0;
 	uint16_t csum_data = dshot_full_number;

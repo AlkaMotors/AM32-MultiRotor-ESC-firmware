@@ -147,9 +147,18 @@
 		-remove unused brake on stop conditional
 *1.86  - create do-once in sine mode instead of setting pwm mode each time.
 *1.87  - fix fixed mode max rpm limits
-*1.88  -
- */
-
+*1.88  - Fix stutter on sine mode re-entry due to position reset
+*1.89  - Fix drive by rpm mode scaling.
+ 	   - Fix dshot px4 timings
+*1.90  - Disable comp interrupts for brushed mode
+	   - Re-enter polling mode after prop strike or desync
+	   - add G071 "N" variant
+	   - add preliminary Extended Dshot
+*1.91  - Reset average interval time on desync only after 100 zero crosses 
+*1.92  - Move g071 comparator blanking to TIM1 OC5
+ 	   - Increase ADC read frequency and current sense filtering 
+	   - Add addressable LED strip for G071 targets
+*/
 
 #include <stdint.h>
 #include "main.h"
@@ -167,9 +176,12 @@
 #include "peripherals.h"
 #include "common.h"
 
+#ifdef USE_LED_STRIP
+#include "WS2812.h"
+#endif
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 88
+#define VERSION_MINOR 92
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -186,10 +198,9 @@
 //=============================  Defaults =============================
 //===========================================================================
 
-uint8_t drive_by_rpm = 1;
-uint32_t MAXIMUM_RPM_SPEED_CONTROL = 24000;
-uint32_t MINIMUM_RPM_SPEED_CONTROL = 3000;
-
+uint8_t drive_by_rpm = 0;
+uint32_t MAXIMUM_RPM_SPEED_CONTROL = 10000;
+uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
                 .Kp = 31, // 10
@@ -338,8 +349,8 @@ char brushed_direction_set = 0;
 
 uint16_t tenkhzcounter = 0;
 float consumed_current = 0;
-uint16_t smoothed_raw_current = 0;
-uint16_t actual_current = 0;
+uint32_t smoothed_raw_current = 0;
+int16_t actual_current = 0;
 
 char lowkv = 0;
 
@@ -808,7 +819,7 @@ void getBemfState(){
     	current_state = PHASE_B_EXTI_PORT->IDR & PHASE_B_EXTI_PIN;
 	}
 #else
-    current_state = !LL_COMP_ReadOutputLevel(MAIN_COMP);  // polarity reversed
+    current_state = !LL_COMP_ReadOutputLevel(active_COMP);  // polarity reversed
 #endif
     if (rising){
     	if (current_state){
@@ -897,7 +908,6 @@ void PeriodElapsedCallback(){
 			if(zero_crosses<10000){
 			zero_crosses++;
 			}
-		//	UTILITY_TIMER->CNT = 0;
 
 }
 
@@ -923,7 +933,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 #ifdef MCU_F031
 				if((current_GPIO_PORT->IDR & current_GPIO_PIN) == (uint32_t)GPIO_PIN_RESET){
 #else
-				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
+				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
 #endif
 					return;
 					}
@@ -933,7 +943,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 #ifdef MCU_F031
 				if((current_GPIO_PORT->IDR & current_GPIO_PIN) != (uint32_t)GPIO_PIN_RESET){
 #else
-				if(LL_COMP_ReadOutputLevel(MAIN_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
+				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
 #endif
 					return;
 			    }
@@ -962,24 +972,46 @@ void tenKhzRoutine(){
 
 
 	tenkhzcounter++;
-	if(tenkhzcounter > 10000){      // 1s sample interval
+	if(tenkhzcounter > 10000){      // 1s sample interval 10000
 		consumed_current = (float)actual_current/360 + consumed_current;
+					switch (dshot_extended_telemetry){
+
+					case 1:
+					    send_extended_dshot = 0b0010 << 8 | degrees_celsius;
+					    dshot_extended_telemetry = 2;
+					break;
+					case 2:
+					    send_extended_dshot = 0b0110 << 8 | (uint8_t)actual_current/50;
+					    dshot_extended_telemetry = 3;
+					break;
+					case 3:
+					    send_extended_dshot = 0b0100 << 8 | (uint8_t)(battery_voltage/25);
+					    dshot_extended_telemetry = 1;
+					break;
+
+					}
+
 		tenkhzcounter = 0;
 	}
-if(!armed){
+if(!armed && (cell_count == 0)){
 	if(inputSet){
 		if(adjusted_input == 0){
 			armed_timeout_count++;
 			if(armed_timeout_count > 10000){    // one second
 				if(zero_input_count > 30){
 				armed = 1;
+				#ifdef USE_LED_STRIP
+			//	send_LED_RGB(0,0,0);
+				delayMicros(1000);
+				send_LED_RGB(0,255,0);
+				#endif
 				#ifdef USE_RGB_LED
 				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn on green
 				  			GPIOB->BSRR = LL_GPIO_PIN_8;   // turn on green
 				  			GPIOB->BSRR = LL_GPIO_PIN_5;
 				#endif
-				  			if(cell_count == 0 && LOW_VOLTAGE_CUTOFF){
-				  			  cell_count = battery_voltage / 370;
+				  			if((cell_count == 0) && LOW_VOLTAGE_CUTOFF){
+				  			  cell_count = battery_voltage / 310;
 				  			  for (int i = 0 ; i < cell_count; i++){
 				  			  playInputTune();
 				  			  delayMillis(100);
@@ -1199,10 +1231,13 @@ if(desync_check && zero_crosses > 10){
 //
 //	}
 		if((getAbsDif(last_average_interval,average_interval) > average_interval>>1) && (average_interval < 2000)){ //throttle resitricted before zc 20.
-		zero_crosses = 10;
+		zero_crosses = 0;
 		desync_happened ++;
-//running = 0;
-//old_routine = 1;
+running = 0;
+old_routine = 1;
+if(zero_crosses > 100){
+average_interval = 5000;
+}
 		last_duty_cycle = min_startup_duty/2;
 		}
 		desync_check = 0;
@@ -1368,13 +1403,12 @@ int main(void)
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2N);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3N);
 
-  #ifdef MCU_G071
-  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);  // timer used for comparator blanking
-  #endif
-#if defined(MCU_F051) || defined(MCU_F031)
+#ifdef MCU_G071
+  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH5);  // timer used for comparator blanking
+#endif
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);      // timer used for timing adc read
   TIM1->CCR4 = 100;  // set in 10khz loop to match pwm cycle timed to end of pwm on
-  #endif
+  
 
   /* Enable counter */
   LL_TIM_EnableCounter(TIM1);
@@ -1389,6 +1423,11 @@ int main(void)
   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
 #endif
 
+
+#ifdef USE_LED_STRIP
+send_LED_RGB(255,0,0);
+#endif
+
 #ifdef USE_RGB_LED
   LED_GPIO_init();
   GPIOB->BRR = LL_GPIO_PIN_8; // turn on red
@@ -1396,11 +1435,12 @@ int main(void)
   GPIOB->BSRR = LL_GPIO_PIN_3; //
 #endif
 
+#ifndef BRUSHED_MODE
    LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
    LL_TIM_GenerateEvent_UPDATE(COM_TIMER);
    LL_TIM_EnableIT_UPDATE(COM_TIMER);
    COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
-//
+#endif
    LL_TIM_EnableCounter(UTILITY_TIMER);
    LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
 //
@@ -1421,6 +1461,9 @@ int main(void)
   __IO uint32_t wait_loop_index = 0;
     /* Enable comparator */
   LL_COMP_Enable(MAIN_COMP);
+#ifdef N_VARIANT  // needs comp 1 and 2
+  LL_COMP_Enable(COMP1);
+#endif
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
    while(wait_loop_index != 0)
    {
@@ -1496,6 +1539,7 @@ loadEEpromSettings();
 		//bi_direction = 1;
 	 	commutation_interval = 5000;
 	 	use_sin_start = 0;
+		maskPhaseInterrupts();
 		playBrushedStartupTune();
 #else
 	   playStartupTune();
@@ -1517,9 +1561,7 @@ loadEEpromSettings();
  receiveDshotDma();
  if(drive_by_rpm){
 	 use_speed_control_loop = 1;
-	 target_e_com_time_high = 60000000 / MAXIMUM_RPM_SPEED_CONTROL / (motor_poles/2) ;
-	 target_e_com_time_low = 60000000 / MINIMUM_RPM_SPEED_CONTROL / (motor_poles/2) ;
- }
+}
 #endif
 
 #endif      // end fixed duty mode ifdef
@@ -1543,25 +1585,25 @@ loadEEpromSettings();
 LL_IWDG_ReloadCounter(IWDG);
 
 	  adc_counter++;
-	  if(adc_counter>100){   // for testing adc and telemetry
-#ifdef MCU_F051
+	  if(adc_counter>10){   // for adc and telemetry
+
 		  ADC_CCR = TIM1->CCR3*2/3 + 1;  // sample current at quarter pwm on
-		  if (ADC_CCR > 550){
-			  ADC_CCR = 550;
+		  if (ADC_CCR > tim1_arr){
+			  ADC_CCR = tim1_arr;
 		  }
 		  TIM1->CCR4 = ADC_CCR;
-#endif
+
 		  ADC_raw_temp = ADC_raw_temp - (temperature_offset);
 		  converted_degrees =__LL_ADC_CALC_TEMPERATURE(3300,  ADC_raw_temp, LL_ADC_RESOLUTION_12B);
 		  degrees_celsius =((7 * degrees_celsius) + converted_degrees) >> 3;
 
           battery_voltage = ((7 * battery_voltage) + ((ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER)/100)) >> 3;
-          smoothed_raw_current = ((7*smoothed_raw_current + (ADC_raw_current) )>> 3);
+          smoothed_raw_current = ((63*smoothed_raw_current + (ADC_raw_current) )>>6);
           actual_current = (smoothed_raw_current * 3300/41) / (MILLIVOLT_PER_AMP)  + CURRENT_OFFSET;
+		  if(actual_current < 0){actual_current = 0;}      
 
-//#ifdef MCU_G071
           LL_ADC_REG_StartConversion(ADC1);
-//#endif
+
 		  if(LOW_VOLTAGE_CUTOFF){
 			  if(battery_voltage < (cell_count * low_cell_volt_cutoff)){
 				  low_voltage_count++;
@@ -1824,13 +1866,13 @@ if(newinput > 2000){
 
 if (zero_crosses < 100 || commutation_interval > 500) {
 #ifdef MCU_G071
-		TIM1->CCR4 = 100;
+		TIM1->CCR5 = 100;  // comparator blanking
 #endif
 		filter_level = 12;
 
 	} else {
 #ifdef MCU_G071
-		TIM1->CCR4 = 5;
+		TIM1->CCR5 = 5;
 #endif
 		filter_level = map(average_interval, 100 , 500, 3, 10);
 	}
@@ -1911,6 +1953,7 @@ if(input > 48 && armed){
 	 		  if (input > 48 && input < 137){// sine wave stepper
 
 	   	 	if(do_once_sinemode){
+				COM_TIMER->DIER &= ~((0x1UL << (0U)));  // disable commutation interrupt in case set
 	   	 		maskPhaseInterrupts();
 	   	 		TIM1->CCR1 = 0;
 	   	 		TIM1->CCR2 = 0;
@@ -1984,6 +2027,7 @@ proportionalBrake();
 #ifdef BRUSHED_MODE
 
 	  			if(brushed_direction_set == 0 && adjusted_input > 48){
+					
 	  				if(forward){
 	  					allOff();
 	  					delayMicros(10);
@@ -2005,6 +2049,7 @@ proportionalBrake();
 	  				TIM1->CCR2 = input;
 	  				TIM1->CCR3 = input;
 	  			}else{
+					
 	  				TIM1->CCR1 = 0;												// set duty cycle to 50 out of 768 to start.
 	  				TIM1->CCR2 = 0;
 	  				TIM1->CCR3 = 0;

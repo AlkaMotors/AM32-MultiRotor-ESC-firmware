@@ -8,7 +8,7 @@
 #include "WS2812.h"
 
 char dma_busy;
-uint16_t led_Buffer[26] = {0,0,20,20,20,20,20,20,20,20,
+uint16_t led_Buffer[24] = {20,20,20,20,20,20,20,20,
 		                  60,60,60,60,60,60,60,60,
 		                  20,20,20,20,20,20,20,20};
 
@@ -16,7 +16,7 @@ void send_LED_DMA(){
 	dma_busy = 1;
 	TIM16->CNT = 0;
 	  LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_6, (uint32_t)&led_Buffer, (uint32_t)&TIM16->CCR1, LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_6));
-	  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, 26);
+	  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, 24);
 	  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
 	  LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_6);
 			  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
@@ -31,8 +31,8 @@ if(!dma_busy){
 uint32_t twenty_four_bit_color_number = green << 16 | red << 8 | blue ;
 
 
-for(int i = 2; i < 26 ; i ++){
-	led_Buffer[i] = (((twenty_four_bit_color_number >> (25 - i))&1) * 40) + 20;
+for(int i = 0; i < 24 ; i ++){
+	led_Buffer[i] = (((twenty_four_bit_color_number >> (23 - i))&1) * 40) + 20;
 }
 
 send_LED_DMA();

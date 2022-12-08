@@ -8,6 +8,7 @@
 #include "comparator.h"
 #include "targets.h"
 
+COMP_TypeDef* active_COMP = COMP1;
 
 void maskPhaseInterrupts(){
 	EXTI->IMR &= ~(1 << 21);
