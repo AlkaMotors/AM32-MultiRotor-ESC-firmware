@@ -270,12 +270,14 @@ uint16_t low_cell_volt_cutoff = 330;	// 3.3volts per cell
 typedef struct __attribute__((packed)) {
   uint8_t version_major;
   uint8_t version_minor;
+  char type[4];
   char device_name[12];
 } firmware_info_s;
 
 firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   version_major: VERSION_MAJOR,
   version_minor: VERSION_MINOR,
+  type: "AM32",
   device_name: FIRMWARE_NAME
 };
 
@@ -402,7 +404,7 @@ char send_telemetry = 0;
 char telemetry_done = 0;
 char prop_brake_active = 0;
 
-uint8_t eepromBuffer[176] ={0};
+uint8_t eepromBuffer[181] = {0};
 
 char dshot_telemetry = 0;
 
@@ -574,7 +576,7 @@ float doPidCalculations(struct fastPID *pidnow, int actual, int target){
 
 
 void loadEEpromSettings(){
-	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 176);
+	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 181);
 
 	   if(eepromBuffer[17] == 0x01){
 	 	  dir_reversed =  1;
@@ -772,7 +774,7 @@ void saveEEpromSettings(){
     	  eepromBuffer[22] = 0x00;
       }
    eepromBuffer[23] = advance_level;
-   save_flash_nolib(eepromBuffer, 176, EEPROM_START_ADD);
+   save_flash_nolib(eepromBuffer, 181, EEPROM_START_ADD);
 }
 
 
@@ -1452,12 +1454,20 @@ send_LED_RGB(255,0,0);
 
 loadEEpromSettings();
 //  EEPROM_VERSION = *(uint8_t*)(0x08000FFC);
-  if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4]){
+  if(firmware_info.version_major != eepromBuffer[3] || firmware_info.version_minor != eepromBuffer[4] ||
+  	eepromBuffer[176] == 0 || eepromBuffer[176] == 255 ) {
+
 	  eepromBuffer[3] = firmware_info.version_major;
 	  eepromBuffer[4] = firmware_info.version_minor;
-	  for(int i = 0; i < 12 ; i ++){
+	  
+	  for(int i = 0; i < 12 ; i ++) {
 		  eepromBuffer[5+i] = firmware_info.device_name[i];
 	  }
+
+	  for(int j = 0; j < 4; j ++) {
+		  eepromBuffer[176 + j] = firmware_info.type[j];
+	  }
+
 	  saveEEpromSettings();
   }
 

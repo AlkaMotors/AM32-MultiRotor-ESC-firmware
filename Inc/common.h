@@ -1,6 +1,6 @@
 #pragma once
 
-extern uint8_t eepromBuffer[176];
+extern uint8_t eepromBuffer[181];
 extern uint16_t TIMER1_MAX_ARR;
 
 extern uint32_t gcr[37];

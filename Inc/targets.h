@@ -89,6 +89,14 @@
 #define USE_SERIAL_TELEMETRY
 #endif
 
+
+#ifdef HAKRC_MINI_40
+#define FIRMWARE_NAME           "HAKRC M 40  "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_F
+#define USE_SERIAL_TELEMETRY
+#endif
+
 #ifdef MAMBA_F40PRO
 #define FIRMWARE_NAME           "MAMBA F40PRO"
 #define DEAD_TIME               20
