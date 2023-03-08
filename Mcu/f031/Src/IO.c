@@ -20,6 +20,7 @@ char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
 uint32_t average_signal_pulse;
+uint8_t buffer_padding = 7;
 
 void changeToOutput(){
 	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);

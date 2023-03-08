@@ -1,6 +1,6 @@
 
-TARGETS_F031 := \
- 	 
+TARGETS_F031 := REF_F031\
+
 HAL_FOLDER_F031 := $(HAL_FOLDER)/f031
 
 MCU_F031 := -mcpu=cortex-m0 -mthumb

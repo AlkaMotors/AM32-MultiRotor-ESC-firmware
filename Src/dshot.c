@@ -9,6 +9,7 @@
 #include "dshot.h"
 #include "targets.h"
 #include "common.h"
+#include "sounds.h"
 
 int dpulse[16] = {0} ;
 
@@ -102,8 +103,6 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
                     send_telemetry=1;
 					}
 					if (tocheck > 47){
-
-
 						newinput = tocheck;
 	                    dshotcommand = 0;
 	                    command_count = 0;
@@ -142,6 +141,9 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					case 3:
 						playBeaconTune3();
 					break;
+					case 5:
+						playStartupTune();
+					break;
 					case 7:
 						dir_reversed = 0;
 						forward = 1 - dir_reversed;
@@ -166,12 +168,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					case 13:
 					dshot_extended_telemetry = 1;
 					send_extended_dshot = 0b111000000000;
-					make_dshot_package();
+				//	make_dshot_package();
 					break;
 					case 14:
 					dshot_extended_telemetry = 0;
 					send_extended_dshot = 0b111011111111;
-					make_dshot_package();
+				//	make_dshot_package();
 					break;
 					case 20:
 						forward = 1 - dir_reversed;

@@ -158,6 +158,10 @@
 *1.92  - Move g071 comparator blanking to TIM1 OC5
  	   - Increase ADC read frequency and current sense filtering 
 	   - Add addressable LED strip for G071 targets
+*1.93  - Optimization for build process
+       - Add firmware file name to each target hex file
+       -fix extended telemetry not activating dshot600
+       -fix low voltage cuttoff timeout
 */
 
 #include <stdint.h>
@@ -181,7 +185,7 @@
 #endif
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 92
+#define VERSION_MINOR 93
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -278,6 +282,8 @@ firmware_info_s __attribute__ ((section(".firmware_info"))) firmware_info = {
   version_minor: VERSION_MINOR,
   device_name: FIRMWARE_NAME
 };
+
+const char filename[30] __attribute__((section(".file_name"))) = FILE_NAME;
 
 uint8_t EEPROM_VERSION;
 //move these to targets folder or peripherals for each mcu
@@ -495,6 +501,7 @@ uint16_t e_rpm;      // electrical revolution /100 so,  123 is 12300 erpm
 uint16_t adjusted_duty_cycle;
 
 uint8_t bad_count = 0;
+uint8_t bad_count_threshold = CPU_FREQUENCY_MHZ / 24 ;
 uint8_t dshotcommand;
 uint16_t armed_count_threshold = 1000;
 
@@ -811,7 +818,7 @@ void getBemfState(){
     		bemfcounter++;
     		}else{
     		bad_count++;
-    		if(bad_count > 2){
+    		if(bad_count > bad_count_threshold){
     		bemfcounter = 0;
     		}
    	}
@@ -820,7 +827,7 @@ void getBemfState(){
     		bemfcounter++;
     	}else{
     		bad_count++;
-    	    if(bad_count > 2){
+    	    if(bad_count > bad_count_threshold){
     	    bemfcounter = 0;
     	  }
     	}
@@ -910,7 +917,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 			if (rising){
 			for (int i = 0; i < filter_level; i++){
 #ifdef MCU_F031
-				if((current_GPIO_PORT->IDR & current_GPIO_PIN) == (uint32_t)GPIO_PIN_RESET){
+				if(!(current_GPIO_PORT->IDR & current_GPIO_PIN)){
 #else
 				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_HIGH){
 #endif
@@ -920,7 +927,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 			}else{
 				for (int i = 0; i < filter_level; i++){
 #ifdef MCU_F031
-				if((current_GPIO_PORT->IDR & current_GPIO_PIN) != (uint32_t)GPIO_PIN_RESET){
+				if((current_GPIO_PORT->IDR & current_GPIO_PIN)){
 #else
 				if(LL_COMP_ReadOutputLevel(active_COMP) == LL_COMP_OUTPUT_LEVEL_LOW){
 #endif
@@ -990,7 +997,7 @@ if(!armed && (cell_count == 0)){
 				  			GPIOB->BSRR = LL_GPIO_PIN_5;
 				#endif
 				  			if((cell_count == 0) && LOW_VOLTAGE_CUTOFF){
-				  			  cell_count = battery_voltage / 310;
+				  			  cell_count = battery_voltage / 370;
 				  			  for (int i = 0 ; i < cell_count; i++){
 				  			  playInputTune();
 				  			  delayMillis(100);
@@ -1342,7 +1349,7 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
 	commutation_interval = (thiszctime + (3*commutation_interval)) / 4;
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
-	while (INTERVAL_TIMER->CNT - thiszctime < waitTime - advance){
+	while (INTERVAL_TIMER->CNT < waitTime){
 
 	}
 	commutate();
@@ -1504,6 +1511,7 @@ loadEEpromSettings();
  armed = 1;
  adjusted_input = 48;
  newinput = 48;
+ advance_level = 3;
 #ifdef FIXED_SPEED_MODE
  use_speed_control_loop = 1;
  use_sin_start = 0;
@@ -1534,7 +1542,9 @@ loadEEpromSettings();
    inputSet = 1;
 
 #else
+#ifndef RHINO80A_F051
  checkForHighSignal();     // will reboot if signal line is high for 10ms
+#endif
  receiveDshotDma();
  if(drive_by_rpm){
 	 use_speed_control_loop = 1;
@@ -1576,7 +1586,7 @@ LL_IWDG_ReloadCounter(IWDG);
 
           battery_voltage = ((7 * battery_voltage) + ((ADC_raw_volts * 3300 / 4095 * VOLTAGE_DIVIDER)/100)) >> 3;
           smoothed_raw_current = ((63*smoothed_raw_current + (ADC_raw_current) )>>6);
-          actual_current = (smoothed_raw_current * 3300/41) / (MILLIVOLT_PER_AMP)  + CURRENT_OFFSET;
+          actual_current = ((smoothed_raw_current * 3300/41) - (CURRENT_OFFSET*100))/ (MILLIVOLT_PER_AMP);
 		  if(actual_current < 0){actual_current = 0;}      
 
           LL_ADC_REG_StartConversion(ADC1);
@@ -1584,7 +1594,7 @@ LL_IWDG_ReloadCounter(IWDG);
 		  if(LOW_VOLTAGE_CUTOFF){
 			  if(battery_voltage < (cell_count * low_cell_volt_cutoff)){
 				  low_voltage_count++;
-				  if(low_voltage_count > (1000 - (stepper_sine * 900))){
+				  if(low_voltage_count > (20000 - (stepper_sine * 900))){
 				  input = 0;
 				  allOff();
 				  maskPhaseInterrupts();

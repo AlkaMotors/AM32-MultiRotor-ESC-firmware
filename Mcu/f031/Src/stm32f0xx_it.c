@@ -210,6 +210,25 @@ void DMA1_Channel2_3_IRQHandler(void)
   */
 void DMA1_Channel4_5_IRQHandler(void)
 {
+#ifdef USE_SERIAL_TELEMETRY
+	  if(LL_DMA_IsActiveFlag_TC4(DMA1))
+	  {
+	    LL_DMA_ClearFlag_GI4(DMA1);
+	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+	    /* Call function Transmission complete Callback */
+
+	  }
+	  else if(LL_DMA_IsActiveFlag_TE4(DMA1))
+	  {
+		  LL_DMA_ClearFlag_GI4(DMA1);
+		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+	    /* Call Error function */
+	   // USART_TransferError_Callback();
+	  }
+#endif
+
+
+
 #ifdef     USE_TIMER_2_CHANNEL_4
 	if(LL_DMA_IsActiveFlag_HT4(DMA1)){
 		if(servoPwm){
