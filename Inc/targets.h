@@ -2,7 +2,7 @@
 
 #ifndef USE_MAKE
 //#define FD6288_F051
-//#define IFLIGHT_F051
+#define IFLIGHT_F051
 //#define MP6531_F051
 //#define TMOTOR55_F051    // like iflight but with leds
 //#define TMOTOR45_F051
@@ -13,7 +13,7 @@
 //#define AIKON20X20_F051
 //#define AIKONSINGLE_F051
 //#define FLYCOLOR_F051
-#define AM32REF_F051
+//#define AM32REF_F051
 //#define BLPWR_F051
 //#define HVFLYCOLOR_F051
 

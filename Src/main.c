@@ -185,7 +185,7 @@
 #endif
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 93
+#define VERSION_MINOR 94
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -229,6 +229,14 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
  		.Kd = 50,
  		.integral_limit = 10000,
  		.output_limit = 50000
+ };
+
+ enum inputType{
+	 AUTO_IN,
+	 DSHOT_IN,
+	 SERVO_IN,
+	 SERIAL_IN,
+	 EDTARM,
  };
 
 uint16_t target_e_com_time_high;
@@ -728,6 +736,36 @@ void loadEEpromSettings(){
 	   if(eepromBuffer[45] > 0 && eepromBuffer[45] < 11){ 
 	   sine_mode_power = eepromBuffer[45];
 	   }
+
+
+	   if(eepromBuffer[46] >= 0 && eepromBuffer[46] < 10){
+		   switch (eepromBuffer[46]){
+		   case AUTO_IN:
+			   dshot= 0;
+			   servoPwm = 0;
+			   EDT_ARMED = 1;
+			   break;
+		   case DSHOT_IN:
+			   dshot = 1;
+			   EDT_ARMED = 1;
+			   break;
+		   case SERVO_IN:
+			   servoPwm = 1;
+			   break;
+		   case SERIAL_IN:
+			   break;
+		   case EDTARM:
+			   EDT_ARM_ENABLE = 1;
+			   EDT_ARMED = 0;
+			   dshot = 1;
+			   break;
+		   };
+	   }else{
+		   dshot = 0;
+		   servoPwm = 0;
+		   EDT_ARMED = 1;
+	   }
+
 
        if(motor_kv < 300){
 		   low_rpm_throttle_limit = 0;
@@ -1265,7 +1303,7 @@ if(send_telemetry){
 #else
 		signaltimeout++;
 		if(signaltimeout > 2500 * (servoPwm+1)) { // quarter second timeout when armed half second for servo;
-			if(armed){
+			if(input > 47){
 				allOff();
 				armed = 0;
 				input = 0;

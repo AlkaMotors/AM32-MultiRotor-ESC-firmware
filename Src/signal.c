@@ -157,7 +157,10 @@ if(dshot_telemetry){
 			receiveDshotDma();
 		}
 		if  (servoPwm == 1){
+		if( !(INPUT_PIN_PORT->IDR & INPUT_PIN)){  // if the pin is low
 			computeServoInput();
+		}
+
 			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
      		receiveDshotDma();
      	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);

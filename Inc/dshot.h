@@ -17,6 +17,9 @@
 void computeDshotDMA(void);
 void make_dshot_package();
 
+
+extern char EDT_ARM_ENABLE;
+extern char EDT_ARMED;
 extern void saveEEpromSettings(void);
 
 extern char dshot_telemetry;

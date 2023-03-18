@@ -31,6 +31,8 @@ const char gcr_encode_table[16] = { 0b11001,
 		0b01111
 };
 
+char EDT_ARM_ENABLE = 0;
+char EDT_ARMED = 0;
 int shift_amount = 0;
 uint32_t gcrnumber;
 extern int e_com_time;
@@ -103,10 +105,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
                     send_telemetry=1;
 					}
 					if (tocheck > 47){
+						if(EDT_ARMED){
 						newinput = tocheck;
 	                    dshotcommand = 0;
 	                    command_count = 0;
 	                    return;
+						}
 					}
 
 				if ((tocheck <= 47)&& (tocheck > 0)){
@@ -114,6 +118,9 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					dshotcommand = tocheck;    //  todo
 				}
 				if (tocheck == 0){
+					if(EDT_ARM_ENABLE == 1){
+					EDT_ARMED = 0;
+					}
 					newinput = 0;
 					dshotcommand = 0;
 					command_count = 0;
@@ -168,7 +175,9 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					case 13:
 					dshot_extended_telemetry = 1;
 					send_extended_dshot = 0b111000000000;
-				//	make_dshot_package();
+					if(EDT_ARM_ENABLE == 1){
+						EDT_ARMED = 1;
+					}
 					break;
 					case 14:
 					dshot_extended_telemetry = 0;
