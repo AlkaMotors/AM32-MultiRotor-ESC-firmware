@@ -22,7 +22,7 @@ uint32_t dma_buffer[64] = {0};
 char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
-
+uint16_t average_signal_pulse = 0;
 
 
 
