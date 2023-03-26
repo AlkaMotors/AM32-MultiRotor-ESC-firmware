@@ -71,6 +71,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>6) ;
 				}
 #endif
+#if defined(MCU_L431)
+				if((dshot_frametime < 1800)&&(dshot_frametime > 1650)){
+				for (int i = 0; i < 16; i++){
+					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>6) ;
+				}
+#endif
 
 				uint8_t calcCRC = ((dpulse[0]^dpulse[4]^dpulse[8])<<3
 						|(dpulse[1]^dpulse[5]^dpulse[9])<<2
@@ -267,6 +273,12 @@ for (int i = 15; i >= 9 ; i--){
 		  }
           gcr[7] = 0;
 #endif
-
+#ifdef MCU_L431
+		  gcr[1+7] = 94;
+		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
+			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) *94;        // exclusive ored with number before it multiplied by 64 to match output timer.
+		  }
+          gcr[7] = 0;
+#endif
 
 }

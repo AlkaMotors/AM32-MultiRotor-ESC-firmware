@@ -162,6 +162,8 @@
        - Add firmware file name to each target hex file
        -fix extended telemetry not activating dshot600
        -fix low voltage cuttoff timeout
+*1.94  - Add selectable input types
+*1.95  - reduce timeout to 0.5 seconds when armed
 */
 
 #include <stdint.h>
@@ -185,7 +187,7 @@
 #endif
 
 #define VERSION_MAJOR 1
-#define VERSION_MINOR 94
+#define VERSION_MINOR 95
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -1302,8 +1304,8 @@ if(send_telemetry){
 		}
 #else
 		signaltimeout++;
-		if(signaltimeout > 2500 * (servoPwm+1)) { // quarter second timeout when armed half second for servo;
-			if(input > 47){
+		if(signaltimeout > 5000) { // half second timeout when armed;
+			if(armed){
 				allOff();
 				armed = 0;
 				input = 0;

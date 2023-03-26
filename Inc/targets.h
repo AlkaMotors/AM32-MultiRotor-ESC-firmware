@@ -1,9 +1,11 @@
 
 
 #ifndef USE_MAKE
-//#define FD6288_F051
-#define IFLIGHT_F051
+#define FD6288_F051
+//#define IFLIGHT_F051
 //#define MP6531_F051
+//#define DAKEFPV_35A_F051
+
 //#define TMOTOR55_F051    // like iflight but with leds
 //#define TMOTOR45_F051
 //#define HGLRC_F051
@@ -56,6 +58,14 @@
 #define FIRMWARE_NAME           "Mp6531_Dev  "
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_C
+#define USE_SERIAL_TELEMETRY
+#endif
+
+#ifdef DAKEFPV_35A_F051
+#define FILE_NAME				"DAKEFPV_35A_F051"
+#define FIRMWARE_NAME           "DakeFPV 35A"
+#define DEAD_TIME               18
+#define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
 #endif
 

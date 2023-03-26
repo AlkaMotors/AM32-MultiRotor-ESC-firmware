@@ -195,7 +195,7 @@ void checkDshot(){
 		output_timer_prescaler=0;
 		dshot = 1;
 		buffer_divider = 44;
-		buffer_padding = 9;
+	//	buffer_padding = 9;
 		buffersize = 32;
 		inputSet = 1;
 	}
@@ -205,7 +205,7 @@ void checkDshot(){
 		output_timer_prescaler=1;
 		IC_TIMER_REGISTER->CNT = 0xffff;
 		buffer_divider = 44;
-		buffer_padding = 7;
+	//	buffer_padding = 7;
 		buffersize = 32;
 		inputSet = 1;
 	}
