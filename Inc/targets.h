@@ -1,7 +1,8 @@
 
 
 #ifndef USE_MAKE
-#define FD6288_F051
+#define STSPIN32F0A
+//#define FD6288_F051
 //#define IFLIGHT_F051
 //#define MP6531_F051
 //#define DAKEFPV_35A_F051
@@ -407,6 +408,15 @@
 #define    USE_SERIAL_TELEMETRY
 #endif
 
+#ifdef STSPIN32F0A
+#define    FILE_NAME				"STSPIN32F0A"
+#define    FIRMWARE_NAME           "STSPIN32F0A "
+#define    DEAD_TIME               45
+#define    HARDWARE_GROUP_F031_C
+//#define    TARGET_STALL_PROTECTION_INTERVAL 8000
+//#define    MILLIVOLT_PER_AMP           60
+//#define USE_SERIAL_TELEMETRY
+#endif
 
 /********************************** defaults if not set ***************************/
 
@@ -1084,8 +1094,8 @@
 #define CURRENT_ADC_CHANNEL         LL_ADC_CHANNEL_5
 #define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_7
 
-
 #endif
+
 
 #ifdef    HARDWARE_GROUP_F031_B
 
@@ -1149,6 +1159,56 @@
 #define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_4
 
 #endif
+
+
+#ifdef HARDWARE_GROUP_F031_C
+
+#define MCU_F031_2
+#define USE_TIMER_3_CHANNEL_1
+#define INPUT_PIN               LL_GPIO_PIN_6
+#define INPUT_PIN_PORT          GPIOA
+#define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+#define IC_TIMER_REGISTER       TIM3
+#define IC_TIMER_POINTER        htim3
+#define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_4
+#define DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
+#define IC_DMA_IRQ_NAME         DMA1_Channel4_5_IRQn
+
+// Phase W/3 (LSW/LS3, HSW/HS3)
+#define PHASE_A_GPIO_LOW        LL_GPIO_PIN_15
+#define PHASE_A_GPIO_PORT_LOW   GPIOB
+#define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+#define PHASE_A_GPIO_PORT_HIGH  GPIOA
+
+// Phase V/2 (LSV/LS2, HSV/HS2)
+#define PHASE_B_GPIO_LOW        LL_GPIO_PIN_14
+#define PHASE_B_GPIO_PORT_LOW   GPIOB
+#define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+#define PHASE_B_GPIO_PORT_HIGH  GPIOA
+
+// Phase U/1 (LSU/LS1, HSU/HS1)
+#define PHASE_C_GPIO_LOW        LL_GPIO_PIN_13
+#define PHASE_C_GPIO_PORT_LOW   GPIOB
+#define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+#define PHASE_C_GPIO_PORT_HIGH  GPIOA
+
+#define PHASE_A_BEMF_PIN	    LL_GPIO_PIN_1
+#define PHASE_A_BEMF_PORT	    GPIOB
+#define PHASE_A_BEMF_EXTI_PORT  LL_SYSCFG_EXTI_PORTB
+#define PHASE_A_BEMF_EXTI_Line  LL_SYSCFG_EXTI_LINE1
+
+#define PHASE_B_BEMF_PIN	    LL_GPIO_PIN_0
+#define PHASE_B_BEMF_PORT	    GPIOF
+#define PHASE_B_BEMF_EXTI_PORT  LL_SYSCFG_EXTI_PORTF
+#define PHASE_B_BEMF_EXTI_Line  LL_SYSCFG_EXTI_LINE0
+
+#define PHASE_C_BEMF_PIN	    LL_GPIO_PIN_1
+#define PHASE_C_BEMF_PORT	    GPIOF
+#define PHASE_C_BEMF_EXTI_PORT  LL_SYSCFG_EXTI_PORTF
+#define PHASE_C_BEMF_EXTI_Line  LL_SYSCFG_EXTI_LINE1
+
+#endif
+
 /************************************ MCU COMMON PERIPHERALS **********************************************/
 
 #ifdef MCU_F051
@@ -1179,6 +1239,24 @@
 #define TARGET_MIN_BEMF_COUNTS 3
 //#define USE_SERIAL_TELEMETRY // moved to individual ESCs
 #define USE_ADC
+#endif
+
+#ifdef MCU_F031_2
+#define CPU_FREQUENCY_MHZ   48
+#define EEPROM_START_ADD  (uint32_t)0x08007C00
+#define INTERVAL_TIMER     TIM2
+// TEN_KHZ_TIMER is TIM6 in F051 (only a basic 16-bit timer)
+#define TEN_KHZ_TIMER      TIM16
+#define UTILITY_TIMER      TIM17
+#define COM_TIMER          TIM14
+#define TIM1_AUTORELOAD    1999
+//extern const unsigned int APPLICATION_ADDRESS;
+//#define APPLICATION_ADDRESS 0x08001000
+//#define APPLICATION_ADDRESS 0x08000000
+//#define MAIN_COMP	COMP1
+// EXTI 21 is for Comparator 1
+//#define EXTI_LINE   LL_EXTI_LINE_21
+//#define USE_ADC
 #endif
 
 #ifdef MCU_G071

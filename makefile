@@ -21,7 +21,7 @@ include g071makefile.mk
 include f031makefile.mk
 
 # Default MCU type to F051
-MCU_TYPE ?= F051
+MCU_TYPE ?= F031
 
 # additional libs
 LIBS := -lc -lm -lnosys
@@ -69,6 +69,9 @@ clean :
 binary : $(TARGET_BASENAME).bin
 	@$(ECHO) All done
 
+$(TARGETS_F031) :
+	@$(MAKE) -s MCU_TYPE=F031 TARGET=$@ binary
+
 $(TARGETS_F051) :
 	@$(MAKE) -s MCU_TYPE=F051 TARGET=$@ binary
 
@@ -80,7 +83,7 @@ $(TARGETS_F031) :
 
 # Compile target
 $(TARGET_BASENAME).elf: SRC := $(SRC_COMMON) $(SRC_$(MCU_TYPE))
-$(TARGET_BASENAME).elf: CFLAGS := $(MCU_F051) $(CFLAGS_$(MCU_TYPE)) $(CFLAGS_COMMON)
+$(TARGET_BASENAME).elf: CFLAGS := $(MCU_$(MCU_TYPE)) $(CFLAGS_$(MCU_TYPE)) $(CFLAGS_COMMON)
 $(TARGET_BASENAME).elf: LDFLAGS := $(LDFLAGS_COMMON) $(LDFLAGS_$(MCU_TYPE)) -T$(LDSCRIPT_$(MCU_TYPE))
 $(TARGET_BASENAME).elf: $(SRC)
 	@$(ECHO) Compiling $(notdir $@)
