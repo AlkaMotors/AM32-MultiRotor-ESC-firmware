@@ -16,7 +16,7 @@
 # Set up ARM (STM32) SDK
 ARM_SDK_DIR ?= $(TOOLS_DIR)/gcc-arm-none-eabi-10-2020-q4-major
 # Checked below, Should match the output of $(shell arm-none-eabi-gcc -dumpversion)
-GCC_REQUIRED_VERSION ?= 10.2.0
+GCC_REQUIRED_VERSION ?= 9.2.1
 
 .PHONY: arm_sdk_version
 

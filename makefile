@@ -30,9 +30,13 @@ LIBS := -lc -lm -lnosys
 CFLAGS_COMMON := -DUSE_MAKE
 CFLAGS_COMMON += -I$(MAIN_INC_DIR) -O3 -Wall -ffunction-sections
 CFLAGS_COMMON += -D$(TARGET)
+CFLAGS_COMMON += -g -DDEBUG
 
 # Linker options
-LDFLAGS_COMMON := -specs=nano.specs $(LIBS) -Wl,--gc-sections -Wl,--print-memory-usage
+LDFLAGS_COMMON := -specs=nano.specs $(LIBS) -Wl,--gc-sections -Wl,--print-memory-usage,--cref,-Map=test.map
+
+# configure mapfile output
+#LDFLAGS_COMMON +=
 
 # Working directories
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))

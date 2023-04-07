@@ -1419,8 +1419,41 @@ int main(void)
 
  initAfterJump();
 
+    /* MILG test irq vector works
+    // Trigger NMI Interrupt
+    SCB->ICSR |= SCB_ICSR_NMIPENDSET_Msk;
+    while(1) {
+    }
+    //*/
+
  initCorePeripherals();
 
+    /* MILG Enable GPIO for LED and blink
+    LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_SYSCFG);
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
+
+    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+    GPIO_InitStruct.Pin = LL_GPIO_PIN_0;
+    GPIO_InitStruct.Mode = LL_GPIO_MODE_OUTPUT;
+    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_LOW;
+    GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_OPENDRAIN;
+    LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+    //LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_0);
+    LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_0);
+    LL_mDelay(1000);
+    while(1) {
+        LL_mDelay(200);
+        LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_0);
+        LL_mDelay(200);
+        LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_0);
+    }
+    //*/
+
+/*
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
@@ -1435,12 +1468,14 @@ int main(void)
   TIM1->CCR4 = 100;  // set in 10khz loop to match pwm cycle timed to end of pwm on
   
 
-  /* Enable counter */
+  // Enable counter
   LL_TIM_EnableCounter(TIM1);
   LL_TIM_EnableAllOutputs(TIM1);
-  /* Force update generation */
+    // Force update generation
   LL_TIM_GenerateEvent_UPDATE(TIM1);
  // LL_TIM_EnableIT_UPDATE(TIM1);
+
+*/
 #ifdef USE_ADC_INPUT
 
 #else
@@ -1466,6 +1501,33 @@ send_LED_RGB(255,0,0);
    LL_TIM_EnableIT_UPDATE(COM_TIMER);
    COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
 #endif
+
+    //* MILG test PWM input
+    //volatile int test = 0;
+    receiveDshotDma(); //
+    while(1) {
+        if (newinput > 500) {
+        //if (test) {
+            //NVIC_EnableIRQ(SPI1_IRQn);
+            //NVIC_SetPendingIRQ(SPI1_IRQn);
+            //SCB->ICSR |= 0x80000000; // NMIPENDSET
+            LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_0);
+        }
+        else {
+            LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_0);
+        }
+        LL_mDelay(1);
+    }
+    //*/
+
+
+/*
+   LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
+   LL_TIM_GenerateEvent_UPDATE(COM_TIMER);
+    //LL_TIM_EnableIT_UPDATE(COM_TIMER);
+    //COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
+//
+
    LL_TIM_EnableCounter(UTILITY_TIMER);
    LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
 //
@@ -1476,6 +1538,7 @@ send_LED_RGB(255,0,0);
    LL_TIM_GenerateEvent_UPDATE(TEN_KHZ_TIMER);
    TEN_KHZ_TIMER->DIER |= (0x1UL << (0U));  // enable interrupt
   //RCC->APB2ENR  &= ~(1 << 22);  // turn debug off
+
 #ifdef USE_ADC
    ADC_Init();
    enableADC_DMA();
@@ -1490,8 +1553,7 @@ send_LED_RGB(255,0,0);
   LL_COMP_Enable(COMP1);
 #endif
    wait_loop_index = ((LL_COMP_DELAY_STARTUP_US * (SystemCoreClock / (100000 * 2))) / 10);
-   while(wait_loop_index != 0)
-   {
+    while (wait_loop_index != 0) {
      wait_loop_index--;
    }
 #endif
