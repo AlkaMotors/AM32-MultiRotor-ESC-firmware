@@ -64,6 +64,9 @@ If you wish to support the project please join the Patreon.
 https://www.patreon.com/user?u=44228479
 
 
+## Formatting
+Install clang-format on the development machine then the `format-project` script will work. This is a good idea before PRs to keep code clean.
+
 ## Sponsors
 The AM32 project would not have made this far without help from the following sponsors:
 
