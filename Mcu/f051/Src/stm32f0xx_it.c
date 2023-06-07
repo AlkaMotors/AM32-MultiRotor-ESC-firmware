@@ -199,28 +199,28 @@ void DMA1_Channel4_5_IRQHandler(void)
 	    LL_DMA_ClearFlag_GI5(DMA1);
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
 	    transfercomplete();
+	    return;
 	  }
 	  else if(LL_DMA_IsActiveFlag_TE5(DMA1) == 1)
 	  {
 		  LL_DMA_ClearFlag_GI5(DMA1);
 	  }
+#ifdef USE_PA14_TELEMETRY
+	  if(LL_DMA_IsActiveFlag_TC4(DMA1))
+	  {
+	    LL_DMA_ClearFlag_GI4(DMA1);
+	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+	    /* Call function Transmission complete Callback */
 
-//	  if(LL_DMA_IsActiveFlag_TC4(DMA1))
-//	  {
-//		serial_transfer++;
-//	    LL_DMA_ClearFlag_GI4(DMA1);
-//	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-//	    /* Call function Transmission complete Callback */
-//
-//	  }
-//	  else if(LL_DMA_IsActiveFlag_TE4(DMA1))
-//	  {
-//		  LL_DMA_ClearFlag_GI4(DMA1);
-//		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-//	    /* Call Error function */
-//	   // USART_TransferError_Callback();
-//	  }
-
+	  }
+	  else if(LL_DMA_IsActiveFlag_TE4(DMA1))
+	  {
+		  LL_DMA_ClearFlag_GI4(DMA1);
+		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+	    /* Call Error function */
+	   // USART_TransferError_Callback();
+	  }
+#endif
 
 
 
@@ -241,12 +241,7 @@ void DMA1_Channel4_5_IRQHandler(void)
 		  if(LL_DMA_IsActiveFlag_TC4(DMA1) == 1)
 		  {
 		    LL_DMA_ClearFlag_GI4(DMA1);
-
 		    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-
-//		    TIM6->CNT = 0;
-//		    TIM17->CNT = 0;
-//		    TIM6->SR = 0x00;
 		    transfercomplete();
 
 		  }
@@ -273,11 +268,6 @@ void ADC1_COMP_IRQHandler(void)
 	    /* Call interruption treatment function */
 	    interruptRoutine();
 	  }
-  /* USER CODE END ADC1_COMP_IRQn 0 */
-	//  process_time = TIM17->CNT;
-  /* USER CODE BEGIN ADC1_COMP_IRQn 1 */
-
-  /* USER CODE END ADC1_COMP_IRQn 1 */
 }
 
 /**

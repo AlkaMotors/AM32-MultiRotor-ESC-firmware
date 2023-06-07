@@ -121,7 +121,7 @@ void SystemClock_Config(void)
 void MX_COMP1_Init(void)
 {
 
-LL_COMP_InitTypeDef COMP_InitStruct = {0};
+//LL_COMP_InitTypeDef COMP_InitStruct = {0};
 
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -143,13 +143,13 @@ LL_COMP_InitTypeDef COMP_InitStruct = {0};
   NVIC_SetPriority(ADC1_COMP_IRQn, 0);
   NVIC_EnableIRQ(ADC1_COMP_IRQn);
 
-  COMP_InitStruct.PowerMode = LL_COMP_POWERMODE_HIGHSPEED;
-  COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO1;
-  COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_DAC1_CH2;
-  COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
-  COMP_InitStruct.OutputSelection = LL_COMP_OUTPUT_NONE;
-  COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
-  LL_COMP_Init(COMP1, &COMP_InitStruct);
+  // COMP_InitStruct.PowerMode = LL_COMP_POWERMODE_HIGHSPEED;
+  // COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO1;
+  // COMP_InitStruct.InputMinus = LL_COMP_INPUT_MINUS_DAC1_CH2;
+  // COMP_InitStruct.InputHysteresis = LL_COMP_HYSTERESIS_NONE;
+  // COMP_InitStruct.OutputSelection = LL_COMP_OUTPUT_NONE;
+  // COMP_InitStruct.OutputPolarity = LL_COMP_OUTPUTPOL_NONINVERTED;
+  // LL_COMP_Init(COMP1, &COMP_InitStruct);
 
 }
 
@@ -157,18 +157,11 @@ LL_COMP_InitTypeDef COMP_InitStruct = {0};
 void MX_IWDG_Init(void)
 {
 
-  LL_IWDG_Enable(IWDG);
-  LL_IWDG_EnableWriteAccess(IWDG);
-  LL_IWDG_SetPrescaler(IWDG, LL_IWDG_PRESCALER_16);
-  LL_IWDG_SetReloadCounter(IWDG, 4000);
-  while (LL_IWDG_IsReady(IWDG) != 1)
-  {
-  }
-
-  LL_IWDG_SetWindow(IWDG, 4095);
+  IWDG->KR = 0x0000CCCCU;
+  IWDG->KR = 0x00005555U;
+  IWDG->PR = LL_IWDG_PRESCALER_16;
+  IWDG->RLR = 4000;
   LL_IWDG_ReloadCounter(IWDG);
-
-
 }
 
 
@@ -320,57 +313,32 @@ void MX_TIM1_Init(void)
 
 void MX_TIM2_Init(void)
 {
-
- LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
-  TIM_InitStruct.Prescaler = 23;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 0xFFFF;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_Init(TIM2, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(TIM2);
-  LL_TIM_SetClockSource(TIM2, LL_TIM_CLOCKSOURCE_INTERNAL);
-  LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_RESET);
-  LL_TIM_DisableMasterSlaveMode(TIM2);
-
+  TIM2->PSC = 23;
+  TIM2->ARR = 0xFFFF;
 }
 
 
 void MX_TIM6_Init(void)
 {
 
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM6);
 
   NVIC_SetPriority(TIM6_DAC_IRQn, 2);
   NVIC_EnableIRQ(TIM6_DAC_IRQn);
-
-  TIM_InitStruct.Prescaler = 47;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 100;
-  LL_TIM_Init(TIM6, &TIM_InitStruct);
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_DisableARRPreload(TIM6);
-  LL_TIM_DisableMasterSlaveMode(TIM6);
-
+TIM6->PSC = 47;
+TIM6->ARR = 100;
 
 }
 
 
 void MX_TIM14_Init(void)
 {
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
   LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM14);
-
+TIM14->PSC = 23;
+TIM14->ARR = 4000;
   NVIC_SetPriority(TIM14_IRQn, 0);
   NVIC_EnableIRQ(TIM14_IRQn);
-  TIM_InitStruct.Prescaler = 23;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 4000;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  LL_TIM_Init(TIM14, &TIM_InitStruct);
   LL_TIM_EnableARRPreload(TIM14);
 
 }
@@ -378,51 +346,28 @@ void MX_TIM14_Init(void)
 
 void MX_TIM16_Init(void)
 {
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
   LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM16);
-
-  NVIC_SetPriority(TIM16_IRQn, 2);
+ NVIC_SetPriority(TIM16_IRQn, 2);
   NVIC_EnableIRQ(TIM16_IRQn);
-
-  TIM_InitStruct.Prescaler = 0;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 9000;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM16, &TIM_InitStruct);
+TIM16->PSC = 0;
+TIM16->ARR = 9000;
   LL_TIM_DisableARRPreload(TIM16);
-
 }
 
 
 void MX_TIM17_Init(void)
 {
- LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
-  LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM17);
-
-  TIM_InitStruct.Prescaler = 47;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 65535;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(TIM17, &TIM_InitStruct);
+   LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_TIM17);
+TIM17->PSC = 47;
+TIM17->ARR = 0XFFFF;
   LL_TIM_DisableARRPreload(TIM17);
-
-
 }
 
 
 void MX_DMA_Init(void)
 {
-
-  /* Init with LL driver */
-  /* DMA controller clock enable */
   LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-
-  /* DMA interrupt init */
+ /* DMA interrupt init */
   /* DMA1_Channel2_3_IRQn interrupt configuration */
   NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1);
   NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
@@ -457,11 +402,6 @@ void MX_GPIO_Init(void)
 
 void UN_TIM_Init(void)
 {
-
-
-
-  LL_TIM_InitTypeDef TIM_InitStruct = {0};
-
   LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
   /* Peripheral clock enable */
@@ -496,25 +436,6 @@ void UN_TIM_Init(void)
   LL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 #endif
 
- /* TIM16 DMA Init */
-
-  /* TIM16_CH1_UP Init */
-  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-
-  LL_DMA_SetChannelPriorityLevel(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PRIORITY_LOW);
-
-  LL_DMA_SetMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MODE_NORMAL);
-
-  LL_DMA_SetPeriphIncMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PERIPH_NOINCREMENT);
-
-  LL_DMA_SetMemoryIncMode(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MEMORY_INCREMENT);
-
-  LL_DMA_SetPeriphSize(DMA1, INPUT_DMA_CHANNEL, LL_DMA_PDATAALIGN_HALFWORD);
-
-  LL_DMA_SetMemorySize(DMA1, INPUT_DMA_CHANNEL, LL_DMA_MDATAALIGN_WORD);
-
-  /* TIM16 interrupt Init */
-
 #ifdef USE_TIMER_15_CHANNEL_1
   NVIC_SetPriority(TIM15_IRQn, 0);
   NVIC_EnableIRQ(TIM15_IRQn);
@@ -524,18 +445,8 @@ void UN_TIM_Init(void)
    NVIC_EnableIRQ(IC_DMA_IRQ_NAME);
 #endif
 
-  TIM_InitStruct.Prescaler = 0;
-  TIM_InitStruct.CounterMode = LL_TIM_COUNTERMODE_UP;
-  TIM_InitStruct.Autoreload = 63;
-  TIM_InitStruct.ClockDivision = LL_TIM_CLOCKDIVISION_DIV1;
-  TIM_InitStruct.RepetitionCounter = 0;
-  LL_TIM_Init(IC_TIMER_REGISTER, &TIM_InitStruct);
-  LL_TIM_DisableARRPreload(IC_TIMER_REGISTER);
-  LL_TIM_IC_SetActiveInput(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_ACTIVEINPUT_DIRECTTI);
-  LL_TIM_IC_SetPrescaler(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_ICPSC_DIV1);
-  LL_TIM_IC_SetFilter(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_FILTER_FDIV1);
-  LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_BOTHEDGE);
-
+IC_TIMER_REGISTER->PSC = 0;
+IC_TIMER_REGISTER->ARR = 63;
 
 }
 

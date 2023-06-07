@@ -18,7 +18,9 @@ extern uint16_t newinput;
 extern char play_tone_flag;
 extern uint32_t current_GPIO_PIN;
 extern GPIO_TypeDef* current_GPIO_PORT;
+#ifndef MCU_F031
 extern COMP_TypeDef* active_COMP;
+#endif
 extern uint32_t current_EXTI_LINE;
 extern char dshot_extended_telemetry;
 extern uint16_t send_extended_dshot;

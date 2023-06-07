@@ -10,6 +10,7 @@
 
 #include "peripherals.h"
 #include "targets.h"
+#include "serial_telemetry.h"
 
 void initCorePeripherals(void){
 
@@ -26,6 +27,9 @@ void initCorePeripherals(void){
   MX_TIM17_Init();
   TEN_KHZ_Timer_Init();
   UN_TIM_Init();
+  #ifdef USE_SERIAL_TELEMETRY
+  telem_UART_Init();
+#endif
 }
 
 
@@ -419,11 +423,11 @@ void UN_TIM_Init(void)
   /* TIM16 interrupt Init */
 
 #ifdef USE_TIMER_16
-  NVIC_SetPriority(TIM16_IRQn, 0);
-  NVIC_EnableIRQ(TIM16_IRQn);
+//  NVIC_SetPriority(TIM16_IRQn, 1);
+//  NVIC_EnableIRQ(TIM16_IRQn);
 #else
-  NVIC_SetPriority(TIM2_IRQn, 0);
-  NVIC_EnableIRQ(TIM2_IRQn);
+//  NVIC_SetPriority(TIM2_IRQn, 1);
+ // NVIC_EnableIRQ(TIM2_IRQn);
 
 #endif
 

@@ -9,6 +9,7 @@
 #include "dshot.h"
 #include "targets.h"
 #include "common.h"
+#include "sounds.h"
 
 int dpulse[16] = {0} ;
 
@@ -30,6 +31,8 @@ const char gcr_encode_table[16] = { 0b11001,
 		0b01111
 };
 
+char EDT_ARM_ENABLE = 0;
+char EDT_ARMED = 0;
 int shift_amount = 0;
 uint32_t gcrnumber;
 extern int e_com_time;
@@ -68,6 +71,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>6) ;
 				}
 #endif
+#if defined(MCU_L431)
+				if((dshot_frametime < 1800)&&(dshot_frametime > 1650)){
+				for (int i = 0; i < 16; i++){
+					dpulse[i] = ((dma_buffer[j + (i<<1) +1] - dma_buffer[j + (i<<1)])>>6) ;
+				}
+#endif
 
 				uint8_t calcCRC = ((dpulse[0]^dpulse[4]^dpulse[8])<<3
 						|(dpulse[1]^dpulse[5]^dpulse[9])<<2
@@ -102,12 +111,12 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
                     send_telemetry=1;
 					}
 					if (tocheck > 47){
-
-
+						if(EDT_ARMED){
 						newinput = tocheck;
 	                    dshotcommand = 0;
 	                    command_count = 0;
 	                    return;
+						}
 					}
 
 				if ((tocheck <= 47)&& (tocheck > 0)){
@@ -115,6 +124,9 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					dshotcommand = tocheck;    //  todo
 				}
 				if (tocheck == 0){
+					if(EDT_ARM_ENABLE == 1){
+					EDT_ARMED = 0;
+					}
 					newinput = 0;
 					dshotcommand = 0;
 					command_count = 0;
@@ -142,6 +154,9 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					case 3:
 						playBeaconTune3();
 					break;
+					case 5:
+						playStartupTune();
+					break;
 					case 7:
 						dir_reversed = 0;
 						forward = 1 - dir_reversed;
@@ -166,12 +181,14 @@ dshot_frametime = dma_buffer[31]- dma_buffer[0];
 					case 13:
 					dshot_extended_telemetry = 1;
 					send_extended_dshot = 0b111000000000;
-					make_dshot_package();
+					if(EDT_ARM_ENABLE == 1){
+						EDT_ARMED = 1;
+					}
 					break;
 					case 14:
 					dshot_extended_telemetry = 0;
 					send_extended_dshot = 0b111011111111;
-					make_dshot_package();
+				//	make_dshot_package();
 					break;
 					case 20:
 						forward = 1 - dir_reversed;
@@ -256,6 +273,12 @@ for (int i = 15; i >= 9 ; i--){
 		  }
           gcr[7] = 0;
 #endif
-
+#ifdef MCU_L431
+		  gcr[1+7] = 94;
+		  for( int i= 19; i >= 0; i--){              // each digit in gcrnumber
+			  gcr[7+20-i+1] = ((((gcrnumber &  1 << i )) >> i) ^ (gcr[7+20-i]>>6)) *94;        // exclusive ored with number before it multiplied by 64 to match output timer.
+		  }
+          gcr[7] = 0;
+#endif
 
 }

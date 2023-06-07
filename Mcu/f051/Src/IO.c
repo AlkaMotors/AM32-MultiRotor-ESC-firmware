@@ -19,7 +19,6 @@ int smallestnumber = 0;
 uint32_t dma_buffer[64] = {0};
 char out_put = 0;
 char buffer_divider = 44;
-int dshot_runout_timer = 62500;
 uint32_t average_signal_pulse;
 uint8_t  buffer_padding = 0;
 
@@ -142,12 +141,42 @@ void sendDshotDma(){
 
 }
 
+void checkDshot(){
+	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
+		ic_timer_prescaler= 0;
+		output_timer_prescaler=0;
+		dshot = 1;
+		buffer_divider = 44;
+		buffer_padding = 9;
+		buffersize = 32;
+		inputSet = 1;
+	}
+	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
+		dshot = 1;
+		ic_timer_prescaler=1;
+		output_timer_prescaler=1;
+		IC_TIMER_REGISTER->CNT = 0xffff;
+		buffer_divider = 44;
+		buffer_padding = 7;
+		buffersize = 32;
+		inputSet = 1;
+	}
+}
+
+void checkServo(){
+	if (smallestnumber > 300 && smallestnumber < 20000){
+		servoPwm = 1;
+		ic_timer_prescaler=47;
+		armed_count_threshold = 35;
+		buffersize = 2;
+		inputSet = 1;
+	}
+}
+
 
 void detectInput(){
 	smallestnumber = 20000;
 	average_signal_pulse = 0;
-	dshot = 0;
-	servoPwm = 0;
 	int lastnumber = dma_buffer[0];
 
 
@@ -165,46 +194,17 @@ void detectInput(){
 	}
 	average_signal_pulse = average_signal_pulse/32 ;
 
-	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
-		ic_timer_prescaler= 0;
-		output_timer_prescaler=0;
-		dshot = 1;
-		buffer_divider = 44;
-		buffer_padding = 9;
-		dshot_runout_timer = 65000;
-		buffersize = 32;
-	}
-	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
-		dshot = 1;
-		ic_timer_prescaler=1;
-		output_timer_prescaler=1;
-		IC_TIMER_REGISTER->CNT = 0xffff;
-		buffer_divider = 44;
-		dshot_runout_timer = 65000;
-		buffer_padding = 7;
-		buffersize = 32;
-	}
-//	if ((smallestnumber > 100 )&&(smallestnumber < 400)){
-//		multishot = 1;
-//		armed_count_threshold = 1000;
-//		buffersize = 4;
-//	}
-//	if ((smallestnumber > 2000 )&&(smallestnumber < 3000)){
-//		oneshot42 = 1;
-//	}
-		if (smallestnumber > 300 && smallestnumber < 20000){
-			servoPwm = 1;
-			ic_timer_prescaler=47;
-			armed_count_threshold = 35;
-			buffersize = 2;
-		}
+if(dshot == 1){
+ checkDshot();
+}
+if(servoPwm == 1){
+ checkServo();
+}
 
-	if (smallestnumber == 0 || smallestnumber == 20000){
-		inputSet = 0;
-	}else{
-
-		inputSet = 1;
-	}
+if(!dshot && !servoPwm){
+	checkDshot();
+	checkServo();
+}
 
 }
 

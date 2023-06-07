@@ -139,7 +139,7 @@ void transfercomplete(){
 if(dshot_telemetry){
     if(out_put){
 //    	TIM17->CNT = 0;
-    	make_dshot_package();          // this takes around 10us !!
+    make_dshot_package();          // this takes around 10us !!
   	computeDshotDMA();             //this is slow too..
   	receiveDshotDma();             //holy smokes.. reverse the line and set up dma again
    	return;
@@ -157,7 +157,10 @@ if(dshot_telemetry){
 			receiveDshotDma();
 		}
 		if  (servoPwm == 1){
+		if( !(INPUT_PIN_PORT->IDR & INPUT_PIN)){  // if the pin is low
 			computeServoInput();
+		}
+
 			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
      		receiveDshotDma();
      	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);

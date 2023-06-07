@@ -20,6 +20,7 @@ char out_put = 0;
 char buffer_divider = 44;
 int dshot_runout_timer = 62500;
 uint32_t average_signal_pulse;
+uint8_t buffer_padding = 7;
 
 void changeToOutput(){
 	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
@@ -188,11 +189,42 @@ void receiveDshotDma(){
 }
 
 
+void checkDshot(){
+	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
+		ic_timer_prescaler= 0;
+		output_timer_prescaler=0;
+		dshot = 1;
+		buffer_divider = 44;
+	//	buffer_padding = 9;
+		buffersize = 32;
+		inputSet = 1;
+	}
+	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
+		dshot = 1;
+		ic_timer_prescaler=1;
+		output_timer_prescaler=1;
+		IC_TIMER_REGISTER->CNT = 0xffff;
+		buffer_divider = 44;
+	//	buffer_padding = 7;
+		buffersize = 32;
+		inputSet = 1;
+	}
+}
+
+void checkServo(){
+	if (smallestnumber > 300 && smallestnumber < 20000){
+		servoPwm = 1;
+		ic_timer_prescaler=47;
+		armed_count_threshold = 35;
+		buffersize = 2;
+		inputSet = 1;
+	}
+}
+
+
 void detectInput(){
 	smallestnumber = 20000;
 	average_signal_pulse = 0;
-	dshot = 0;
-	servoPwm = 0;
 	int lastnumber = dma_buffer[0];
 
 
@@ -210,209 +242,20 @@ void detectInput(){
 	}
 	average_signal_pulse = average_signal_pulse/32 ;
 
-	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
-		ic_timer_prescaler= 0;
-		output_timer_prescaler=0;
-		dshot = 1;
-		buffer_divider = 44;
-		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
-		buffersize = 32;
-	}
-	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
-		dshot = 1;
-		ic_timer_prescaler=1;
-		output_timer_prescaler=1;
-		IC_TIMER_REGISTER->CNT = 0xffff;
-		buffer_divider = 44;
-		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
-		buffersize = 32;
-	}
-//	if ((smallestnumber > 100 )&&(smallestnumber < 400)){
-//		multishot = 1;
-//		armed_count_threshold = 1000;
-//		buffersize = 4;
-//	}
-//	if ((smallestnumber > 2000 )&&(smallestnumber < 3000)){
-//		oneshot42 = 1;
-//	}
-		if (smallestnumber > 300 && smallestnumber < 20000){
-			servoPwm = 1;
-			ic_timer_prescaler=47;
-			armed_count_threshold = 35;
-			buffersize = 2;
-		}
+if(dshot == 1){
+ checkDshot();
+}
+if(servoPwm == 1){
+ checkServo();
+}
 
-	if (smallestnumber == 0 || smallestnumber == 20000){
-		inputSet = 0;
-	}else{
-
-		inputSet = 1;
-	}
+if(!dshot && !servoPwm){
+	checkDshot();
+	checkServo();
+}
 
 }
 
-
-
-
-
-//void detectInput(){
-//	smallestnumber = 20000;
-//	dshot = 0;
-//	servoPwm = 0;
-//	int lastnumber = dma_buffer[0];
-//	for ( int j = 1 ; j < 31; j++){
-//		if((dma_buffer[j] - lastnumber) < smallestnumber){ // blank space
-//			smallestnumber = dma_buffer[j] - lastnumber;
-//		}
-//		lastnumber = dma_buffer[j];
-//	}
-//	if ((smallestnumber > 3)&&(smallestnumber < 39)){
-//		ic_timer_prescaler= 0;
-//		output_timer_prescaler=0;
-//		dshot = 1;
-//		buffer_divider = 44;
-//		dshot_runout_timer = 65000;
-//		armed_count_threshold = 10000;
-//		buffersize = 32;
-//	}
-//	if ((smallestnumber > 40 )&&(smallestnumber < 80)){
-//		dshot = 1;
-//		ic_timer_prescaler=1;
-//		output_timer_prescaler=1;
-//		IC_TIMER_REGISTER->CNT = 0xffff;
-//		buffer_divider = 44;
-//		dshot_runout_timer = 65000;
-//		armed_count_threshold = 10000;
-//		buffersize = 32;
-//	}
-//
-//		if (smallestnumber > 3000){
-//			servoPwm = 1;
-//			ic_timer_prescaler=47;
-//			armed_count_threshold = 35;
-//			buffersize = 2;
-//		}
-//
-//	if (smallestnumber == 0){
-//		inputSet = 0;
-//	}else{
-//
-//		inputSet = 1;
-//	}
-//
-//}
-
-
-
-//void computeServoInput(){
-//
-//	int lastnumber = dma_buffer[0];
-//	for ( int j = 1 ; j < 2; j++){
-//
-//		if(((dma_buffer[j] - lastnumber) >900 ) && ((dma_buffer[j] - lastnumber) < 2150)){ // blank space
-//
-//			if(bi_direction){
-//				if(dma_buffer[j] - lastnumber <= servo_neutral){
-//				servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_neutral, 0, 1000);
-//				}else{
-//				servorawinput = map((dma_buffer[j] - lastnumber), servo_neutral+1, servo_high_threshold, 1001, 2000);
-//				}
-//			}else{
-//			servorawinput = map((dma_buffer[j] - lastnumber), servo_low_threshold, servo_high_threshold, 0, 2000);
-//			}
-//			break;
-//		}
-//		lastnumber = dma_buffer[j];
-//	}
-//	if (servorawinput - newinput > max_servo_deviation){
-//		newinput += max_servo_deviation;
-//	}else if(newinput - servorawinput > max_servo_deviation){
-//		newinput -= max_servo_deviation;
-//	}else{
-//		newinput = servorawinput;
-//	}
-//
-//}
-//
-
-
-
-//void transfercomplete(){
-//	if(armed && dshot_telemetry){
-//	    if(out_put){
-//
-//
-//	  	receiveDshotDma();
-//	   	return;
-//	    }else{
-//
-//			sendDshotDma();
-//			make_dshot_package();
-//			computeDshotDMA();
-//	    return;
-//	    }
-//	}
-//
-//	  if (inputSet == 0){
-//	 	 detectInput();
-//	 	receiveDshotDma();
-//	 	return;
-//	  }
-//
-//	if (inputSet == 1){
-//	if(!armed){
-//		signaltimeout = 0;
-//		if (adjusted_input < 0){
-//			adjusted_input = 0;
-//			  					}
-//		 		 if (adjusted_input == 0){                       // note this in input..not newinput so it will be adjusted be main loop
-//		 		 			zero_input_count++;
-//		 		 		}else{
-//		 		 			zero_input_count = 0;
-//		 		 		}
-//		}
-//
-//if(dshot_telemetry){
-//    if(out_put){
-////    	TIM17->CNT = 0;
-//    	make_dshot_package();          // this takes around 10us !!
-//  	computeDshotDMA();             //this is slow too..
-//  	receiveDshotDma();             //holy smokes.. reverse the line and set up dma again
-//   	return;
-//    }else{
-//		sendDshotDma();
-//    return;
-//    }
-//}else{
-//
-//		if (dshot == 1){
-//			computeDshotDMA();
-//			if(send_telemetry){
-////			  makeTelemPackage(degrees_celsius,
-////					  ADC_raw_volts,
-////			  					  1000,
-////			  					  200,
-////			  					  k_erpm);
-////			  send_telem_DMA();
-//			}
-//			receiveDshotDma();
-//		}
-//
-//
-//		if  (servoPwm == 1){
-//			computeServoInput();
-//		//	IC_TIMER_REGISTER->CNT = 0;
-//			signaltimeout = 0;
-//			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
-//     		receiveDshotDma();
-//     	    LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
-//		}
-//
-//	}
-//	}
-//}
 
 
 
