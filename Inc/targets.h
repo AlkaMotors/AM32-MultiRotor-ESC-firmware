@@ -50,7 +50,21 @@
 #define DEAD_TIME               45
 #define HARDWARE_GROUP_F0_B
 #define USE_SERIAL_TELEMETRY
+#define SERIAL_PIN_OPENDRAIN
 //#define USE_RGB_LED
+#endif
+
+#ifdef HKMICRO_F051
+#define FILE_NAME				"HKMICRO_F051"
+#define FIRMWARE_NAME           "HK Micro    "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_B
+#define MILLIVOLT_PER_AMP       20
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  110
+#define USE_SERIAL_TELEMETRY
+#define SERIAL_PIN_OPENDRAIN
+#define USE_RGB_LED
 #endif
 
 #ifdef MP6531_F051
@@ -101,6 +115,20 @@
 #define HARDWARE_GROUP_F0_A
 #define USE_SERIAL_TELEMETRY
 #endif
+
+#ifdef HGLRC35_F051
+#define FILE_NAME				"HGLRC35_F051"
+#define FIRMWARE_NAME           "HGLRC_35A   "
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_A
+#define USE_SERIAL_TELEMETRY
+#define SERIAL_PIN_OPENDRAIN
+#define PA6_VOLTAGE
+#define TARGET_VOLTAGE_DIVIDER  210
+#endif
+
+
+
 
 #ifdef SISKIN_F051
 #define FILE_NAME				"SISKIN_F051"
@@ -420,7 +448,7 @@
 
 #ifndef  	MILLIVOLT_PER_AMP
 #define     MILLIVOLT_PER_AMP           20
-#endif 
+#endif
 
 #ifndef 	CURRENT_OFFSET
 #define     CURRENT_OFFSET              0     // in millivolt measured at output of op-amp 
@@ -1211,15 +1239,3 @@
 	#define VOLTAGE_ADC_PIN LL_GPIO_PIN_6
 #endif
 #endif
-
-
-
-
-
-
-
-
-
-
-
-

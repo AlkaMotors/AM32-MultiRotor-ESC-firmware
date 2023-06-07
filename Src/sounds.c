@@ -47,10 +47,10 @@ void setCaptureCompare(){
 
 void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
 	uint16_t timerOne_reload = TIM1_AUTORELOAD;
- 
+
 	TIM1->PSC = 10;
 	timerOne_reload = 4800000 / freq;
-	
+
 	TIM1->ARR = timerOne_reload;
 	TIM1->CCR1 = beep_volume * timerOne_reload /TIM1_AUTORELOAD ; // volume of the beep, (duty cycle) don't go above 25 out of 2000
 	TIM1->CCR2 = beep_volume * timerOne_reload /TIM1_AUTORELOAD;
@@ -69,8 +69,8 @@ void playBlueJayTune(){
 	uint16_t duration;
 	float frequency;
 	comStep(3);
-	//read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 48 , 128);
-	for(int i = 52 ; i < 176 ; i+=2){
+	//read_flash_bin(blueJayTuneBuffer , EEPROM_START_ADD + 55 , 128);
+	for(int i = 59 ; i < 183 ; i+=2){
 		LL_IWDG_ReloadCounter(IWDG);
 		signaltimeout = 0;
 
@@ -102,7 +102,7 @@ void playBlueJayTune(){
 void playStartupTune(){
 	__disable_irq();
 
-	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+48);
+	uint8_t value = *(uint8_t*)(EEPROM_START_ADD+55);
 		if(value != 0xFF){
 		playBlueJayTune();
 		}else{
