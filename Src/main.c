@@ -1261,8 +1261,8 @@ if(send_telemetry){
 	  makeTelemPackage(degrees_celsius,
 			            battery_voltage,
 					   actual_current,
-			   (uint16_t)consumed_current, //target_rpm
-             e_rpm); // val*motor_poles/200
+			   (uint16_t)consumed_current,
+             e_rpm);
 	  send_telem_DMA();
 	  send_telemetry = 0;
 #endif
