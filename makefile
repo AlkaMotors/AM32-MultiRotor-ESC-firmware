@@ -21,7 +21,7 @@ include g071makefile.mk
 include f031makefile.mk
 
 # Default MCU type to F051
-MCU_TYPE ?= F031
+MCU_TYPE ?= F051
 
 # additional libs
 LIBS := -lc -lm -lnosys
@@ -30,13 +30,9 @@ LIBS := -lc -lm -lnosys
 CFLAGS_COMMON := -DUSE_MAKE
 CFLAGS_COMMON += -I$(MAIN_INC_DIR) -O3 -Wall -ffunction-sections
 CFLAGS_COMMON += -D$(TARGET)
-CFLAGS_COMMON += -g -DDEBUG
 
 # Linker options
-LDFLAGS_COMMON := -specs=nano.specs $(LIBS) -Wl,--gc-sections -Wl,--print-memory-usage,--cref,-Map=test.map
-
-# configure mapfile output
-#LDFLAGS_COMMON +=
+LDFLAGS_COMMON := -specs=nano.specs $(LIBS) -Wl,--gc-sections -Wl,--print-memory-usage,--cref,-Map=$(TARGET).map
 
 # Working directories
 ROOT := $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))
@@ -72,9 +68,6 @@ clean :
 
 binary : $(TARGET_BASENAME).bin
 	@$(ECHO) All done
-
-$(TARGETS_F031) :
-	@$(MAKE) -s MCU_TYPE=F031 TARGET=$@ binary
 
 $(TARGETS_F051) :
 	@$(MAKE) -s MCU_TYPE=F051 TARGET=$@ binary
