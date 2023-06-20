@@ -191,7 +191,7 @@ void receiveDshotDma(){
 
 void checkDshot(){
 	if ((smallestnumber > 1)&&(smallestnumber < 4)&& (average_signal_pulse < 50)) {
-		ic_timer_prescaler= 0;
+		ic_timer_prescaler= 1;
 		output_timer_prescaler=0;
 		dshot = 1;
 		buffer_divider = 44;
@@ -201,7 +201,7 @@ void checkDshot(){
 	}
 	if ((smallestnumber >= 4 )&&(smallestnumber < 8)&& (average_signal_pulse < 50)){
 		dshot = 1;
-		ic_timer_prescaler=1;
+		ic_timer_prescaler=3;
 		output_timer_prescaler=1;
 		IC_TIMER_REGISTER->CNT = 0xffff;
 		buffer_divider = 44;
