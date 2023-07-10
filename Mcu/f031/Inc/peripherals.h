@@ -22,7 +22,7 @@ void MX_DMA_Init(void);
 void MX_TIM14_Init(void);
 void MX_TIM16_Init(void);
 void MX_TIM1_Init(void);
-void MX_TIM3_Init(void);
+void MX_TIM_Interval_Init(void);
 void MX_TIM17_Init(void);
 void MX_IWDG_Init(void);
 //void MX_ADC_Init(void);
@@ -32,3 +32,7 @@ void TEN_KHZ_Timer_Init(void);
 //static void MX_TIM16_Init2(void);
 void UN_GPIO_Init(void);
 void UN_TIM_Init(void);
+
+#ifdef USE_RGB_LED
+void LED_GPIO_init(void);
+#endif

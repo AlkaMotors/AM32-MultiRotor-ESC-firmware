@@ -722,7 +722,7 @@ void loadEEpromSettings(){
 	   minimum_duty_cycle = eepromBuffer[25]/2 + dead_time_override;
 	   throttle_max_at_low_rpm  = throttle_max_at_low_rpm + dead_time_override;
 	   startup_max_duty_cycle = startup_max_duty_cycle  + dead_time_override;
-	   TIM1->BDTR |= dead_time_override;
+	   LL_TIM_OC_SetDeadTime(TIM1, dead_time_override);
 	   }
 	   
 	   if(eepromBuffer[43] >= 70 && eepromBuffer[43] <= 140){ 
@@ -896,6 +896,10 @@ void commutate(){
 		rising = !(step % 2);
 	}
 
+#if defined(INVERTED_COMPARATOR_OUTPUT)
+	rising = !rising;
+#endif
+
 	if(!prop_brake_active){
 	comStep(step);
 	}
@@ -1031,10 +1035,13 @@ if(!armed && (cell_count == 0)){
 				delayMicros(1000);
 				send_LED_RGB(0,255,0);
 				#endif
+
+
 				#ifdef USE_RGB_LED
-				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn on green
-				  			GPIOB->BSRR = LL_GPIO_PIN_8;   // turn on green
-				  			GPIOB->BSRR = LL_GPIO_PIN_5;
+				// turn on green
+				LL_GPIO_ResetOutputPin(LED_GREEN_PORT, LED_GREEN_PIN);
+				LL_GPIO_SetOutputPin(LED_RED_PORT, LED_RED_PIN);
+				LL_GPIO_SetOutputPin(LED_BLUE_PORT, LED_BLUE_PIN);
 				#endif
 				  			if((cell_count == 0) && LOW_VOLTAGE_CUTOFF){
 				  			  cell_count = battery_voltage / 370;
@@ -1453,7 +1460,7 @@ int main(void)
     }
     //*/
 
-/*
+
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH1);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH2);
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH3);
@@ -1471,11 +1478,10 @@ int main(void)
   // Enable counter
   LL_TIM_EnableCounter(TIM1);
   LL_TIM_EnableAllOutputs(TIM1);
-    // Force update generation
+  // Force update generation
   LL_TIM_GenerateEvent_UPDATE(TIM1);
- // LL_TIM_EnableIT_UPDATE(TIM1);
+  // LL_TIM_EnableIT_UPDATE(TIM1);
 
-*/
 #ifdef USE_ADC_INPUT
 
 #else
@@ -1489,10 +1495,11 @@ send_LED_RGB(255,0,0);
 #endif
 
 #ifdef USE_RGB_LED
-  LED_GPIO_init();
-  GPIOB->BRR = LL_GPIO_PIN_8; // turn on red
-  GPIOB->BSRR = LL_GPIO_PIN_5;
-  GPIOB->BSRR = LL_GPIO_PIN_3; //
+	LED_GPIO_init();
+	// turn on red
+	LL_GPIO_ResetOutputPin(LED_RED_PORT, LED_RED_PIN);
+	LL_GPIO_SetOutputPin(LED_GREEN_PORT, LED_GREEN_PIN);
+	LL_GPIO_SetOutputPin(LED_BLUE_PORT, LED_BLUE_PIN);
 #endif
 
 #ifndef BRUSHED_MODE
@@ -1502,42 +1509,16 @@ send_LED_RGB(255,0,0);
    COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
 #endif
 
-    //* MILG test PWM input
-    //volatile int test = 0;
-    receiveDshotDma(); //
-    while(1) {
-        if (newinput > 500) {
-        //if (test) {
-            //NVIC_EnableIRQ(SPI1_IRQn);
-            //NVIC_SetPendingIRQ(SPI1_IRQn);
-            //SCB->ICSR |= 0x80000000; // NMIPENDSET
-            LL_GPIO_ResetOutputPin(GPIOA, LL_GPIO_PIN_0);
-        }
-        else {
-            LL_GPIO_SetOutputPin(GPIOA, LL_GPIO_PIN_0);
-        }
-        LL_mDelay(1);
-    }
-    //*/
-
-
-/*
-   LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
-   LL_TIM_GenerateEvent_UPDATE(COM_TIMER);
-    //LL_TIM_EnableIT_UPDATE(COM_TIMER);
-    //COM_TIMER->DIER &= ~((0x1UL << (0U)));         // disable for now.
-//
-
    LL_TIM_EnableCounter(UTILITY_TIMER);
    LL_TIM_GenerateEvent_UPDATE(UTILITY_TIMER);
-//
+
    LL_TIM_EnableCounter(INTERVAL_TIMER);
    LL_TIM_GenerateEvent_UPDATE(INTERVAL_TIMER);
 
    LL_TIM_EnableCounter(TEN_KHZ_TIMER);                 // 10khz timer
    LL_TIM_GenerateEvent_UPDATE(TEN_KHZ_TIMER);
    TEN_KHZ_TIMER->DIER |= (0x1UL << (0U));  // enable interrupt
-  //RCC->APB2ENR  &= ~(1 << 22);  // turn debug off
+   LL_APB1_GRP2_DisableClock(LL_APB1_GRP2_PERIPH_DBGMCU); // turn debug off
 
 #ifdef USE_ADC
    ADC_Init();
@@ -1601,9 +1582,9 @@ loadEEpromSettings();
 	}
 
 #ifdef MCU_F031
-	  GPIOF->BSRR = LL_GPIO_PIN_6;            // uncomment to take bridge out of standby mode and set oc level
-	  GPIOF->BRR = LL_GPIO_PIN_7;				// out of standby mode
-	  GPIOA->BRR = LL_GPIO_PIN_11;
+	GPIOF->BSRR = LL_GPIO_PIN_6;	// uncomment to take bridge out of standby mode and set oc level
+	GPIOF->BRR = LL_GPIO_PIN_7;		// out of standby mode
+	GPIOA->BSRR = LL_GPIO_PIN_11;	// turn on hardware current protection
 #endif
 
 #if defined(FIXED_DUTY_MODE) || defined(FIXED_SPEED_MODE)
@@ -1849,11 +1830,12 @@ if(newinput > 2000){
 	 	 if ((zero_crosses > 1000) || (adjusted_input == 0)){
  	 		bemf_timeout_happened = 0;
 #ifdef USE_RGB_LED
- 	 		if(adjusted_input == 0 && armed){
-			  GPIOB->BSRR = LL_GPIO_PIN_8; // off red
-			  GPIOB->BRR = LL_GPIO_PIN_5;  // on green
-			  GPIOB->BSRR = LL_GPIO_PIN_3;  //off blue
- 	 		}
+			if(adjusted_input == 0 && armed){
+				// turn green on
+				LL_GPIO_ResetOutputPin(LED_GREEN_PORT, LED_GREEN_PIN);
+				LL_GPIO_SetOutputPin(LED_RED_PORT, LED_RED_PIN);
+				LL_GPIO_SetOutputPin(LED_BLUE_PORT, LED_BLUE_PIN);
+			}
 #endif
  	 	 }
 	 	 if(zero_crosses > 100 && adjusted_input < 200){
@@ -1880,9 +1862,10 @@ if(newinput > 2000){
 	 		 input = 0;
 	 		bemf_timeout_happened = 102;
 #ifdef USE_RGB_LED
-			  GPIOB->BRR = LL_GPIO_PIN_8; // on red
-			  GPIOB->BSRR = LL_GPIO_PIN_5;  //
-			  GPIOB->BSRR = LL_GPIO_PIN_3;
+			// turn on red
+			LL_GPIO_ResetOutputPin(LED_RED_PORT, LED_RED_PIN);
+			LL_GPIO_SetOutputPin(LED_GREEN_PORT, LED_GREEN_PIN);
+			LL_GPIO_SetOutputPin(LED_BLUE_PORT, LED_BLUE_PIN);
 #endif
 	 	  }else{
 #ifdef FIXED_DUTY_MODE

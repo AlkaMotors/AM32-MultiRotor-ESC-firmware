@@ -33,5 +33,6 @@ void MX_TIM17_Init(void);
 
 void UN_TIM_Init(void);
 
+#ifdef USE_RGB_LED
 void LED_GPIO_init(void);
-
+#endif

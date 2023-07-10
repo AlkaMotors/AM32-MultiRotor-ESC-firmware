@@ -240,62 +240,51 @@ void phaseALOW() {
 
 #endif
 
-void allOff(){
+void allOff() {
 	phaseAFLOAT();
 	phaseBFLOAT();
 	phaseCFLOAT();
 }
 
 
-void  comStep (int newStep){
-//TIM14->CNT = 0;
-switch(newStep)
-{
+void comStep(int newStep) {
+	switch(newStep) {
+		case 1: //A-B  W-V
+			phaseAPWM();
+			phaseBLOW();
+			phaseCFLOAT();
+			break;
 
-        case 1:			//A-B
-        	phaseAPWM();
-        	phaseBLOW();
-        	phaseCFLOAT();
-        	break;
+		case 2: // C-B  U-V
+			phaseAFLOAT();
+			phaseBLOW();
+			phaseCPWM();
+			break;
 
+		case 3: // C-A  U-W
+			phaseALOW();
+			phaseBFLOAT();
+			phaseCPWM();
+			break;
 
-        case 2:		// C-B
-        	phaseAFLOAT();
-        	phaseBLOW();
-        	phaseCPWM();
-        	break;
+		case 4: // B-A  V-W
+			phaseALOW();
+			phaseBPWM();
+			phaseCFLOAT();
+			break;
 
+		case 5: // B-C  V-U
+			phaseAFLOAT();
+			phaseBPWM();
+			phaseCLOW();
+			break;
 
-
-        case 3:	// C-A
-        	phaseALOW();
-        	phaseBFLOAT();
-        	phaseCPWM();
-        	break;
-
-
-        case 4:// B-A
-        	phaseALOW();
-        	phaseBPWM();
-        	phaseCFLOAT();
-        	break;
-
-
-        case 5:    // B-C
-        	phaseAFLOAT();
-        	phaseBPWM();
-        	phaseCLOW();
-        	break;
-
-
-        case 6:      // A-C
-        	phaseAPWM();
-        	phaseBFLOAT();
-        	phaseCLOW();
-        	break;
+		case 6: // A-C  W-U
+			phaseAPWM();
+			phaseBFLOAT();
+			phaseCLOW();
+			break;
 	}
-
-//stop_time = TIM14->CNT;
 
 }
 
