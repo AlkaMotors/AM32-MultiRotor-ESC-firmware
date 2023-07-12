@@ -12,10 +12,6 @@
 #include "targets.h"
 #include "serial_telemetry.h"
 
-#ifdef USE_LED_STRIP
-#include "WS2812.h"
-#endif
-
 //extern uint16_t DEAD_TIME;
 
 
@@ -45,9 +41,6 @@ void initCorePeripherals(void){
   MX_TIM17_Init();
   MX_TIM6_Init();
   telem_UART_Init();
-#ifdef USE_LED_STRIP
-WS2812_Init();
-#endif
 
 }
 

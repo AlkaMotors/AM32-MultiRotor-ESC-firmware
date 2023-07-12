@@ -180,11 +180,8 @@
 #include "comparator.h"
 #include "functions.h"
 #include "peripherals.h"
+#include "led.h"
 #include "common.h"
-
-#ifdef USE_LED_STRIP
-#include "WS2812.h"
-#endif
 
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 95
@@ -990,6 +987,7 @@ void startMotor() {
 	commutation_interval = 10000;
 	INTERVAL_TIMER->CNT = 5000;
 	running = 1;
+	led_set_running();
 	}
 	enableCompInterrupts();
 }
@@ -998,6 +996,11 @@ void tenKhzRoutine(){
 
 
 	tenkhzcounter++;
+
+	if ((tenkhzcounter % 1000) == 0) {
+		led_blink_100ms(); // call this at 100ms intervals to run the LED blink patterns
+	}
+
 	if(tenkhzcounter > 10000){      // 1s sample interval 10000
 		consumed_current = (float)actual_current/360 + consumed_current;
 					switch (dshot_extended_telemetry){
@@ -1025,17 +1028,8 @@ if(!armed && (cell_count == 0)){
 			armed_timeout_count++;
 			if(armed_timeout_count > 10000){    // one second
 				if(zero_input_count > 30){
-				armed = 1;
-				#ifdef USE_LED_STRIP
-			//	send_LED_RGB(0,0,0);
-				delayMicros(1000);
-				send_LED_RGB(0,255,0);
-				#endif
-				#ifdef USE_RGB_LED
-				  			GPIOB->BRR = LL_GPIO_PIN_3;    // turn on green
-				  			GPIOB->BSRR = LL_GPIO_PIN_8;   // turn on green
-				  			GPIOB->BSRR = LL_GPIO_PIN_5;
-				#endif
+					armed = 1;
+					led_set_armed();
 				  			if((cell_count == 0) && LOW_VOLTAGE_CUTOFF){
 				  			  cell_count = battery_voltage / 370;
 				  			  for (int i = 0 ; i < cell_count; i++){
@@ -1077,6 +1071,7 @@ if(!armed && (cell_count == 0)){
 			  }
 			  running = 1;
 			  last_duty_cycle = min_startup_duty;
+			  led_set_running();
 
 		  }
 	  if(use_sin_start){
@@ -1092,6 +1087,7 @@ if(!armed && (cell_count == 0)){
 			}
 			if(use_current_limit_adjust > duty_cycle){
 				use_current_limit_adjust = duty_cycle;
+				led_sig_currentlimited();
 			}
 
 	  }
@@ -1448,17 +1444,7 @@ int main(void)
   LL_TIM_EnableCounter(IC_TIMER_REGISTER);
 #endif
 
-
-#ifdef USE_LED_STRIP
-send_LED_RGB(255,0,0);
-#endif
-
-#ifdef USE_RGB_LED
-  LED_GPIO_init();
-  GPIOB->BRR = LL_GPIO_PIN_8; // turn on red
-  GPIOB->BSRR = LL_GPIO_PIN_5;
-  GPIOB->BSRR = LL_GPIO_PIN_3; //
-#endif
+  led_init();
 
 #ifndef BRUSHED_MODE
    LL_TIM_EnableCounter(COM_TIMER);               // commutation_timer priority 0
@@ -1549,6 +1535,7 @@ loadEEpromSettings();
  LL_IWDG_ReloadCounter(IWDG);
  inputSet = 1;
  armed = 1;
+ led_set_armed();
  adjusted_input = 48;
  newinput = 48;
  advance_level = 3;
@@ -1641,6 +1628,8 @@ LL_IWDG_ReloadCounter(IWDG);
 				  running = 0;
 				  zero_input_count = 0;
 				  armed = 0;
+				  led_sig_lowbatt();
+				  led_set_unarmed();
 
 				  }
 			  }else{
@@ -1788,9 +1777,7 @@ if(newinput > 2000){
  	 		bemf_timeout_happened = 0;
 #ifdef USE_RGB_LED
  	 		if(adjusted_input == 0 && armed){
-			  GPIOB->BSRR = LL_GPIO_PIN_8; // off red
-			  GPIOB->BRR = LL_GPIO_PIN_5;  // on green
-			  GPIOB->BSRR = LL_GPIO_PIN_3;  //off blue
+				led_set_green();
  	 		}
 #endif
  	 	 }
@@ -1818,9 +1805,7 @@ if(newinput > 2000){
 	 		 input = 0;
 	 		bemf_timeout_happened = 102;
 #ifdef USE_RGB_LED
-			  GPIOB->BRR = LL_GPIO_PIN_8; // on red
-			  GPIOB->BSRR = LL_GPIO_PIN_5;  //
-			  GPIOB->BSRR = LL_GPIO_PIN_3;
+	 		led_set_red();
 #endif
 	 	  }else{
 #ifdef FIXED_DUTY_MODE
