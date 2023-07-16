@@ -85,17 +85,12 @@
 #include "common.h"
 
 COMP_TypeDef* active_COMP = COMP2;
-uint32_t current_EXTI_LINE = LL_EXTI_LINE_18;
+uint32_t current_EXTI_LINE = LL_EXTI_LINE_22;
 
 void maskPhaseInterrupts(){
-	EXTI->IMR1 &= ~(1 << 18);
-	LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_18);
-	LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_18);
-#ifdef N_VARIANT
-	EXTI->IMR1 &= ~(1 << 17);
-	LL_EXTI_ClearRisingFlag_0_31(LL_EXTI_LINE_17);
-	LL_EXTI_ClearFallingFlag_0_31(LL_EXTI_LINE_17);
-#endif
+	EXTI->IMR1 &= ~(1 << 22);
+	LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_22);
+
 
 }
 
@@ -112,37 +107,24 @@ void changeCompInput() {
 
 
 	if (step == 1 || step == 4) {   // c floating
-#ifdef N_VARIANT
-		current_EXTI_LINE = PHASE_C_EXTI_LINE;
-		active_COMP = PHASE_C_COMP_NUMBER;
-#endif
-		LL_COMP_ConfigInputs(active_COMP, PHASE_C_COMP , LL_COMP_INPUT_PLUS_IO3);
+		LL_COMP_ConfigInputs(active_COMP, PHASE_C_COMP , LL_COMP_INPUT_PLUS_IO1);
 
 
 	}
 
 	if (step == 2 || step == 5) {     // a floating
-#ifdef N_VARIANT
-		current_EXTI_LINE = PHASE_A_EXTI_LINE;
-		active_COMP = PHASE_A_COMP_NUMBER;
-#endif
-	LL_COMP_ConfigInputs(active_COMP, PHASE_A_COMP, LL_COMP_INPUT_PLUS_IO3);
+	LL_COMP_ConfigInputs(active_COMP, PHASE_A_COMP, LL_COMP_INPUT_PLUS_IO1);
 	}
 
 	if (step == 3 || step == 6) {      // b floating
-#ifdef N_VARIANT
-		current_EXTI_LINE = PHASE_B_EXTI_LINE;
-		active_COMP = PHASE_B_COMP_NUMBER;
-#endif
-    LL_COMP_ConfigInputs(active_COMP, PHASE_B_COMP, LL_COMP_INPUT_PLUS_IO3);
+    LL_COMP_ConfigInputs(active_COMP, PHASE_B_COMP, LL_COMP_INPUT_PLUS_IO1);
 	}
 	//COMP_InitStruct.InputPlus = LL_COMP_INPUT_PLUS_IO3;
 	//LL_COMP_Init(COMP2, &COMP_InitStruct);
 
 	if (rising){
 
-		  LL_EXTI_DisableRisingTrig_0_31(LL_EXTI_LINE_18);
-		  LL_EXTI_DisableRisingTrig_0_31(LL_EXTI_LINE_17);
+		  LL_EXTI_DisableRisingTrig_0_31(LL_EXTI_LINE_22);
 		  LL_EXTI_EnableFallingTrig_0_31(current_EXTI_LINE);
 
 	//	hcomp1.Init.TriggerMode = COMP_TRIGGERMODE_IT_FALLING;   // polarity of comp output reversed
@@ -150,8 +132,7 @@ void changeCompInput() {
 
 
 		  LL_EXTI_EnableRisingTrig_0_31(current_EXTI_LINE);
-		  LL_EXTI_DisableFallingTrig_0_31(LL_EXTI_LINE_17);
-		  LL_EXTI_DisableFallingTrig_0_31(LL_EXTI_LINE_18);
+		  LL_EXTI_DisableFallingTrig_0_31(LL_EXTI_LINE_22);
 	//	hcomp1.Init.TriggerMode = COMP_TRIGGERMODE_IT_RISING;
 	}
 

@@ -14,7 +14,7 @@
 #include "sounds.h"
 #include "common.h"
 
-int max_servo_deviation = 250;
+int max_servo_deviation = 200;
 int servorawinput;
 
 uint8_t enter_calibration_count = 0;
@@ -98,14 +98,34 @@ void computeServoInput(){
 			zero_input_count = 0;      // reset if out of range
 		}
 
-	if (servorawinput - newinput > max_servo_deviation){
-		newinput += max_servo_deviation;
-	}else if(newinput - servorawinput > max_servo_deviation){
-		newinput -= max_servo_deviation;
+#ifdef SLOW_RAMP_DOWN
+if(forward){
+	if ((servorawinput - newinput) > max_servo_deviation){
+			newinput += max_servo_deviation;
+	}else if((newinput - servorawinput) > (max_servo_deviation>>2)){
+		newinput -= (max_servo_deviation>>2);
 	}else{
 		newinput = servorawinput;
 	}
+	}else{
+		if ((servorawinput - newinput) > max_servo_deviation>>2){
+				newinput += max_servo_deviation>>2;
+		}else if((newinput - servorawinput) > (max_servo_deviation)){
+			newinput -= (max_servo_deviation);
+		}else{
+			newinput = servorawinput;
+		}
+	}
+#else
+	if ((servorawinput - newinput) > max_servo_deviation){
+			newinput += max_servo_deviation;
+	}else if((newinput - servorawinput) > max_servo_deviation){
+			newinput -= max_servo_deviation;
 
+	}else{
+		newinput = servorawinput;
+	}
+#endif
 }
 
 void transfercomplete(){
@@ -157,9 +177,10 @@ if(dshot_telemetry){
 			receiveDshotDma();
 		}
 		if  (servoPwm == 1){
-		if( !(INPUT_PIN_PORT->IDR & INPUT_PIN)){  // if the pin is low
-			computeServoInput();
+		while((INPUT_PIN_PORT->IDR & INPUT_PIN)){  // if the pin is high wait
 		}
+			computeServoInput();
+		
 
 			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_RISING); // setup rising pin trigger.
      		receiveDshotDma();

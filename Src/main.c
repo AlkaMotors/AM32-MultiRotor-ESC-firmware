@@ -164,6 +164,14 @@
        -fix low voltage cuttoff timeout
 *1.94  - Add selectable input types
 *1.95  - reduce timeout to 0.5 seconds when armed
+*1.96  - Improved erpm accuracy dshot and serial telemetry, thanks Dj-Uran
+	     - Fix PID loop integral.	
+		 - add overcurrent low voltage cuttoff to brushed mode.
+*1.97    - enable input pullup 
+*1.98    - Dshot erpm rounding compensation.
+*1.99    - Add max duty cycle change to individual targets ( will later become an settings option)
+		 - Fix dshot telemetry delay f4 and e230 mcu
+
 */
 
 #include <stdint.h>
@@ -186,8 +194,13 @@
 #include "WS2812.h"
 #endif
 
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 95
+#ifdef USE_CRSF_INPUT
+#include "crsf.h"
+
+#endif
+
+#define VERSION_MAJOR 2
+#define VERSION_MINOR 00
 
 //firmware build options !! fixed speed and duty cycle modes are not to be used with sinusoidal startup !!
 
@@ -205,8 +218,8 @@
 //===========================================================================
 
 uint8_t drive_by_rpm = 0;
-uint32_t MAXIMUM_RPM_SPEED_CONTROL = 10000;
-uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
+uint32_t MAXIMUM_RPM_SPEED_CONTROL = 5000;
+uint32_t MINIMUM_RPM_SPEED_CONTROL = 500;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
@@ -244,6 +257,8 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
 uint16_t target_e_com_time_high;
 uint16_t target_e_com_time_low;
 
+
+uint8_t crsf_input_channel = 1;
 char eeprom_layout_version = 2;
 char dir_reversed = 0;
 char comp_pwm = 1;
@@ -302,33 +317,6 @@ uint16_t ADC_CCR = 30;
 uint16_t current_angle = 90;
 uint16_t desired_angle = 90;
 
-
-//assign current control PID values
-
-//PID speedPid = {
-//		.Kp = 0.001,
-//		.Ki = 0,
-//		.Kd = 0.010,
-//		.integral_limit = 1,
-//		.output_limit = 5
-//};
-//
-//PID currentPid = {
-//		.Kp = 0.04,
-//		.Ki = 0,
-//		.Kd = 0.05,
-//		.integral_limit = 2,
-//		.output_limit = 10
-//};
-//
-//PID stallPid = {
-//		.Kp = 0.0002,
-//		.Ki = 0.00000001,
-//		.Kd = 0.05,
-//		.integral_limit = 1,
-//		.output_limit = 5
-//};
-
 uint16_t target_e_com_time = 0;
 int16_t Speed_pid_output;
 char use_speed_control_loop = 0;
@@ -361,7 +349,7 @@ char brushed_direction_set = 0;
 
 uint16_t tenkhzcounter = 0;
 float consumed_current = 0;
-uint32_t smoothed_raw_current = 0;
+int32_t smoothed_raw_current = 0;
 int16_t actual_current = 0;
 
 char lowkv = 0;
@@ -552,7 +540,7 @@ for(int i = 0 ; i < 1000; i ++){
 	 }
      delayMicros(10);
 }
-LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
+LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_UP);
 	 if(low_pin_count > 5){
 		 return;      // its either a signal or a disconnected pin
 	 }else{
@@ -566,7 +554,7 @@ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_NO);
 float doPidCalculations(struct fastPID *pidnow, int actual, int target){
 
 	pidnow->error = actual - target;
-	pidnow->integral = pidnow->integral + pidnow->error*pidnow->Ki + pidnow->last_error*pidnow->Ki;
+	pidnow->integral = pidnow->integral + pidnow->error*pidnow->Ki;
 	if(pidnow->integral > pidnow->integral_limit){
 		pidnow->integral = pidnow->integral_limit;
 	}
@@ -775,7 +763,8 @@ void loadEEpromSettings(){
 	   low_rpm_level  = motor_kv / 100 / (32 / motor_poles);
 	   high_rpm_level = motor_kv / 17 / (32/motor_poles);
 	   }
-	   reverse_speed_threshold =  map(motor_kv, 300, 3000, 2500 , 1250);
+//	   reverse_speed_threshold =  map(motor_kv, 300, 3000, 2500 , 1250);
+	   reverse_speed_threshold = 200;
 	if(!comp_pwm){
 		bi_direction = 0;
 	}
@@ -876,8 +865,8 @@ void getBemfState(){
 
 
 void commutate(){
-	commutation_intervals[step-1] = commutation_interval;
-	e_com_time = (commutation_intervals[0] + commutation_intervals[1] + commutation_intervals[2] + commutation_intervals[3] + commutation_intervals[4] +commutation_intervals[5]) >> 1;  // COMMUTATION INTERVAL IS 0.5US INCREMENTS
+	commutation_intervals[step-1] = thiszctime;
+	e_com_time = ((commutation_intervals[0] + commutation_intervals[1] + commutation_intervals[2] + commutation_intervals[3] + commutation_intervals[4] +commutation_intervals[5]) +4) >> 1;  // COMMUTATION INTERVAL IS 0.5US INCREMENTS
 
 //	COM_TIMER->CNT = 0;
 	if (forward == 1){
@@ -976,6 +965,7 @@ thiszctime = INTERVAL_TIMER->CNT;
 				}
 			}
 							maskPhaseInterrupts();
+                            thiszctime += INTERVAL_TIMER->CNT - thiszctime;
 							INTERVAL_TIMER->CNT = 0 ;
 		   waitTime = waitTime >> fast_accel;
             COM_TIMER->CNT = 0;
@@ -1105,6 +1095,18 @@ if(!armed && (cell_count == 0)){
 		  						stall_protection_adjust = 0;
 		  					 }
 		  	 }
+//			  if(use_speed_control_loop && running){
+//			  input_override += doPidCalculations(&speedPid, e_com_time, target_e_com_time)/10000;
+//			  if(input_override > 2047){
+//				  input_override = 2047;
+//			  }
+//			  if(input_override < 0){
+//				  input_override = 0;
+//			  }
+//			  if(zero_crosses < 100){
+//				  speedPid.integral = 0;
+//			  }
+//		}
 	  }
 	  if(!RC_CAR_REVERSE){
 		  prop_brake_active = 0;
@@ -1210,11 +1212,21 @@ if(!prop_brake_active){
 	 }
 	 if(maximum_throttle_change_ramp){
 	//	max_duty_cycle_change = map(k_erpm, low_rpm_level, high_rpm_level, 1, 40);
-			if(average_interval > 500){
-				max_duty_cycle_change = 10;
+#ifdef VOLTAGE_BASED_RAMP
+			uint16_t voltage_based_max_change = map(battery_voltage, 800, 2200, 10, 1);
+			if(average_interval > 200){
+				max_duty_cycle_change = voltage_based_max_change;
 			}else{
-				max_duty_cycle_change = 30;
+				max_duty_cycle_change = voltage_based_max_change * 3;
 			}
+#else
+			if(average_interval > 300){
+				max_duty_cycle_change = RAMP_SPEED_LOW_RPM;
+			}else{
+				max_duty_cycle_change = RAMP_SPEED_LOW_RPM * 3;
+			}
+#endif				
+
 	 if ((duty_cycle - last_duty_cycle) > max_duty_cycle_change){
 		duty_cycle = last_duty_cycle + max_duty_cycle_change;
 		if(commutation_interval > 500){
@@ -1390,7 +1402,9 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
 	advance = commutation_interval / advancedivisor;
 	waitTime = commutation_interval /2  - advance;
 	while (INTERVAL_TIMER->CNT < waitTime){
-
+    if(zero_crosses < 10){
+    	break;
+    }
 	}
 	commutate();
     bemfcounter = 0;
@@ -1412,7 +1426,58 @@ void zcfoundroutine(){   // only used in polling mode, blocking routine.
     }
 
 }
+#ifdef BRUSHED_MODE
+void runBrushedLoop(){
 
+    uint16_t brushed_duty_cycle = 0;
+    
+	if(brushed_direction_set == 0 && adjusted_input > 48){
+		if(forward){
+			allOff();
+			delayMicros(10);
+			twoChannelForward();
+		}else{
+			allOff();
+			delayMicros(10);
+			twoChannelReverse();
+		}
+    	brushed_direction_set = 1;
+	}
+
+	brushed_duty_cycle = map(adjusted_input, 48, 2047, 0, TIMER1_MAX_ARR - 50);
+
+	   if(degrees_celsius > TEMPERATURE_LIMIT){
+		   duty_cycle_maximum = map(degrees_celsius, TEMPERATURE_LIMIT, TEMPERATURE_LIMIT+20, TIMER1_MAX_ARR/2, 1);
+	   }else{
+		   duty_cycle_maximum = TIMER1_MAX_ARR - 50;
+	   }
+	   if(brushed_duty_cycle > duty_cycle_maximum){
+		   brushed_duty_cycle = duty_cycle_maximum;
+	   }
+
+	  if(use_current_limit){
+		use_current_limit_adjust -= (int16_t)(doPidCalculations(&currentPid, actual_current, CURRENT_LIMIT*100)/10000);
+		if(use_current_limit_adjust < minimum_duty_cycle){
+			use_current_limit_adjust = minimum_duty_cycle;
+		}
+
+		 if (brushed_duty_cycle > use_current_limit_adjust){
+				 brushed_duty_cycle = use_current_limit_adjust;
+			 }
+	  }
+if((brushed_duty_cycle > 0) && armed){
+	  	TIM1->CCR1 = brushed_duty_cycle;
+		TIM1->CCR2 = brushed_duty_cycle;
+		TIM1->CCR3 = brushed_duty_cycle;
+		
+	}else{
+		TIM1->CCR1 = 0;												//
+		TIM1->CCR2 = 0;
+		TIM1->CCR3 = 0;
+		brushed_direction_set = 0;
+}
+}
+#endif
 
 int main(void)
 {
@@ -1431,11 +1496,9 @@ int main(void)
 #ifdef MCU_G071
   LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH5);  // timer used for comparator blanking
 #endif
-  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);      // timer used for timing adc read
-  TIM1->CCR4 = 100;  // set in 10khz loop to match pwm cycle timed to end of pwm on
-  
-
-  /* Enable counter */
+//  LL_TIM_CC_EnableChannel(TIM1, LL_TIM_CHANNEL_CH4);      // timer used for timing adc read
+//  TIM1->CCR4 = 100;  // set in 10khz loop to match pwm cycle timed to end of pwm on
+   /* Enable counter */
   LL_TIM_EnableCounter(TIM1);
   LL_TIM_EnableAllOutputs(TIM1);
   /* Force update generation */
@@ -1544,6 +1607,13 @@ loadEEpromSettings();
 	  GPIOA->BRR = LL_GPIO_PIN_11;
 #endif
 
+
+#ifdef USE_CRSF_INPUT
+	inputSet = 1;
+	playStartupTune();
+	MX_IWDG_Init();
+	LL_IWDG_ReloadCounter(IWDG);
+#else
 #if defined(FIXED_DUTY_MODE) || defined(FIXED_SPEED_MODE)
  MX_IWDG_Init();
  LL_IWDG_ReloadCounter(IWDG);
@@ -1582,7 +1652,9 @@ loadEEpromSettings();
    inputSet = 1;
 
 #else
-#ifndef RHINO80A_F051
+#ifdef RHINO80A_F051
+ LL_GPIO_SetPinPull(INPUT_PIN_PORT, INPUT_PIN, LL_GPIO_PULL_UP);
+#else 
  checkForHighSignal();     // will reboot if signal line is high for 10ms
 #endif
  receiveDshotDma();
@@ -1592,7 +1664,7 @@ loadEEpromSettings();
 #endif
 
 #endif      // end fixed duty mode ifdef
-
+#endif     // end crsf input
 
 
 #ifdef MCU_F051
@@ -1613,7 +1685,6 @@ LL_IWDG_ReloadCounter(IWDG);
 
 	  adc_counter++;
 	  if(adc_counter>10){   // for adc and telemetry
-
 		  ADC_CCR = TIM1->CCR3*2/3 + 1;  // sample current at quarter pwm on
 		  if (ADC_CCR > tim1_arr){
 			  ADC_CCR = tim1_arr;
@@ -1874,7 +1945,7 @@ if(newinput > 2000){
 	 	  }
 		  if ( stepper_sine == 0){
 
-  e_rpm = running * (100000/ e_com_time) * 6;       // in tens of rpm
+  e_rpm = running * (600000/ e_com_time);       // in tens of rpm
   k_erpm =  e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
 
   if(low_rpm_throttle_limit){     // some hardware doesn't need this, its on by default to keep hardware / motors protected but can slow down the response in the very low end a little.
@@ -2050,35 +2121,7 @@ proportionalBrake();
 #endif    // end of brushless mode
 
 #ifdef BRUSHED_MODE
-
-	  			if(brushed_direction_set == 0 && adjusted_input > 48){
-					
-	  				if(forward){
-	  					allOff();
-	  					delayMicros(10);
-	  					twoChannelForward();
-	  				}else{
-	  					allOff();
-	  					delayMicros(10);
-	  					twoChannelReverse();
-	  				}
-	  				brushed_direction_set = 1;
-	  			}
-	  			if(adjusted_input > 1900){
-	  				adjusted_input = 1900;
-	  			}
-	  			input = map(adjusted_input, 48, 2047, 0, TIMER1_MAX_ARR);
-
-	  			if(input > 0 && armed){
-	  				TIM1->CCR1 = input;												// set duty cycle to 50 out of 768 to start.
-	  				TIM1->CCR2 = input;
-	  				TIM1->CCR3 = input;
-	  			}else{
-					
-	  				TIM1->CCR1 = 0;												// set duty cycle to 50 out of 768 to start.
-	  				TIM1->CCR2 = 0;
-	  				TIM1->CCR3 = 0;
-	  			}
+runBrushedLoop();
 #endif
   		}
 }

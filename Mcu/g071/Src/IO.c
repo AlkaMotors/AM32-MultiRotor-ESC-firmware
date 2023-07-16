@@ -31,13 +31,13 @@ void changeToInput(){
 #ifdef USE_TIMER_3_CHANNEL_1
 	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
 	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
+	  IC_TIMER_REGISTER->CCMR1 = 0x6001;
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
 #ifdef USE_TIMER_16_CHANNEL_1
 	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM16);           // de-init timer 2
 	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM16);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
+	  IC_TIMER_REGISTER->CCMR1 = 0x6001;
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
 

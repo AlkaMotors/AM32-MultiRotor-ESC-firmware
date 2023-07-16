@@ -65,7 +65,7 @@
     !defined (STM32L4R5xx) && !defined (STM32L4R7xx) && !defined (STM32L4R9xx) && !defined (STM32L4S5xx) && !defined (STM32L4S7xx) && !defined (STM32L4S9xx)
   /* #define STM32L412xx */   /*!< STM32L412xx Devices */
   /* #define STM32L422xx */   /*!< STM32L422xx Devices */
-  /* #define STM32L431xx */   /*!< STM32L431xx Devices */
+   #define STM32L431xx    /*!< STM32L431xx Devices */
   /* #define STM32L432xx */   /*!< STM32L432xx Devices */
   /* #define STM32L433xx */   /*!< STM32L433xx Devices */
   /* #define STM32L442xx */   /*!< STM32L442xx Devices */
