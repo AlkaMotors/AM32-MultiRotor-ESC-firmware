@@ -7,8 +7,8 @@
 // crc code from https://github.com/stepinside/Arduino-CRSF/tree/main
 //
 #include "crsf.h"
-#include "common.h"
 #include "targets.h"
+#include "common.h"
 #include "functions.h"
 #include "signal.h"
 
