@@ -25,39 +25,11 @@
 /* USER CODE BEGIN Includes */
 #include "targets.h"
 #include "ADC.h"
-/* USER CODE END Includes */
+#ifdef USE_CRSF_INPUT
+#include "crsf.h"
+#include "peripherals.h"
+#endif
 
-/* Private typedef -----------------------------------------------------------*/
-/* USER CODE BEGIN TD */
-
-/* USER CODE END TD */
-
-/* Private define ------------------------------------------------------------*/
-/* USER CODE BEGIN PD */
- 
-/* USER CODE END PD */
-
-/* Private macro -------------------------------------------------------------*/
-/* USER CODE BEGIN PM */
-
-/* USER CODE END PM */
-
-/* Private variables ---------------------------------------------------------*/
-/* USER CODE BEGIN PV */
-
-/* USER CODE END PV */
-
-/* Private function prototypes -----------------------------------------------*/
-/* USER CODE BEGIN PFP */
-
-/* USER CODE END PFP */
-
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
-
-/* USER CODE END 0 */
-
-/* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
 extern void transfercomplete();
@@ -161,17 +133,22 @@ void DMA1_Channel2_3_IRQHandler(void)
 	  {
 	    LL_DMA_ClearFlag_GI2(DMA1);
 	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-	    /* Call function Transmission complete Callback */
-
 	  }
 	  else if(LL_DMA_IsActiveFlag_TE2(DMA1))
 	  {
 		  LL_DMA_ClearFlag_GI2(DMA1);
 		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-	    /* Call Error function */
-	   // USART_TransferError_Callback();
 	  }
-
+	  if(LL_DMA_IsActiveFlag_TC3(DMA1))
+	  {
+	    LL_DMA_ClearFlag_GI3(DMA1);
+	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+	  }
+	  else if(LL_DMA_IsActiveFlag_TE3(DMA1))
+	  {
+		  LL_DMA_ClearFlag_GI3(DMA1);
+		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+	  }
 
 
   /* USER CODE END DMA1_Channel2_3_IRQn 0 */
@@ -331,7 +308,14 @@ void TIM16_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
+if(LL_USART_IsActiveFlag_IDLE(USART1)){
+	LL_USART_ClearFlag_IDLE(USART1);
+    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+#ifdef USE_CRSF_INPUT
+    setChannels();
+    receiveCRSF();
+#endif
+}
 
 
   /* USER CODE END USART1_IRQn 0 */
@@ -345,7 +329,6 @@ void TIM15_IRQHandler(void)
 {
 	  if(LL_TIM_IsActiveFlag_CC1(TIM15) == 1)
 	  {
-
 	    LL_TIM_ClearFlag_CC1(TIM15);
 	  }
 

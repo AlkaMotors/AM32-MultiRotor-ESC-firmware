@@ -52,13 +52,21 @@ void changeToInput(){
 	//  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
 	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
 	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
+	  if(servoPwm){
+	    IC_TIMER_REGISTER->CCMR1 = 0x8001;
+	  }else{
+	    IC_TIMER_REGISTER->CCMR1 = 0x6001;
+	  }
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
 #ifdef USE_TIMER_15_CHANNEL_1
 	  LL_APB1_GRP2_ForceReset(LL_APB1_GRP2_PERIPH_TIM15);
 	  LL_APB1_GRP2_ReleaseReset(LL_APB1_GRP2_PERIPH_TIM15);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
+	  if(servoPwm){
+	    IC_TIMER_REGISTER->CCMR1 = 0x8001;
+	  }else{
+	    IC_TIMER_REGISTER->CCMR1 = 0x6001;
+	  }
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
 	  IC_TIMER_REGISTER->PSC = ic_timer_prescaler;

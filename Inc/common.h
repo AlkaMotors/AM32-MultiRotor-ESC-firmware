@@ -1,8 +1,9 @@
 #pragma once
-
+extern char armed;
 extern uint8_t eepromBuffer[176];
 extern uint16_t TIMER1_MAX_ARR;
-
+extern uint8_t crsf_buffer[100];
+extern uint8_t crsf_input_channel;
 extern uint32_t gcr[37];
 extern uint8_t buffer_padding;
 extern uint16_t adjusted_input;
@@ -24,7 +25,10 @@ extern COMP_TypeDef* active_COMP;
 extern uint32_t current_EXTI_LINE;
 extern char dshot_extended_telemetry;
 extern uint16_t send_extended_dshot;
-
+extern char comp_pwm;
+extern char use_sin_start;
+extern char brake_on_stop;
+extern char RC_CAR_REVERSE;
 //typedef struct PID{
 //	float error;
 //	float Kp;
