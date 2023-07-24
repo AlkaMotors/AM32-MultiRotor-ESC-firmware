@@ -49,7 +49,7 @@ void playBJNote(uint16_t freq, uint16_t bduration){        // hz and ms
 	uint16_t timerOne_reload = TIM1_AUTORELOAD;
  
 	TIM1->PSC = 10;
-	timerOne_reload = 4800000 / freq;
+	timerOne_reload = CPU_FREQUENCY_MHZ*100000 / freq;
 	
 	TIM1->ARR = timerOne_reload;
 	TIM1->CCR1 = beep_volume * timerOne_reload /TIM1_AUTORELOAD ; // volume of the beep, (duty cycle) don't go above 25 out of 2000

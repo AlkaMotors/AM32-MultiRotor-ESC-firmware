@@ -48,7 +48,10 @@ MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 48K
   RAM2    (xrw)    : ORIGIN = 0x10000000,   LENGTH = 16K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
+  FLASH         (rx)  :ORIGIN = 0x08001000, LENGTH = 64K - 52
+  FLASH_VERSION (rx)  : ORIGIN = 0x0800F800 - 52, LENGTH = 18
+  FILE_NAME     (rx)  : ORIGIN = 0x0800F800 - 32, LENGTH = 32
+  EEPROM        (rx)  : ORIGIN = 0x0800F800, LENGTH = 2K
 }
 
 /* Sections */
@@ -61,6 +64,13 @@ SECTIONS
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
   } >FLASH
+
+  /* The firmware version and name - at a fixed address to make it possible to read it from firmware files. */
+  .firmware_version :
+  {
+    . = ALIGN(4);
+	KEEP (*(.firmware_info))
+  } >FLASH_VERSION
 
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
@@ -130,6 +140,19 @@ SECTIONS
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
   } >FLASH
+
+ .firmware_version :
+  {
+    . = ALIGN(4);
+	KEEP (*(.firmware_info))
+  } >FLASH_VERSION
+
+  .file_name :
+  {
+    . = ALIGN(4);
+	KEEP (*(.file_name))
+  } >FILE_NAME
+
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);

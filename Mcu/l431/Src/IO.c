@@ -14,7 +14,7 @@
 
 //int max_servo_deviation = 250;
 //int servorawinput;
-char ic_timer_prescaler = 1;
+char ic_timer_prescaler = CPU_FREQUENCY_MHZ / 8 - 1;
 char output_timer_prescaler;
 int buffersize = 32;
 int smallestnumber = 20000;
@@ -28,15 +28,9 @@ uint16_t average_signal_pulse = 0;
 
 void changeToInput(){
 	  LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-#ifdef USE_TIMER_3_CHANNEL_1
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
-	  IC_TIMER_REGISTER->CCMR1 = 0x1;
-	  IC_TIMER_REGISTER->CCER = 0xa;
-#endif
-#ifdef USE_TIMER_16_CHANNEL_1
-	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM16);           // de-init timer 2
-	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM16);
+#ifdef USE_TIMER_15_CHANNEL_1
+	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM15);           // de-init timer 2
+	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM15);
 	  IC_TIMER_REGISTER->CCMR1 = 0x1;
 	  IC_TIMER_REGISTER->CCER = 0xa;
 #endif
@@ -69,22 +63,14 @@ void receiveDshotDma(){
 void changeToOutput(){
 	LL_DMA_SetDataTransferDirection(DMA1, INPUT_DMA_CHANNEL, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
 
-#ifdef USE_TIMER_3_CHANNEL_1
-	  LL_APB1_GRP1_ForceReset(LL_APB1_GRP1_PERIPH_TIM3);           // de-init timer 2
-	  LL_APB1_GRP1_ReleaseReset(LL_APB1_GRP1_PERIPH_TIM3);
+#ifdef USE_TIMER_15_CHANNEL_1
+	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM15);           // de-init timer 2
+	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM15);
 	  IC_TIMER_REGISTER->CCMR1 = 0x60;
 	  IC_TIMER_REGISTER->CCER = 0x3;
 #endif
-#ifdef USE_TIMER_16_CHANNEL_1
-	  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_TIM16);           // de-init timer 2
-	  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_TIM16);
-	  IC_TIMER_REGISTER->CCMR1 = 0x60;
-	  IC_TIMER_REGISTER->CCER = 0x3;
-#endif
-
-
 	  IC_TIMER_REGISTER->PSC = output_timer_prescaler;
-	  IC_TIMER_REGISTER->ARR = 92;
+	  IC_TIMER_REGISTER->ARR = 115;
 	  out_put = 1;
 	  LL_TIM_GenerateEvent_UPDATE(IC_TIMER_REGISTER);
 }
@@ -107,39 +93,49 @@ void sendDshotDma(){
 
 }
 
-
 void checkDshot(){
-	if ((smallestnumber > 3)&&(smallestnumber < 32)){
-		ic_timer_prescaler= 0;
+		if ((smallestnumber >= 0)&&(smallestnumber < 2)&& (average_signal_pulse < 3)) {
+		ic_timer_prescaler= 1;
 		output_timer_prescaler=0;
 		dshot = 1;
-		buffer_divider = 65;
+		buffer_divider = 44;
 		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
+		buffersize = 32;
+	}
+	if ((smallestnumber >= 2)&&(smallestnumber < 4)&& (average_signal_pulse < 4)) {
+			ic_timer_prescaler= 3;
+			output_timer_prescaler=0;
+			dshot = 1;
+			buffersize = 32;
+		}
+
+
+	if ((smallestnumber >= 4)&&(smallestnumber < 6)&& (average_signal_pulse < 8)) {
+		ic_timer_prescaler= 7;
+		output_timer_prescaler=0;
+		dshot = 1;
 		buffersize = 32;
 		inputSet = 1;
 	}
-	if ((smallestnumber > 32 )&&(smallestnumber < 110)){
+	if ((smallestnumber >= 8 )&&(smallestnumber < 10)&& (average_signal_pulse < 20)){
 		dshot = 1;
-		ic_timer_prescaler=1;
+		ic_timer_prescaler=15;
 		output_timer_prescaler=1;
-		IC_TIMER_REGISTER->CNT = 0xffff;
-		buffer_divider = 65;
-		dshot_runout_timer = 65000;
-		armed_count_threshold = 10000;
+//		IC_TIMER_REGISTER->CNT = 0xffff;
 		buffersize = 32;
 		inputSet = 1;
 	}
 }
-
 void checkServo(){
-	if (smallestnumber > 1500){
-		servoPwm = 1;
-		ic_timer_prescaler=63;
-		armed_count_threshold = 100;
-		buffersize = 2;
-		inputSet = 1;
-	}
+		if (smallestnumber > 300 && smallestnumber < 20000){
+			servoPwm = 1;
+			ic_timer_prescaler=CPU_FREQUENCY_MHZ - 1;
+			armed_count_threshold = 35;
+			buffersize = 2;
+			inputSet = 1;
+		}
+
+
 }
 
 
@@ -147,7 +143,6 @@ void detectInput(){
 	smallestnumber = 20000;
 	average_signal_pulse = 0;
 	int lastnumber = dma_buffer[0];
-
 
 	for ( int j = 1 ; j < 31; j++){
 		if(dma_buffer[j] - lastnumber > 0 ){
@@ -176,5 +171,3 @@ if(!dshot && !servoPwm){
 }
 
 }
-
-
