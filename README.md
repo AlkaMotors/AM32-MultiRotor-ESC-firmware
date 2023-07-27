@@ -11,12 +11,18 @@ The firmware is intended to be safe and fast with smooth fast startups and linea
 
 AM32 has the following features:
 
-- Firmware upgradable via betaflight passthrough - only support G4, F4 and F7 FCs, and make sure your betaflight firmware is up to date when you try to use passthrough
+- Firmware upgradable via betaflight passthrough, single wire serial or arduino
 - Servo PWM, Dshot(300, 600) motor protocol support
 - Bi-directional Dshot
 - KISS standard ESC telemetry
 - Variable PWM frequency
 - Sinusoidal startup mode, which is designed to get larger motors up to speed
+## Build instructions
+-Using make
+  make - builds all targets
+  make AM32_XXX_F051 builds a speciic target
+-Github actions
+Fork project and run the build action within github itself.
 
 ## Firmware Release & Configuration Tool
 
