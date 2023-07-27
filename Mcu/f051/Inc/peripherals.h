@@ -34,5 +34,6 @@ void crsf_UART_Init(void);
 void receiveCRSF();
 void UN_TIM_Init(void);
 
+#ifdef USE_RGB_LED
 void LED_GPIO_init(void);
-
+#endif
