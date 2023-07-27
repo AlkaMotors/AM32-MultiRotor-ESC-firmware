@@ -35,7 +35,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+#define IS_IN_RANGE(v, lo, hi) (((lo) <= (v)) && ((v) <= (hi)))
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -403,65 +403,83 @@ void TIM16_IRQHandler(void)
 
 	}
 #endif
-
-
 }
 
-#if (EXTI_IRQA_NAME == EXTI0_1_IRQn) || (EXTI_IRQB_NAME == EXTI0_1_IRQn) || (EXTI_IRQC_NAME == EXTI0_1_IRQn)
+/**
+  * @brief This function handles EXTI line 0 and line 1 interrupts.
+  */
 void EXTI0_1_IRQHandler(void) {
+// check if one of the phases exti line is in the range from 0 to 1
+#if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1)|| IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1) || IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1)
 	const uint32_t exitLines =
-#if EXTI_IRQA_NAME == EXTI0_1_IRQn
+  #if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1)
 		PHASE_A_LL_EXTI_LINE |
-#endif
-#if EXTI_IRQB_NAME == EXTI0_1_IRQn
+  #endif
+  #if IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1)
 		PHASE_B_LL_EXTI_LINE |
-#endif
-#if EXTI_IRQC_NAME == EXTI0_1_IRQn
+  #endif
+  #if IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_0, LL_EXTI_LINE_1)
 		PHASE_C_LL_EXTI_LINE |
-#endif
+  #endif
 		0U;
 
-	//if ((LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_0) != RESET) || (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_1) != RESET)) {
 	if (LL_EXTI_ReadFlag_0_31(exitLines) != RESET) {
 		LL_EXTI_ClearFlag_0_31(exitLines); // clear bits
 		interruptRoutine();
 	}
-
-
-	//if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_0) != RESET)
-	//{
-	//	LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_0);
-	//	interruptRoutine();
-	//}
-	//if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_1) != RESET)
-	//{
-	//	LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
-	//	interruptRoutine();
-	//}
-
+#endif // check if one of the phases exti line is in the range from 0 to 1
 }
-#endif
 
-#if (EXTI_IRQA_NAME == EXTI4_15_IRQn) || (EXTI_IRQB_NAME == EXTI4_15_IRQn) || (EXTI_IRQC_NAME == EXTI4_15_IRQn)
-void EXTI4_15_IRQHandler(void){
+/**
+  * @brief This function handles EXTI line 2 and line 3 interrupts.
+  */
+void EXTI2_3_IRQHandler(void) {
+// check if one of the phases exti line is in the range from 2 to 3
+#if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3)|| IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3) || IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3)
 	const uint32_t exitLines =
-#if EXTI_IRQA_NAME == EXTI4_15_IRQn
+  #if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3)
 		PHASE_A_LL_EXTI_LINE |
-#endif
-#if EXTI_IRQB_NAME == EXTI4_15_IRQn
+  #endif
+  #if IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3)
 		PHASE_B_LL_EXTI_LINE |
-#endif
-#if EXTI_IRQC_NAME == EXTI4_15_IRQn
+  #endif
+	#if IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_2, LL_EXTI_LINE_3)
 		PHASE_C_LL_EXTI_LINE |
-#endif
+  #endif
 		0U;
 
-	if (LL_EXTI_IsActiveFlag_0_31(exitLines) != RESET) {
-		LL_EXTI_ClearFlag_0_31(exitLines);
+	if (LL_EXTI_ReadFlag_0_31(exitLines) != RESET) {
+		LL_EXTI_ClearFlag_0_31(exitLines); // clear bits
 		interruptRoutine();
 	}
+#endif // check if one of the phases exti line is in the range from 2 to 3
 }
-#endif
+
+/**
+  * @brief This function handles EXTI line 4 and line 15 interrupts.
+  */
+void EXTI4_15_IRQHandler(void) {
+// check if one of the phases exti line is in the range from 4 to 15
+#if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15)|| IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15) || IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15)
+	const uint32_t exitLines =
+  #if IS_IN_RANGE(PHASE_A_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15)
+		PHASE_A_LL_EXTI_LINE |
+  #endif
+  #if IS_IN_RANGE(PHASE_B_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15)
+		PHASE_B_LL_EXTI_LINE |
+  #endif
+	#if IS_IN_RANGE(PHASE_C_LL_EXTI_LINE, LL_EXTI_LINE_4, LL_EXTI_LINE_15)
+		PHASE_C_LL_EXTI_LINE |
+  #endif
+		0U;
+
+	if (LL_EXTI_ReadFlag_0_31(exitLines) != RESET) {
+		LL_EXTI_ClearFlag_0_31(exitLines); // clear bits
+		interruptRoutine();
+	}
+#endif // check if one of the phases exti line is in the range from 4 to 15
+}
+
 
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

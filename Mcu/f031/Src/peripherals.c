@@ -490,6 +490,14 @@ void UN_GPIO_Init(void) {
 	GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
 	LL_GPIO_Init(PHASE_C_EXTI_PORT, &GPIO_InitStruct);
 
+	/* EXTI interrupt init*/
+	NVIC_SetPriority(EXTI_IRQA_NAME, 0);
+	NVIC_SetPriority(EXTI_IRQB_NAME, 0);
+	NVIC_SetPriority(EXTI_IRQC_NAME, 0);
+	NVIC_EnableIRQ(EXTI_IRQA_NAME);
+	NVIC_EnableIRQ(EXTI_IRQB_NAME);
+	NVIC_EnableIRQ(EXTI_IRQC_NAME);
+
 #ifdef USE_HALL_SENSOR
 	GPIO_InitStruct.Pin = HALL_A_PIN;
 	GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
@@ -505,14 +513,6 @@ void UN_GPIO_Init(void) {
 	GPIO_InitStruct.Mode = LL_GPIO_MODE_INPUT;
 	GPIO_InitStruct.Pull = LL_GPIO_PULL_UP;
 	LL_GPIO_Init(HALL_C_PORT, &GPIO_InitStruct);
-#endif
-
-	/* EXTI interrupt init*/
-	NVIC_SetPriority(EXTI_IRQ1_NAME, 0);
-	NVIC_EnableIRQ(EXTI_IRQ1_NAME);
-#ifdef EXTI_IRQ2_NAME
-	NVIC_SetPriority(EXTI_IRQ2_NAME, 0);
-	NVIC_EnableIRQ(EXTI_IRQ2_NAME);
 #endif
 
 }

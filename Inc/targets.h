@@ -1374,8 +1374,9 @@
 #define SYSCFG_EXTI_PORTC        LL_SYSCFG_EXTI_PORTF
 #define SYSCFG_EXTI_LINEC        LL_SYSCFG_EXTI_LINE1
 
-#define EXTI_IRQ1_NAME           EXTI0_1_IRQn
-#undef  EXTI_IRQ2_NAME
+#define EXTI_IRQA_NAME           EXTI0_1_IRQn
+#define EXTI_IRQB_NAME           EXTI0_1_IRQn
+#define EXTI_IRQC_NAME           EXTI0_1_IRQn
 
 #define ADC_DMA_CHANNEL          LL_DMA_CHANNEL_1
 
