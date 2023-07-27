@@ -18,11 +18,10 @@ AM32 has the following features:
 - Variable PWM frequency
 - Sinusoidal startup mode, which is designed to get larger motors up to speed
 ## Build instructions
--Using make
-  make - builds all targets
-  make AM32_XXX_F051 builds a speciic target
+-"make" - builds all targets
+-"make AM32_XXX_F051 builds" a speciic target
 -Github actions
-Fork project and run the build action within github itself.
+-Fork project and run the build action within github itself.
 
 ## Firmware Release & Configuration Tool
 
