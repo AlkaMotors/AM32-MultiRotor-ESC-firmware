@@ -6,14 +6,11 @@
  */
 
 #ifndef FUNCTIONS_H_
-#define FUNCTIONS_H_
-
-
+    #define FUNCTIONS_H_
 
 #endif /* FUNCTIONS_H_ */
 
 #include "main.h"
-
 
 int getAbsDif(int number1, int number2);
 void delayMicros(uint32_t micros);

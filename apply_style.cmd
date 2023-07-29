@@ -1,0 +1,1 @@
+"C:\ProgramFiles\astyle-3.4-x64\astyle.exe" --options=_astylerc --recursive ./Src/*.c ./Inc/*.h

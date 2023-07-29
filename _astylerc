@@ -1,0 +1,51 @@
+--quiet
+--errors-to-stdout
+--preserve-date
+--suffix=none
+
+--style=stroustrup 
+
+--indent=spaces=4
+--convert-tabs
+
+--attach-extern-c
+--attach-namespaces
+
+--indent-preproc-block
+--indent-preproc-define
+
+# All comments have to be properly indented
+--indent-col1-comments
+
+--min-conditional-indent=0
+#--max-continuation-indent=4096
+
+# Paddings around operators, parentheses, and a header
+# (header means `if`, `while`, etc. Example: `if (true)`, instead of `if(true)`)
+--pad-oper
+--pad-header
+
+# Pad parens, and remove all not requested padding
+#--pad-paren-in
+--unpad-paren
+
+# doesn't seem to preserve any lines, will just remove any empty lines!
+# --delete-empty-lines
+--squeeze-lines=1
+
+# Pointer alignment
+--align-pointer=type
+--align-reference=type
+
+# Make sure to always add brackets to if,for,while etc statements
+# we do not want to repeat goto fail;
+--keep-one-line-blocks
+--keep-one-line-statements
+
+--break-after-logical
+--break-closing-braces
+--break-one-line-headers
+--add-braces
+
+--attach-return-type
+--attach-return-type-decl
