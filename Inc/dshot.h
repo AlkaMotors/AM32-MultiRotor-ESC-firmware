@@ -5,10 +5,10 @@
  *      Author: Alka
  */
 
-#include "main.h"
-
 #ifndef INC_DSHOT_H_
 #define INC_DSHOT_H_
+
+#include "main.h"
 
 void computeDshotDMA(void);
 void make_dshot_package();

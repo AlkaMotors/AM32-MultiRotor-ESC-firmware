@@ -8,10 +8,6 @@
 #ifndef PERIPHERALS_H_
 #define PERIPHERALS_H_
 
-
-
-#endif /* PERIPHERALS_H_ */
-
 #include "main.h"
 
 void initAfterJump(void);
@@ -32,3 +28,5 @@ void TEN_KHZ_Timer_Init(void);
 //static void MX_TIM16_Init2(void);
 void UN_GPIO_Init(void);
 void UN_TIM_Init(void);
+
+#endif /* PERIPHERALS_H_ */

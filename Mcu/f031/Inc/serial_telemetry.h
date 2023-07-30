@@ -5,11 +5,10 @@
  *      Author: Alka
  */
 
-
-#include "main.h"
-
 #ifndef SERIAL_TELEMETRY_H_
 #define SERIAL_TELEMETRY_H_
+
+#include "main.h"
 
 void makeTelemPackage(uint8_t temp,
 		              uint16_t voltage,

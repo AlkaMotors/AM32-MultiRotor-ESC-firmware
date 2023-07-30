@@ -8,10 +8,6 @@
 #ifndef PERIPHERALS_H_
 #define PERIPHERALS_H_
 
-
-
-#endif /* PERIPHERALS_H_ */
-
 #include "main.h"
 
 void initAfterJump(void);
@@ -31,3 +27,4 @@ void MX_TIM16_Init(void);
 void MX_IWDG_Init(void);
 void MX_TIM6_Init(void);
 
+#endif /* PERIPHERALS_H_ */
