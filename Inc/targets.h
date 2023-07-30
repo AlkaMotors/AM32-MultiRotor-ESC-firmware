@@ -191,10 +191,10 @@
     #define CURRENT_OFFSET          1010   // millivolts
     #define HARDWARE_GROUP_F0_A
     #define USE_SERIAL_TELEMETRY
-    #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_3
-    #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_3
-    #define CURRENT_ADC_PIN     LL_GPIO_PIN_6
-    #define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_6
+    #define VOLTAGE_ADC_PIN         LL_GPIO_PIN_3
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_3
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_6
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_6
 #endif
 
 #ifdef  AIKON20X20_F051
@@ -297,7 +297,7 @@
 
 #ifdef  GEN_64K_G071
     #define FILE_NAME               "GEN_64K_G071"
-    #define FIRMWARE_NAME            "G071 64kESC "
+    #define FIRMWARE_NAME           "G071 64kESC "
     #define DEAD_TIME               60
     #define MILLIVOLT_PER_AMP       67
     #define CURRENT_OFFSET          0
@@ -309,7 +309,7 @@
 
 #ifdef  SEQURE_G071
     #define FILE_NAME               "SEQURE_G071"
-    #define FIRMWARE_NAME            "SEQURE G071 "
+    #define FIRMWARE_NAME           "SEQURE G071 "
     #define DEAD_TIME               60
     #define MILLIVOLT_PER_AMP       33
     #define CURRENT_OFFSET          0
@@ -318,8 +318,8 @@
     #define HARDWARE_GROUP_G0_A
     #define USE_SERIAL_TELEMETRY
     #define SIXTY_FOUR_KB_MEMORY
-    #define CURRENT_ADC_CHANNEL LL_ADC_CHANNEL_4
-    #define CURRENT_ADC_PIN LL_GPIO_PIN_4
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_4
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_4
     #define USE_LED_STRIP
 #endif
 
@@ -461,37 +461,37 @@
     #define    DEAD_TIME                60
     #define    HARDWARE_GROUP_F031_A
     #define    TARGET_STALL_PROTECTION_INTERVAL 8000
-    #define    MILLIVOLT_PER_AMP           60
+    #define    MILLIVOLT_PER_AMP        60
     #define    USE_SERIAL_TELEMETRY
 #endif
 
 /********************************** defaults if not set ***************************/
 
-#ifndef RAMP_SPEED_LOW_RPM
+#ifndef     RAMP_SPEED_LOW_RPM
     #define RAMP_SPEED_LOW_RPM       10
 #endif
 
-#ifndef RAMP_SPEED_HIGH_RPM
+#ifndef     RAMP_SPEED_HIGH_RPM
     #define RAMP_SPEED_HIGH_RPM      30
 #endif
 
 #ifndef     TARGET_VOLTAGE_DIVIDER
-    #define     TARGET_VOLTAGE_DIVIDER      110
+    #define TARGET_VOLTAGE_DIVIDER      110
 #endif
 
 #ifndef     SINE_DIVIDER
-    #define     SINE_DIVIDER                2
+    #define SINE_DIVIDER                2
 #endif
 
 #ifndef     MILLIVOLT_PER_AMP
-    #define     MILLIVOLT_PER_AMP           20
+    #define MILLIVOLT_PER_AMP           20
 #endif
 
 #ifndef     CURRENT_OFFSET
-    #define     CURRENT_OFFSET              0     // in millivolt measured at output of op-amp
+    #define CURRENT_OFFSET              0     // in millivolt measured at output of op-amp
 #endif
 
-#ifndef TARGET_STALL_PROTECTION_INTERVAL
+#ifndef     TARGET_STALL_PROTECTION_INTERVAL
     #define TARGET_STALL_PROTECTION_INTERVAL 6500
 #endif
 
@@ -525,9 +525,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA5
-    #define PHASE_B_COMP COMP_PA4
-    #define PHASE_C_COMP COMP_PA0
+    #define PHASE_A_COMP            COMP_PA5
+    #define PHASE_B_COMP            COMP_PA4
+    #define PHASE_C_COMP            COMP_PA0
 
 #endif
 
@@ -559,9 +559,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA0
-    #define PHASE_B_COMP COMP_PA4
-    #define PHASE_C_COMP COMP_PA5
+    #define PHASE_A_COMP            COMP_PA0
+    #define PHASE_B_COMP            COMP_PA4
+    #define PHASE_C_COMP            COMP_PA5
 
 #endif
 
@@ -593,9 +593,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA4
-    #define PHASE_B_COMP COMP_PA5
-    #define PHASE_C_COMP COMP_PA0
+    #define PHASE_A_COMP            COMP_PA4
+    #define PHASE_B_COMP            COMP_PA5
+    #define PHASE_C_COMP            COMP_PA0
 
 #endif
 
@@ -627,9 +627,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA0
-    #define PHASE_B_COMP COMP_PA4
-    #define PHASE_C_COMP COMP_PA5
+    #define PHASE_A_COMP            COMP_PA0
+    #define PHASE_B_COMP            COMP_PA4
+    #define PHASE_C_COMP            COMP_PA5
 
 #endif
 
@@ -661,9 +661,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA5
-    #define PHASE_B_COMP COMP_PA0
-    #define PHASE_C_COMP COMP_PA4
+    #define PHASE_A_COMP            COMP_PA5
+    #define PHASE_B_COMP            COMP_PA0
+    #define PHASE_C_COMP            COMP_PA4
 
 #endif
 
@@ -695,9 +695,9 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA4
-    #define PHASE_B_COMP COMP_PA0
-    #define PHASE_C_COMP COMP_PA5
+    #define PHASE_A_COMP            COMP_PA4
+    #define PHASE_B_COMP            COMP_PA0
+    #define PHASE_C_COMP            COMP_PA5
 
     #define USE_INVERTED_LOW
     //#define USE_INVERTED_HIGH
@@ -734,378 +734,378 @@
     #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
     #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP COMP_PA5
-    #define PHASE_B_COMP COMP_PA4
-    #define PHASE_C_COMP COMP_PA0
+    #define PHASE_A_COMP            COMP_PA5
+    #define PHASE_B_COMP            COMP_PA4
+    #define PHASE_C_COMP            COMP_PA0
 
 #endif
 
 /************************************* G071 Hardware Groups **********************************/
 
-#ifdef     HARDWARE_GROUP_G0_A
+#ifdef HARDWARE_GROUP_G0_A
 
-    #define    MCU_G071
-    #define    USE_TIMER_3_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define MCU_G071
+    #define USE_TIMER_3_CHANNEL_1
+    #define INPUT_PIN                  LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT             GPIOB
+    #define IC_TIMER_CHANNEL           LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER          TIM3
+    #define IC_TIMER_POINTER           htim3
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL          LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF        hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME            DMA1_Channel1_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
+    #define PHASE_A_GPIO_LOW           LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_LOW      GPIOB
     #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_PORT_HIGH     GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
+    #define PHASE_B_GPIO_LOW           LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW      GPIOB
     #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_PORT_HIGH     GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
+    #define PHASE_C_GPIO_LOW           LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW      GPIOA
     #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_PORT_HIGH     GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define PHASE_A_COMP               LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP               LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_C_COMP               LL_COMP_INPUT_MINUS_IO3  // PA2
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_B
+#ifdef HARDWARE_GROUP_G0_B
 
-    #define    MCU_G071
-    #define    PWM_ENABLE_BRIDGE
-    #define    USE_TIMER_3_CHANNEL_1
+    #define MCU_G071
+    #define PWM_ENABLE_BRIDGE
+    #define USE_TIMER_3_CHANNEL_1
 
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define INPUT_PIN                 LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT            GPIOB
+    #define IC_TIMER_CHANNEL          LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER         TIM3
+    #define IC_TIMER_POINTER          htim3
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL         LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF       hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME           DMA1_Channel1_IRQn
 
     #define PHASE_A_GPIO_PWM          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_PWM         GPIOA
-    #define PHASE_A_GPIO_ENABLE          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_ENABLE         GPIOB
+    #define PHASE_A_GPIO_PORT_PWM     GPIOA
+    #define PHASE_A_GPIO_ENABLE       LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_ENABLE  GPIOB
 
     #define PHASE_B_GPIO_PWM          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_PWM         GPIOA
-    #define PHASE_B_GPIO_ENABLE          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_ENABLE         GPIOB
+    #define PHASE_B_GPIO_PORT_PWM     GPIOA
+    #define PHASE_B_GPIO_ENABLE       LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_ENABLE  GPIOB
 
     #define PHASE_C_GPIO_PWM          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_PWM         GPIOA
-    #define PHASE_C_GPIO_ENABLE          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_ENABLE         GPIOA
+    #define PHASE_C_GPIO_PORT_PWM     GPIOA
+    #define PHASE_C_GPIO_ENABLE       LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_ENABLE  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define PHASE_A_COMP              LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP              LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_C_COMP              LL_COMP_INPUT_MINUS_IO3  // PA2
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_C
+#ifdef HARDWARE_GROUP_G0_C
 
-    #define    MCU_G071
-    #define    OPEN_DRAIN_PWM
-    #define    PWM_ENABLE_BRIDGE
-    #define    USE_TIMER_3_CHANNEL_1
+    #define MCU_G071
+    #define OPEN_DRAIN_PWM
+    #define PWM_ENABLE_BRIDGE
+    #define USE_TIMER_3_CHANNEL_1
 
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define INPUT_PIN                  LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT             GPIOB
+    #define IC_TIMER_CHANNEL           LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER          TIM3
+    #define IC_TIMER_POINTER           htim3
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL          LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF        hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME            DMA1_Channel1_IRQn
+
+    #define PHASE_A_GPIO_PWM           LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_PWM      GPIOA
+    #define PHASE_A_GPIO_ENABLE        LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_ENABLE   GPIOB
+
+    #define PHASE_B_GPIO_PWM           LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_PWM      GPIOA
+    #define PHASE_B_GPIO_ENABLE        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_ENABLE   GPIOB
+
+    #define PHASE_C_GPIO_PWM           LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_PWM      GPIOA
+    #define PHASE_C_GPIO_ENABLE        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_ENABLE   GPIOA
+
+    #define PHASE_A_COMP               LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP               LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_C_COMP               LL_COMP_INPUT_MINUS_IO3  // PA2
+
+#endif
+
+#ifdef HARDWARE_GROUP_G0_D
+
+    #define MCU_G071
+    #define OPEN_DRAIN_PWM
+    #define PWM_ENABLE_BRIDGE
+    #define USE_TIMER_3_CHANNEL_1
+
+    #define INPUT_PIN                 LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT            GPIOB
+    #define IC_TIMER_CHANNEL          LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER         TIM3
+    #define IC_TIMER_POINTER          htim3
+
+    #define INPUT_DMA_CHANNEL         LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF       hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME           DMA1_Channel1_IRQn
 
     #define PHASE_A_GPIO_PWM          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_PWM         GPIOA
-    #define PHASE_A_GPIO_ENABLE          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_ENABLE         GPIOB
+    #define PHASE_A_GPIO_PORT_PWM     GPIOA
+    #define PHASE_A_GPIO_ENABLE       LL_GPIO_PIN_15
+    #define PHASE_A_GPIO_PORT_ENABLE  GPIOA
 
     #define PHASE_B_GPIO_PWM          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_PWM         GPIOA
-    #define PHASE_B_GPIO_ENABLE          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_ENABLE         GPIOB
+    #define PHASE_B_GPIO_PORT_PWM     GPIOA
+    #define PHASE_B_GPIO_ENABLE       LL_GPIO_PIN_6
+    #define PHASE_B_GPIO_PORT_ENABLE  GPIOC
 
     #define PHASE_C_GPIO_PWM          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_PWM         GPIOA
-    #define PHASE_C_GPIO_ENABLE          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_ENABLE         GPIOA
+    #define PHASE_C_GPIO_PORT_PWM     GPIOA
+    #define PHASE_C_GPIO_ENABLE       LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_ENABLE  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define PHASE_A_COMP              LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP              LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_C_COMP              LL_COMP_INPUT_MINUS_IO3  // PA2
+#endif
+
+#ifdef HARDWARE_GROUP_G0_F
+
+    #define MCU_G071
+    #define USE_TIMER_3_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT          GPIOB
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM3
+    #define IC_TIMER_POINTER        htim3
+
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
+
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
+
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
+
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO3  // PA2
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_D
+#ifdef HARDWARE_GROUP_G0_G
 
-    #define    MCU_G071
-    #define    OPEN_DRAIN_PWM
-    #define    PWM_ENABLE_BRIDGE
-    #define    USE_TIMER_3_CHANNEL_1
+    #define MCU_G071
+    #define N_VARIANT
+    #define USE_TIMER_16_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_6
+    #define INPUT_PIN_PORT          GPIOA
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM16
+    #define IC_TIMER_POINTER        htim16
 
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_15
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_GPIO_PWM          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_PWM         GPIOA
-    #define PHASE_A_GPIO_ENABLE          LL_GPIO_PIN_15
-    #define PHASE_A_GPIO_PORT_ENABLE         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_PWM          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_PWM         GPIOA
-    #define PHASE_B_GPIO_ENABLE          LL_GPIO_PIN_6
-    #define PHASE_B_GPIO_PORT_ENABLE         GPIOC
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_PWM          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_PWM         GPIOA
-    #define PHASE_C_GPIO_ENABLE          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_ENABLE         GPIOA
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO3  // PA2
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO3  // PA0
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
-#endif
+    #define PHASE_A_EXTI_LINE       LL_EXTI_LINE_18
+    #define PHASE_A_COMP_NUMBER     COMP2
 
-#ifdef     HARDWARE_GROUP_G0_F
+    #define PHASE_B_EXTI_LINE       LL_EXTI_LINE_18
+    #define PHASE_B_COMP_NUMBER     COMP2
 
-    #define    MCU_G071
-    #define    USE_TIMER_3_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define PHASE_C_EXTI_LINE       LL_EXTI_LINE_17
+    #define PHASE_C_COMP_NUMBER     COMP1
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define VOLTAGE_ADC_PIN         LL_GPIO_PIN_5
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_5
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_4
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_4
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_G
+#ifdef HARDWARE_GROUP_G0_H
 
-    #define    MCU_G071
-    #define    N_VARIANT
-    #define    USE_TIMER_16_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_6
-    #define    INPUT_PIN_PORT              GPIOA
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM16
-    #define    IC_TIMER_POINTER           htim16
+    #define MCU_G071
+    #define N_VARIANT
+    #define USE_TIMER_16_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_6
+    #define INPUT_PIN_PORT          GPIOA
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM16
+    #define IC_TIMER_POINTER        htim16
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_15
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_15
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa0
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO3  // PA2
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO3  // PA0
 
-    #define PHASE_A_EXTI_LINE           LL_EXTI_LINE_18
-    #define PHASE_A_COMP_NUMBER         COMP2
+    #define PHASE_A_EXTI_LINE       LL_EXTI_LINE_18
+    #define PHASE_A_COMP_NUMBER     COMP2
 
-    #define PHASE_B_EXTI_LINE           LL_EXTI_LINE_18
-    #define PHASE_B_COMP_NUMBER         COMP2
+    #define PHASE_B_EXTI_LINE       LL_EXTI_LINE_18
+    #define PHASE_B_COMP_NUMBER     COMP2
 
-    #define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
-    #define PHASE_C_COMP_NUMBER         COMP1
+    #define PHASE_C_EXTI_LINE       LL_EXTI_LINE_17
+    #define PHASE_C_COMP_NUMBER     COMP1
 
-    #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_5
-    #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_5
+    #define VOLTAGE_ADC_PIN         LL_GPIO_PIN_5
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_5
 
-    #define CURRENT_ADC_PIN     LL_GPIO_PIN_4
-    #define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
-
-#endif
-
-#ifdef     HARDWARE_GROUP_G0_H
-
-    #define    MCU_G071
-    #define    N_VARIANT
-    #define    USE_TIMER_16_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_6
-    #define    INPUT_PIN_PORT              GPIOA
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM16
-    #define    IC_TIMER_POINTER           htim16
-
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim16_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
-
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_15
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
-
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa0
-
-    #define PHASE_A_EXTI_LINE           LL_EXTI_LINE_18
-    #define PHASE_A_COMP_NUMBER         COMP2
-
-    #define PHASE_B_EXTI_LINE           LL_EXTI_LINE_18
-    #define PHASE_B_COMP_NUMBER         COMP2
-
-    #define PHASE_C_EXTI_LINE           LL_EXTI_LINE_17
-    #define PHASE_C_COMP_NUMBER         COMP1
-
-    #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_5
-    #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_5
-
-    #define CURRENT_ADC_PIN     LL_GPIO_PIN_4
-    #define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_4
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_4
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_N
+#ifdef HARDWARE_GROUP_G0_N
 
-    #define    USE_LED_STRIP
-    #define    MCU_G071
-    #define    USE_TIMER_3_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define USE_LED_STRIP
+    #define MCU_G071
+    #define USE_TIMER_3_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT          GPIOB
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM3
+    #define IC_TIMER_POINTER        htim3
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO3  // PA2
 
-    #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_6
-    #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_6
+    #define VOLTAGE_ADC_PIN         LL_GPIO_PIN_6
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_6
 
-    #define CURRENT_ADC_PIN     LL_GPIO_PIN_4
-    #define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_4
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_4
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_4
 
 #endif
 
-#ifdef     HARDWARE_GROUP_G0_I
+#ifdef HARDWARE_GROUP_G0_I
 
-    #define    MCU_G071
-    #define    USE_TIMER_3_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_4
-    #define    INPUT_PIN_PORT              GPIOB
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM3
-    #define    IC_TIMER_POINTER           htim3
+    #define MCU_G071
+    #define USE_TIMER_3_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_4
+    #define INPUT_PIN_PORT          GPIOB
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM3
+    #define IC_TIMER_POINTER        htim3
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim3_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO1  // pb3
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO3  // pa2
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO1  // PB3
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO3  // PA2
 
-    #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_1
-    #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_1
+    #define VOLTAGE_ADC_PIN         LL_GPIO_PIN_1
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_1
 
-    #define CURRENT_ADC_PIN     LL_GPIO_PIN_5
-    #define CURRENT_ADC_CHANNEL  LL_ADC_CHANNEL_5
+    #define CURRENT_ADC_PIN         LL_GPIO_PIN_5
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_5
 
 #endif
 
@@ -1113,187 +1113,187 @@
 
 #ifdef HARDWARE_GROUP_F031_A
 
-    #define    EXTI_TYPE_BAC
-    #define    USE_TIMER_2_CHANNEL_3
-    #define    MCU_F031
+    #define EXTI_TYPE_BAC
+    #define USE_TIMER_2_CHANNEL_3
+    #define MCU_F031
 
-    #define    INPUT_PIN               LL_GPIO_PIN_2
-    #define    INPUT_PIN_PORT              GPIOA
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH3
-    #define    IC_TIMER_REGISTER          TIM2
-    #define    IC_TIMER_POINTER           htim2
+    #define INPUT_PIN               LL_GPIO_PIN_2
+    #define INPUT_PIN_PORT          GPIOA
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH3
+    #define IC_TIMER_REGISTER       TIM2
+    #define IC_TIMER_POINTER        htim2
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim2_ch3
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim2_ch3
+    #define IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
 
-    #define    PHASE_A_EXTI_PORT          GPIOF
-    #define    PHASE_B_EXTI_PORT          GPIOF
-    #define    PHASE_C_EXTI_PORT          GPIOA
+    #define PHASE_A_EXTI_PORT       GPIOF
+    #define PHASE_B_EXTI_PORT       GPIOF
+    #define PHASE_C_EXTI_PORT       GPIOA
 
-    #define    PHASE_A_EXTI_PIN           LL_GPIO_PIN_0
-    #define    PHASE_B_EXTI_PIN           LL_GPIO_PIN_1
-    #define    PHASE_C_EXTI_PIN           LL_GPIO_PIN_6
+    #define PHASE_A_EXTI_PIN        LL_GPIO_PIN_0
+    #define PHASE_B_EXTI_PIN        LL_GPIO_PIN_1
+    #define PHASE_C_EXTI_PIN        LL_GPIO_PIN_6
 
-    #define    PHASE_A_EXTI_LINE          0
-    #define    PHASE_B_EXTI_LINE          1
-    #define    PHASE_C_EXTI_LINE          6
+    #define PHASE_A_EXTI_LINE       0
+    #define PHASE_B_EXTI_LINE       1
+    #define PHASE_C_EXTI_LINE       6
 
-    #define    SYSCFG_EXTI_PORTA         LL_SYSCFG_EXTI_PORTF
-    #define    SYSCFG_EXTI_PORTB         LL_SYSCFG_EXTI_PORTF
-    #define    SYSCFG_EXTI_PORTC         LL_SYSCFG_EXTI_PORTA
+    #define SYSCFG_EXTI_PORTA       LL_SYSCFG_EXTI_PORTF
+    #define SYSCFG_EXTI_PORTB       LL_SYSCFG_EXTI_PORTF
+    #define SYSCFG_EXTI_PORTC       LL_SYSCFG_EXTI_PORTA
 
-    #define    SYSCFG_EXTI_LINEA         LL_SYSCFG_EXTI_LINE0
-    #define    SYSCFG_EXTI_LINEB         LL_SYSCFG_EXTI_LINE1
-    #define    SYSCFG_EXTI_LINEC         LL_SYSCFG_EXTI_LINE6
+    #define SYSCFG_EXTI_LINEA       LL_SYSCFG_EXTI_LINE0
+    #define SYSCFG_EXTI_LINEB       LL_SYSCFG_EXTI_LINE1
+    #define SYSCFG_EXTI_LINEC       LL_SYSCFG_EXTI_LINE6
 
-    #define    PHASE_A_LL_EXTI_LINE      LL_EXTI_LINE_0
-    #define    PHASE_B_LL_EXTI_LINE      LL_EXTI_LINE_1
-    #define    PHASE_C_LL_EXTI_LINE      LL_EXTI_LINE_6
+    #define PHASE_A_LL_EXTI_LINE    LL_EXTI_LINE_0
+    #define PHASE_B_LL_EXTI_LINE    LL_EXTI_LINE_1
+    #define PHASE_C_LL_EXTI_LINE    LL_EXTI_LINE_6
 
-    #define    EXTI_IRQ1_NAME          EXTI0_1_IRQn
-    #define    EXTI_IRQ2_NAME          EXTI4_15_IRQn
+    #define EXTI_IRQ1_NAME          EXTI0_1_IRQn
+    #define EXTI_IRQ2_NAME          EXTI4_15_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_14
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_14
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_13
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_13
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_15
-    #define PHASE_C_GPIO_PORT_LOW         GPIOB
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_15
+    #define PHASE_C_GPIO_PORT_LOW   GPIOB
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define CURRENT_SENSE_ADC_PIN        LL_GPIO_PIN_5
-    #define VOLTAGE_SENSE_ADC_PIN        LL_GPIO_PIN_7
+    #define CURRENT_SENSE_ADC_PIN   LL_GPIO_PIN_5
+    #define VOLTAGE_SENSE_ADC_PIN   LL_GPIO_PIN_7
 
-    #define CURRENT_ADC_CHANNEL         LL_ADC_CHANNEL_5
-    #define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_7
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_5
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_7
 
 #endif
 
-#ifdef    HARDWARE_GROUP_F031_B
+#ifdef HARDWARE_GROUP_F031_B
 
-    #define    USE_TIMER_2_CHANNEL_3
-    #define    INPUT_PIN               LL_GPIO_PIN_2
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH3
-    #define    IC_TIMER_REGISTER          TIM2
-    #define    IC_TIMER_POINTER           htim2
+    #define USE_TIMER_2_CHANNEL_3
+    #define INPUT_PIN                 LL_GPIO_PIN_2
+    #define IC_TIMER_CHANNEL          LL_TIM_CHANNEL_CH3
+    #define IC_TIMER_REGISTER         TIM2
+    #define IC_TIMER_POINTER          htim2
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_1
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim2_ch3
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel1_IRQn
+    #define INPUT_DMA_CHANNEL         LL_DMA_CHANNEL_1
+    #define DMA_HANDLE_TYPE_DEF       hdma_tim2_ch3
+    #define IC_DMA_IRQ_NAME           DMA1_Channel1_IRQn
 
-    #define    PHASE_A_EXTI_PORT          GPIOF
-    #define    PHASE_B_EXTI_PORT          GPIOF
-    #define    PHASE_C_EXTI_PORT          GPIOA
+    #define PHASE_A_EXTI_PORT         GPIOF
+    #define PHASE_B_EXTI_PORT         GPIOF
+    #define PHASE_C_EXTI_PORT         GPIOA
 
-    #define    PHASE_A_EXTI_PIN           LL_GPIO_PIN_0
-    #define    PHASE_B_EXTI_PIN           LL_GPIO_PIN_1
-    #define    PHASE_C_EXTI_PIN           LL_GPIO_PIN_5
+    #define PHASE_A_EXTI_PIN          LL_GPIO_PIN_0
+    #define PHASE_B_EXTI_PIN          LL_GPIO_PIN_1
+    #define PHASE_C_EXTI_PIN          LL_GPIO_PIN_5
 
-    #define    PHASE_A_EXTI_LINE          0
-    #define    PHASE_B_EXTI_LINE          1
-    #define    PHASE_C_EXTI_LINE          5
+    #define PHASE_A_EXTI_LINE         0
+    #define PHASE_B_EXTI_LINE         1
+    #define PHASE_C_EXTI_LINE         5
 
-    #define    SYSCFG_EXTI_PORTA         LL_SYSCFG_EXTI_PORTF
-    #define    SYSCFG_EXTI_PORTB         LL_SYSCFG_EXTI_PORTF
-    #define    SYSCFG_EXTI_PORTC         LL_SYSCFG_EXTI_PORTA
+    #define SYSCFG_EXTI_PORTA         LL_SYSCFG_EXTI_PORTF
+    #define SYSCFG_EXTI_PORTB         LL_SYSCFG_EXTI_PORTF
+    #define SYSCFG_EXTI_PORTC         LL_SYSCFG_EXTI_PORTA
 
-    #define    SYSCFG_EXTI_LINEA         LL_SYSCFG_EXTI_LINE0
-    #define    SYSCFG_EXTI_LINEB         LL_SYSCFG_EXTI_LINE1
-    #define    SYSCFG_EXTI_LINEC         LL_SYSCFG_EXTI_LINE5
+    #define SYSCFG_EXTI_LINEA         LL_SYSCFG_EXTI_LINE0
+    #define SYSCFG_EXTI_LINEB         LL_SYSCFG_EXTI_LINE1
+    #define SYSCFG_EXTI_LINEC         LL_SYSCFG_EXTI_LINE5
 
-    #define    PHASE_A_LL_EXTI_LINE      LL_EXTI_LINE_0
-    #define    PHASE_B_LL_EXTI_LINE      LL_EXTI_LINE_1
-    #define    PHASE_C_LL_EXTI_LINE      LL_EXTI_LINE_5
+    #define PHASE_A_LL_EXTI_LINE      LL_EXTI_LINE_0
+    #define PHASE_B_LL_EXTI_LINE      LL_EXTI_LINE_1
+    #define PHASE_C_LL_EXTI_LINE      LL_EXTI_LINE_5
 
-    #define    EXTI_IRQ1_NAME          EXTI0_1_IRQn
-    #define    EXTI_IRQ2_NAME          EXTI4_15_IRQn
+    #define EXTI_IRQ1_NAME            EXTI0_1_IRQn
+    #define EXTI_IRQ2_NAME            EXTI4_15_IRQn
 
     #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_14
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_PORT_LOW     GPIOB
+    #define PHASE_A_GPIO_HIGH         LL_GPIO_PIN_9
+    #define PHASE_A_GPIO_PORT_HIGH    GPIOA
 
     #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_13
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_PORT_LOW     GPIOB
+    #define PHASE_B_GPIO_HIGH         LL_GPIO_PIN_8
+    #define PHASE_B_GPIO_PORT_HIGH    GPIOA
 
     #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_15
-    #define PHASE_C_GPIO_PORT_LOW         GPIOB
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_PORT_LOW     GPIOB
+    #define PHASE_C_GPIO_HIGH         LL_GPIO_PIN_10
+    #define PHASE_C_GPIO_PORT_HIGH    GPIOA
 
-    #define CURRENT_SENSE_ADC_PIN        LL_GPIO_PIN_3
-    #define VOLTAGE_SENSE_ADC_PIN        LL_GPIO_PIN_4
+    #define CURRENT_SENSE_ADC_PIN     LL_GPIO_PIN_3
+    #define VOLTAGE_SENSE_ADC_PIN     LL_GPIO_PIN_4
 
-    #define CURRENT_ADC_CHANNEL         LL_ADC_CHANNEL_3
-    #define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_4
+    #define CURRENT_ADC_CHANNEL       LL_ADC_CHANNEL_3
+    #define VOLTAGE_ADC_CHANNEL       LL_ADC_CHANNEL_4
 
 #endif
 /*************************************l431******************************************************/
-#ifdef     HARDWARE_GROUP_L4_A
+#ifdef HARDWARE_GROUP_L4_A
 
-    #define    MCU_L431
-    #define    USE_TIMER_15_CHANNEL_1
-    #define    INPUT_PIN               LL_GPIO_PIN_2
-    #define    INPUT_PIN_PORT              GPIOA
-    #define    IC_TIMER_CHANNEL         LL_TIM_CHANNEL_CH1
-    #define    IC_TIMER_REGISTER          TIM15
-    #define    IC_TIMER_POINTER           htim15
+    #define MCU_L431
+    #define USE_TIMER_15_CHANNEL_1
+    #define INPUT_PIN               LL_GPIO_PIN_2
+    #define INPUT_PIN_PORT          GPIOA
+    #define IC_TIMER_CHANNEL        LL_TIM_CHANNEL_CH1
+    #define IC_TIMER_REGISTER       TIM15
+    #define IC_TIMER_POINTER        htim15
 
-    #define    INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_5
-    #define    DMA_HANDLE_TYPE_DEF     hdma_tim15_ch1
-    #define    IC_DMA_IRQ_NAME         DMA1_Channel5_IRQn
+    #define INPUT_DMA_CHANNEL       LL_DMA_CHANNEL_5
+    #define DMA_HANDLE_TYPE_DEF     hdma_tim15_ch1
+    #define IC_DMA_IRQ_NAME         DMA1_Channel5_IRQn
 
-    #define PHASE_A_GPIO_LOW          LL_GPIO_PIN_1
-    #define PHASE_A_GPIO_PORT_LOW         GPIOB
-    #define PHASE_A_GPIO_HIGH          LL_GPIO_PIN_10
-    #define PHASE_A_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_A_GPIO_LOW        LL_GPIO_PIN_1
+    #define PHASE_A_GPIO_PORT_LOW   GPIOB
+    #define PHASE_A_GPIO_HIGH       LL_GPIO_PIN_10
+    #define PHASE_A_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_B_GPIO_LOW          LL_GPIO_PIN_0
-    #define PHASE_B_GPIO_PORT_LOW         GPIOB
-    #define PHASE_B_GPIO_HIGH          LL_GPIO_PIN_9
-    #define PHASE_B_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_B_GPIO_LOW        LL_GPIO_PIN_0
+    #define PHASE_B_GPIO_PORT_LOW   GPIOB
+    #define PHASE_B_GPIO_HIGH       LL_GPIO_PIN_9
+    #define PHASE_B_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_C_GPIO_LOW          LL_GPIO_PIN_7
-    #define PHASE_C_GPIO_PORT_LOW         GPIOA
-    #define PHASE_C_GPIO_HIGH          LL_GPIO_PIN_8
-    #define PHASE_C_GPIO_PORT_HIGH         GPIOA
+    #define PHASE_C_GPIO_LOW        LL_GPIO_PIN_7
+    #define PHASE_C_GPIO_PORT_LOW   GPIOA
+    #define PHASE_C_GPIO_HIGH       LL_GPIO_PIN_8
+    #define PHASE_C_GPIO_PORT_HIGH  GPIOA
 
-    #define PHASE_A_COMP  LL_COMP_INPUT_MINUS_IO2  // pb7
-    #define PHASE_B_COMP  LL_COMP_INPUT_MINUS_IO5  // pa4
-    #define PHASE_C_COMP  LL_COMP_INPUT_MINUS_IO4  // pa5
+    #define PHASE_A_COMP            LL_COMP_INPUT_MINUS_IO2  // PB7
+    #define PHASE_B_COMP            LL_COMP_INPUT_MINUS_IO5  // PA4
+    #define PHASE_C_COMP            LL_COMP_INPUT_MINUS_IO4  // PA5
 
-    #define CURRENT_SENSE_ADC_PIN        LL_GPIO_PIN_3
-    #define VOLTAGE_SENSE_ADC_PIN        LL_GPIO_PIN_6
+    #define CURRENT_SENSE_ADC_PIN   LL_GPIO_PIN_3
+    #define VOLTAGE_SENSE_ADC_PIN   LL_GPIO_PIN_6
 
-    #define CURRENT_ADC_CHANNEL         LL_ADC_CHANNEL_8
-    #define VOLTAGE_ADC_CHANNEL         LL_ADC_CHANNEL_11
+    #define CURRENT_ADC_CHANNEL     LL_ADC_CHANNEL_8
+    #define VOLTAGE_ADC_CHANNEL     LL_ADC_CHANNEL_11
 
 #endif
 
 /************************************ MCU COMMON PERIPHERALS **********************************************/
 
 #ifdef MCU_F051
-    #define CPU_FREQUENCY_MHZ   48
-    #define EEPROM_START_ADD  (uint32_t)0x08007C00
-    #define INTERVAL_TIMER     TIM2
-    #define TEN_KHZ_TIMER      TIM6
-    #define UTILITY_TIMER      TIM17
-    #define COM_TIMER          TIM14
-    #define TIM1_AUTORELOAD    1999
-    #define APPLICATION_ADDRESS 0x08001000
-    #define MAIN_COMP   COMP1
-    #define EXTI_LINE   LL_EXTI_LINE_21
-    #define TARGET_MIN_BEMF_COUNTS 6
+    #define CPU_FREQUENCY_MHZ       48
+    #define EEPROM_START_ADD        (uint32_t)0x08007C00
+    #define INTERVAL_TIMER          TIM2
+    #define TEN_KHZ_TIMER           TIM6
+    #define UTILITY_TIMER           TIM17
+    #define COM_TIMER               TIM14
+    #define TIM1_AUTORELOAD         1999
+    #define APPLICATION_ADDRESS     0x08001000
+    #define MAIN_COMP               COMP1
+    #define EXTI_LINE               LL_EXTI_LINE_21
+    #define TARGET_MIN_BEMF_COUNTS  6
     #define USE_ADC
     #ifndef CURRENT_ADC_CHANNEL
         #define CURRENT_ADC_CHANNEL LL_ADC_CHANNEL_6
@@ -1302,59 +1302,59 @@
         #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_3
     #endif
     #ifndef CURRENT_ADC_PIN
-        #define CURRENT_ADC_PIN LL_GPIO_PIN_6
+        #define CURRENT_ADC_PIN     LL_GPIO_PIN_6
     #endif
     #ifndef VOLTAGE_ADC_PIN
-        #define VOLTAGE_ADC_PIN LL_GPIO_PIN_3
+        #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_3
     #endif
 #endif
 
 #ifdef MCU_L431
-    #define CPU_FREQUENCY_MHZ   80
-    #define EEPROM_START_ADD  (uint32_t)0x0800F800
-    #define INTERVAL_TIMER     TIM2
-    #define TEN_KHZ_TIMER      TIM6
-    #define UTILITY_TIMER      TIM7
-    #define COM_TIMER          TIM16
-    #define TIM1_AUTORELOAD    3334
-    #define APPLICATION_ADDRESS 0x08001000
-    #define MAIN_COMP   COMP2
-    #define EXTI_LINE   LL_EXTI_LINE_22
-    #define TARGET_MIN_BEMF_COUNTS 6
+    #define CPU_FREQUENCY_MHZ       80
+    #define EEPROM_START_ADD        (uint32_t)0x0800F800
+    #define INTERVAL_TIMER          TIM2
+    #define TEN_KHZ_TIMER           TIM6
+    #define UTILITY_TIMER           TIM7
+    #define COM_TIMER               TIM16
+    #define TIM1_AUTORELOAD         3334
+    #define APPLICATION_ADDRESS     0x08001000
+    #define MAIN_COMP               COMP2
+    #define EXTI_LINE               LL_EXTI_LINE_22
+    #define TARGET_MIN_BEMF_COUNTS  6
     //#define USE_SERIAL_TELEMETRY // moved to individual ESCs
     #define USE_ADC
 #endif
 
 #ifdef MCU_F031
-    #define CPU_FREQUENCY_MHZ   48
-    #define EEPROM_START_ADD  (uint32_t)0x08007C00
-    #define INTERVAL_TIMER     TIM3
-    #define TEN_KHZ_TIMER      TIM16
-    #define UTILITY_TIMER      TIM17
-    #define COM_TIMER          TIM14
-    #define TIM1_AUTORELOAD    1999
-    #define APPLICATION_ADDRESS 0x08001000
-    #define TARGET_MIN_BEMF_COUNTS 3
+    #define CPU_FREQUENCY_MHZ       48
+    #define EEPROM_START_ADD        (uint32_t)0x08007C00
+    #define INTERVAL_TIMER          TIM3
+    #define TEN_KHZ_TIMER           TIM16
+    #define UTILITY_TIMER           TIM17
+    #define COM_TIMER               TIM14
+    #define TIM1_AUTORELOAD         1999
+    #define APPLICATION_ADDRESS     0x08001000
+    #define TARGET_MIN_BEMF_COUNTS  3
     //#define USE_SERIAL_TELEMETRY // moved to individual ESCs
     #define USE_ADC
 #endif
 
 #ifdef MCU_G071
-    #define CPU_FREQUENCY_MHZ   64
+    #define CPU_FREQUENCY_MHZ       64
     #ifdef  SIXTY_FOUR_KB_MEMORY
-        #define EEPROM_START_ADD  (uint32_t)0x0800F800
+        #define EEPROM_START_ADD    (uint32_t)0x0800F800
     #else
-        #define EEPROM_START_ADD  (uint32_t)0x0801F800
+        #define EEPROM_START_ADD    (uint32_t)0x0801F800
     #endif
-    #define INTERVAL_TIMER     TIM2
-    #define TEN_KHZ_TIMER      TIM6
-    #define UTILITY_TIMER      TIM17
-    #define COM_TIMER          TIM14
-    #define TIM1_AUTORELOAD    2667
-    #define APPLICATION_ADDRESS 0x08001000
-    #define MAIN_COMP   COMP2
-    #define EXTI_LINE   LL_EXTI_LINE_18
-    #define TARGET_MIN_BEMF_COUNTS 8
+    #define INTERVAL_TIMER          TIM2
+    #define TEN_KHZ_TIMER           TIM6
+    #define UTILITY_TIMER           TIM17
+    #define COM_TIMER               TIM14
+    #define TIM1_AUTORELOAD         2667
+    #define APPLICATION_ADDRESS     0x08001000
+    #define MAIN_COMP               COMP2
+    #define EXTI_LINE               LL_EXTI_LINE_18
+    #define TARGET_MIN_BEMF_COUNTS  8
     #define USE_ADC
     #ifndef CURRENT_ADC_CHANNEL
         #define CURRENT_ADC_CHANNEL LL_ADC_CHANNEL_5
@@ -1363,9 +1363,9 @@
         #define VOLTAGE_ADC_CHANNEL LL_ADC_CHANNEL_6
     #endif
     #ifndef CURRENT_ADC_PIN
-        #define CURRENT_ADC_PIN LL_GPIO_PIN_5
+        #define CURRENT_ADC_PIN     LL_GPIO_PIN_5
     #endif
     #ifndef VOLTAGE_ADC_PIN
-        #define VOLTAGE_ADC_PIN LL_GPIO_PIN_6
+        #define VOLTAGE_ADC_PIN     LL_GPIO_PIN_6
     #endif
 #endif
