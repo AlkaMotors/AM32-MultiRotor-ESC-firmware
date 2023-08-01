@@ -290,7 +290,6 @@ void playDefaultTone()
     TIM1->PSC = 0;
     signaltimeout = 0;
     TIM1->ARR = TIMER1_MAX_ARR;
-
 }
 
 void playChangedTone()
@@ -307,7 +306,6 @@ void playChangedTone()
     TIM1->PSC = 0;
     signaltimeout = 0;
     TIM1->ARR = TIMER1_MAX_ARR;
-
 }
 
 void playBeaconTune3()

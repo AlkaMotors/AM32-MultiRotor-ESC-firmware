@@ -17,7 +17,6 @@ long map(long x, long in_min, long in_max, long out_min, long out_max)
         x = in_max;
     }
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-
 }
 
 int getAbsDif(int number1, int number2)
@@ -33,7 +32,6 @@ void delayMicros(uint32_t micros)
 {
     UTILITY_TIMER->CNT = 0;
     while (UTILITY_TIMER->CNT < micros) {
-
     }
 }
 

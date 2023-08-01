@@ -49,18 +49,17 @@ void setChannels()
     uint8_t crc = crsf_crc8(&crsf_buffer[2], crsf_buffer[1] - 1);
 
     if (crc == crsf_buffer[25]) {
-
         if (crsf_buffer[1] == 24) {
-            crsf_channels[0] = ((crsf_buffer[3] | crsf_buffer[4] << 8) & 0x07FF);
-            crsf_channels[1] = ((crsf_buffer[4] >> 3 | crsf_buffer[5] << 5) & 0x07FF);
-            crsf_channels[2] = ((crsf_buffer[5] >> 6 | crsf_buffer[6] << 2 | crsf_buffer[7] << 10) & 0x07FF);
-            crsf_channels[3] = ((crsf_buffer[7] >> 1 | crsf_buffer[8] << 7) & 0x07FF);
-            crsf_channels[4] = ((crsf_buffer[8] >> 4 | crsf_buffer[9] << 4) & 0x07FF);
-            crsf_channels[5] = ((crsf_buffer[9] >> 7 | crsf_buffer[10] << 1 | crsf_buffer[11] << 9) & 0x07FF);
-            crsf_channels[6] = ((crsf_buffer[11] >> 2 | crsf_buffer[12] << 6) & 0x07FF);
-            crsf_channels[7] = ((crsf_buffer[12] >> 5 | crsf_buffer[13] << 3) & 0x07FF);
-            crsf_channels[8] = ((crsf_buffer[14] | crsf_buffer[15] << 8) & 0x07FF);
-            crsf_channels[9] = ((crsf_buffer[15] >> 3 | crsf_buffer[16] << 5) & 0x07FF);
+            crsf_channels[ 0] = ((crsf_buffer[ 3]      | crsf_buffer[ 4] << 8) & 0x07FF);
+            crsf_channels[ 1] = ((crsf_buffer[ 4] >> 3 | crsf_buffer[ 5] << 5) & 0x07FF);
+            crsf_channels[ 2] = ((crsf_buffer[ 5] >> 6 | crsf_buffer[ 6] << 2 | crsf_buffer[7] << 10) & 0x07FF);
+            crsf_channels[ 3] = ((crsf_buffer[ 7] >> 1 | crsf_buffer[ 8] << 7) & 0x07FF);
+            crsf_channels[ 4] = ((crsf_buffer[ 8] >> 4 | crsf_buffer[ 9] << 4) & 0x07FF);
+            crsf_channels[ 5] = ((crsf_buffer[ 9] >> 7 | crsf_buffer[10] << 1 | crsf_buffer[11] << 9) & 0x07FF);
+            crsf_channels[ 6] = ((crsf_buffer[11] >> 2 | crsf_buffer[12] << 6) & 0x07FF);
+            crsf_channels[ 7] = ((crsf_buffer[12] >> 5 | crsf_buffer[13] << 3) & 0x07FF);
+            crsf_channels[ 8] = ((crsf_buffer[14]      | crsf_buffer[15] << 8) & 0x07FF);
+            crsf_channels[ 9] = ((crsf_buffer[15] >> 3 | crsf_buffer[16] << 5) & 0x07FF);
             crsf_channels[10] = ((crsf_buffer[16] >> 6 | crsf_buffer[17] << 2 | crsf_buffer[18] << 10) & 0x07FF);
             crsf_channels[11] = ((crsf_buffer[18] >> 1 | crsf_buffer[19] << 7) & 0x07FF);
             crsf_channels[12] = ((crsf_buffer[19] >> 4 | crsf_buffer[20] << 4) & 0x07FF);

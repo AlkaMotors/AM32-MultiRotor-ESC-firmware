@@ -91,7 +91,6 @@ void phaseCPWM()
         LL_GPIO_SetPinMode(PHASE_C_GPIO_PORT_LOW, PHASE_C_GPIO_LOW, LL_GPIO_MODE_ALTERNATE);
     }
     LL_GPIO_SetPinMode(PHASE_C_GPIO_PORT_HIGH, PHASE_C_GPIO_HIGH, LL_GPIO_MODE_ALTERNATE);
-
 }
 
 void phaseCFLOAT()
@@ -155,7 +154,6 @@ void phaseBPWM()
         PHASE_B_GPIO_PORT_ENABLE->BSRR = PHASE_B_GPIO_ENABLE;
     }
     LL_GPIO_SetPinMode(PHASE_B_GPIO_PORT_PWM, PHASE_B_GPIO_PWM, LL_GPIO_MODE_ALTERNATE);  // high pwm
-
 }
 
 void phaseBFLOAT()
@@ -188,7 +186,6 @@ void phaseCPWM()
         PHASE_C_GPIO_PORT_ENABLE->BSRR = PHASE_C_GPIO_ENABLE;
     }
     LL_GPIO_SetPinMode(PHASE_C_GPIO_PORT_PWM, PHASE_C_GPIO_PWM, LL_GPIO_MODE_ALTERNATE);
-
 }
 
 void phaseCFLOAT()
@@ -252,7 +249,6 @@ void  comStep(int newStep)
 {
     //TIM14->CNT = 0;
     switch (newStep) {
-
     case 1:         //A-B
         phaseAPWM();
         phaseBLOW();
@@ -291,7 +287,6 @@ void  comStep(int newStep)
     }
 
     //stop_time = TIM14->CNT;
-
 }
 
 void fullBrake()                      // full braking shorting all low sides

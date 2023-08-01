@@ -550,7 +550,6 @@ void checkForHighSignal()
 
 float doPidCalculations(struct fastPID* pidnow, int actual, int target)
 {
-
     pidnow->error = actual - target;
     pidnow->integral = pidnow->integral + pidnow->error * pidnow->Ki;
     if (pidnow->integral > pidnow->integral_limit) {
@@ -571,7 +570,6 @@ float doPidCalculations(struct fastPID* pidnow, int actual, int target)
         pidnow->pid_output = -pidnow->output_limit;
     }
     return pidnow->pid_output;
-
 }
 
 void loadEEpromSettings()
@@ -779,12 +777,10 @@ void loadEEpromSettings()
     if (!comp_pwm) {
         bi_direction = 0;
     }
-
 }
 
 void saveEEpromSettings()
 {
-
     eepromBuffer[1] = eeprom_layout_version;
     if (dir_reversed == 1) {
         eepromBuffer[17] = 0x01;
@@ -829,7 +825,6 @@ void saveEEpromSettings()
 
 void getSmoothedInput()
 {
-
     total = total - readings[readIndex];
     readings[readIndex] = commutation_interval;
     total = total + readings[readIndex];
@@ -838,7 +833,6 @@ void getSmoothedInput()
         readIndex = 0;
     }
     smoothedinput = total / numReadings;
-
 }
 
 void getBemfState()
@@ -931,7 +925,6 @@ void commutate()
 
 void PeriodElapsedCallback()
 {
-
     COM_TIMER->DIER &= ~((0x1UL << (0U)));             // disable interrupt
     commutation_interval = ((3 * commutation_interval) + thiszctime) >> 2;
     commutate();
@@ -943,7 +936,6 @@ void PeriodElapsedCallback()
     if (zero_crosses < 10000) {
         zero_crosses++;
     }
-
 }
 
 void interruptRoutine()
@@ -1008,12 +1000,10 @@ void startMotor()
 
 void tenKhzRoutine()
 {
-
     tenkhzcounter++;
     if (tenkhzcounter > 10000) {    // 1s sample interval 10000
         consumed_current = (float)actual_current / 360 + consumed_current;
         switch (dshot_extended_telemetry) {
-
         case 1:
             send_extended_dshot = 0b0010 << 8 | degrees_celsius;
             dshot_extended_telemetry = 2;
@@ -1237,7 +1227,6 @@ void tenKhzRoutine()
             }
 
             if (stall_protection_adjust > 0) {
-
                 duty_cycle = duty_cycle + (uint16_t)stall_protection_adjust;
             }
             if (maximum_throttle_change_ramp) {
@@ -1465,12 +1454,10 @@ void zcfoundroutine()    // only used in polling mode, blocking routine.
 
         }
     }
-
 }
 #ifdef BRUSHED_MODE
 void runBrushedLoop()
 {
-
     uint16_t brushed_duty_cycle = 0;
 
     if (brushed_direction_set == 0 && adjusted_input > 48) {
@@ -1513,10 +1500,9 @@ void runBrushedLoop()
         TIM1->CCR1 = brushed_duty_cycle;
         TIM1->CCR2 = brushed_duty_cycle;
         TIM1->CCR3 = brushed_duty_cycle;
-
     }
     else {
-        TIM1->CCR1 = 0;                                             //
+        TIM1->CCR1 = 0;
         TIM1->CCR2 = 0;
         TIM1->CCR3 = 0;
         brushed_direction_set = 0;
@@ -1526,7 +1512,6 @@ void runBrushedLoop()
 
 int main(void)
 {
-
     initAfterJump();
 
     initCorePeripherals();
@@ -1718,10 +1703,9 @@ int main(void)
     else {
         temperature_offset = 230;
     }
-
 #endif
-    while (1) {
 
+    while (1) {
         LL_IWDG_ReloadCounter(IWDG);
 
         adc_counter++;
@@ -1763,6 +1747,7 @@ int main(void)
                 }
             }
             adc_counter = 0;
+
 #ifdef USE_ADC_INPUT
             if (ADC_raw_input < 10) {
                 zero_input_count++;
@@ -1771,9 +1756,10 @@ int main(void)
                 zero_input_count = 0;
             }
 #endif
-        }
-#ifdef USE_ADC_INPUT
 
+        }
+
+#ifdef USE_ADC_INPUT
         signaltimeout = 0;
         ADC_smoothed_input = (((10 * ADC_smoothed_input) + ADC_raw_input) / 11);
         newinput = ADC_smoothed_input / 2;
@@ -1781,6 +1767,7 @@ int main(void)
             newinput = 2000;
         }
 #endif
+
         stuckcounter = 0;
 
         if (bi_direction == 1 && dshot == 0) {
@@ -1861,7 +1848,6 @@ int main(void)
         }
         else if (dshot && bi_direction) {
             if (newinput > 1047) {
-
                 if (forward == dir_reversed) {
                     if (commutation_interval > reverse_speed_threshold || stepper_sine) {
                         forward = 1 - dir_reversed;
@@ -1984,7 +1970,6 @@ int main(void)
                         }
                     }
                     else {
-
                         input = (uint16_t)input_override;  // speed control pid override
                         if (input_override > 2047) {
                             input = 2047;
@@ -1995,7 +1980,6 @@ int main(void)
                     }
                 }
                 else {
-
                     input = adjusted_input;
 
                 }
@@ -2003,7 +1987,6 @@ int main(void)
 #endif
         }
         if (stepper_sine == 0) {
-
             e_rpm = running * (600000 / e_com_time);      // in tens of rpm
             k_erpm =  e_rpm / 10; // ecom time is time for one electrical revolution in microseconds
 
@@ -2034,7 +2017,6 @@ int main(void)
             }
 
             if (motor_kv < 500) {
-
                 filter_level = filter_level * 2;
             }
 
@@ -2103,7 +2085,6 @@ int main(void)
 #else
 
             if (input > 48 && armed) {
-
                 if (input > 48 && input < 137) { // sine wave stepper
 
                     if (do_once_sinemode) {

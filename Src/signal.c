@@ -27,10 +27,8 @@ uint16_t last_input = 0;
 
 void computeMSInput()
 {
-
     int lastnumber = dma_buffer[0];
     for (int j = 1 ; j < 2; j++) {
-
         if (((dma_buffer[j] - lastnumber) < 1500) && ((dma_buffer[j] - lastnumber) > 0)) { // blank space
 
             newinput = map((dma_buffer[j] - lastnumber), 243, 1200, 0, 2000);
@@ -42,7 +40,6 @@ void computeMSInput()
 
 void computeServoInput()
 {
-
     if (((dma_buffer[1] - dma_buffer[0]) > 800) && ((dma_buffer[1] - dma_buffer[0]) < 2200)) {
         if (calibration_required) {
             if (!high_calibration_set) {
@@ -131,7 +128,6 @@ void computeServoInput()
     }
     else if ((newinput - servorawinput) > max_servo_deviation) {
         newinput -= max_servo_deviation;
-
     }
     else {
         newinput = servorawinput;
@@ -143,13 +139,10 @@ void transfercomplete()
 {
     if (armed && dshot_telemetry) {
         if (out_put) {
-
             receiveDshotDma();
-
             return;
         }
         else {
-
             sendDshotDma();
             make_dshot_package();
             computeDshotDMA();
@@ -197,7 +190,6 @@ void transfercomplete()
                 receiveDshotDma();
                 LL_DMA_EnableIT_HT(DMA1, INPUT_DMA_CHANNEL);
             }
-
         }
         if (!armed) {
             if (adjusted_input < 0) {
