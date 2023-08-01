@@ -9,21 +9,21 @@
 //
 //char dma_busy;
 //uint16_t led_Buffer[24] = {20,20,20,20,20,20,20,20,
-//		                  60,60,60,60,60,60,60,60,
-//		                  20,20,20,20,20,20,20,20};
+//                        60,60,60,60,60,60,60,60,
+//                        20,20,20,20,20,20,20,20};
 //
 //void send_LED_DMA(){
-//	dma_busy = 1;
-//	TIM16->CNT = 0;
-//	  LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_6, (uint32_t)&led_Buffer, (uint32_t)&TIM16->CCR1, LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_6));
-//	  LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, 24);
-//	  LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
-//	  LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_6);
-//			  LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
-//			  LL_TIM_EnableDMAReq_CC1(TIM16);
-//			  LL_TIM_CC_EnableChannel(TIM16, LL_TIM_CHANNEL_CH1);
-//			  LL_TIM_EnableAllOutputs(TIM16);
-//			  LL_TIM_EnableCounter(TIM16);
+//  dma_busy = 1;
+//  TIM16->CNT = 0;
+//    LL_DMA_ConfigAddresses(DMA1, LL_DMA_CHANNEL_6, (uint32_t)&led_Buffer, (uint32_t)&TIM16->CCR1, LL_DMA_GetDataTransferDirection(DMA1, LL_DMA_CHANNEL_6));
+//    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_6, 24);
+//    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_6);
+//    LL_DMA_EnableIT_TE(DMA1, LL_DMA_CHANNEL_6);
+//            LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_6);
+//            LL_TIM_EnableDMAReq_CC1(TIM16);
+//            LL_TIM_CC_EnableChannel(TIM16, LL_TIM_CHANNEL_CH1);
+//            LL_TIM_EnableAllOutputs(TIM16);
+//            LL_TIM_EnableCounter(TIM16);
 //}
 //
 //void send_LED_RGB(uint8_t red, uint8_t green, uint8_t blue){
@@ -32,7 +32,7 @@
 //
 //
 //for(int i = 0; i < 24 ; i ++){
-//	led_Buffer[i] = (((twenty_four_bit_color_number >> (23 - i))&1) * 40) + 20;
+//  led_Buffer[i] = (((twenty_four_bit_color_number >> (23 - i))&1) * 40) + 20;
 //}
 //
 //send_LED_DMA();
@@ -46,8 +46,8 @@
 //{
 //
 //  /* USER CODE BEGIN TIM16_Init 0 */
-//	 NVIC_SetPriority(DMA1_Ch4_7_DMAMUX1_OVR_IRQn, 3);
-//	 NVIC_EnableIRQ(DMA1_Ch4_7_DMAMUX1_OVR_IRQn);
+//   NVIC_SetPriority(DMA1_Ch4_7_DMAMUX1_OVR_IRQn, 3);
+//   NVIC_EnableIRQ(DMA1_Ch4_7_DMAMUX1_OVR_IRQn);
 //  /* USER CODE END TIM16_Init 0 */
 //
 //  LL_TIM_InitTypeDef TIM_InitStruct = {0};

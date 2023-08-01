@@ -10,7 +10,6 @@
 
 #include "main.h"
 
-
 void setChannels();
 
 #endif /* CRSF_H_ */
