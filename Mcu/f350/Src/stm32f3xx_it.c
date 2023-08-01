@@ -34,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
- 
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -74,19 +74,19 @@ extern char servoPwm;
 /* USER CODE END EV */
 
 /******************************************************************************/
-/*           Cortex-M0 Processor Interruption and Exception Handlers          */ 
+/*           Cortex-M0 Processor Interruption and Exception Handlers          */
 /******************************************************************************/
 /**
   * @brief This function handles Non maskable interrupt.
   */
 void NMI_Handler(void)
 {
-  /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
+    /* USER CODE BEGIN NonMaskableInt_IRQn 0 */
 
-  /* USER CODE END NonMaskableInt_IRQn 0 */
-  /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
+    /* USER CODE END NonMaskableInt_IRQn 0 */
+    /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
 
-  /* USER CODE END NonMaskableInt_IRQn 1 */
+    /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
 /**
@@ -94,14 +94,13 @@ void NMI_Handler(void)
   */
 void HardFault_Handler(void)
 {
-  /* USER CODE BEGIN HardFault_IRQn 0 */
+    /* USER CODE BEGIN HardFault_IRQn 0 */
 
-  /* USER CODE END HardFault_IRQn 0 */
-  while (1)
-  {
-    /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    /* USER CODE END W1_HardFault_IRQn 0 */
-  }
+    /* USER CODE END HardFault_IRQn 0 */
+    while (1) {
+        /* USER CODE BEGIN W1_HardFault_IRQn 0 */
+        /* USER CODE END W1_HardFault_IRQn 0 */
+    }
 }
 
 /**
@@ -109,12 +108,12 @@ void HardFault_Handler(void)
   */
 void SVC_Handler(void)
 {
-  /* USER CODE BEGIN SVC_IRQn 0 */
+    /* USER CODE BEGIN SVC_IRQn 0 */
 
-  /* USER CODE END SVC_IRQn 0 */
-  /* USER CODE BEGIN SVC_IRQn 1 */
+    /* USER CODE END SVC_IRQn 0 */
+    /* USER CODE BEGIN SVC_IRQn 1 */
 
-  /* USER CODE END SVC_IRQn 1 */
+    /* USER CODE END SVC_IRQn 1 */
 }
 
 /**
@@ -122,12 +121,12 @@ void SVC_Handler(void)
   */
 void PendSV_Handler(void)
 {
-  /* USER CODE BEGIN PendSV_IRQn 0 */
+    /* USER CODE BEGIN PendSV_IRQn 0 */
 
-  /* USER CODE END PendSV_IRQn 0 */
-  /* USER CODE BEGIN PendSV_IRQn 1 */
+    /* USER CODE END PendSV_IRQn 0 */
+    /* USER CODE BEGIN PendSV_IRQn 1 */
 
-  /* USER CODE END PendSV_IRQn 1 */
+    /* USER CODE END PendSV_IRQn 1 */
 }
 
 /**
@@ -135,13 +134,13 @@ void PendSV_Handler(void)
   */
 void SysTick_Handler(void)
 {
-  /* USER CODE BEGIN SysTick_IRQn 0 */
+    /* USER CODE BEGIN SysTick_IRQn 0 */
 
-  /* USER CODE END SysTick_IRQn 0 */
-  
-  /* USER CODE BEGIN SysTick_IRQn 1 */
+    /* USER CODE END SysTick_IRQn 0 */
 
-  /* USER CODE END SysTick_IRQn 1 */
+    /* USER CODE BEGIN SysTick_IRQn 1 */
+
+    /* USER CODE END SysTick_IRQn 1 */
 }
 
 /******************************************************************************/
@@ -156,32 +155,28 @@ void SysTick_Handler(void)
   */
 void DMA1_Channel2_3_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
-	  if(LL_DMA_IsActiveFlag_TC2(DMA1))
-	  {
-	//	telemetry_done = 1;
-		serial_transfer++;
-		send_telemetry = 0;
-	    LL_DMA_ClearFlag_GI2(DMA1);
-	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-	    /* Call function Transmission complete Callback */
+    /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
+    if (LL_DMA_IsActiveFlag_TC2(DMA1)) {
+        //  telemetry_done = 1;
+        serial_transfer++;
+        send_telemetry = 0;
+        LL_DMA_ClearFlag_GI2(DMA1);
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+        /* Call function Transmission complete Callback */
 
-	  }
-	  else if(LL_DMA_IsActiveFlag_TE2(DMA1))
-	  {
-		  LL_DMA_ClearFlag_GI2(DMA1);
-		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
-	    /* Call Error function */
-	   // USART_TransferError_Callback();
-	  }
+    }
+    else if (LL_DMA_IsActiveFlag_TE2(DMA1)) {
+        LL_DMA_ClearFlag_GI2(DMA1);
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_2);
+        /* Call Error function */
+        // USART_TransferError_Callback();
+    }
 
+    /* USER CODE END DMA1_Channel2_3_IRQn 0 */
 
+    /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
 
-  /* USER CODE END DMA1_Channel2_3_IRQn 0 */
-  
-  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
-
-  /* USER CODE END DMA1_Channel2_3_IRQn 1 */
+    /* USER CODE END DMA1_Channel2_3_IRQn 1 */
 }
 
 /**
@@ -189,85 +184,74 @@ void DMA1_Channel2_3_IRQHandler(void)
   */
 void DMA1_Channel4_5_IRQHandler(void)
 {
-  /* USER CODE BEGIN DMA1_Channel4_5_IRQn 0 */
+    /* USER CODE BEGIN DMA1_Channel4_5_IRQn 0 */
 #ifdef USE_TIMER_15_CHANNEL_1
-	if(LL_DMA_IsActiveFlag_HT5(DMA1)){
-		if(servoPwm){
-		LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
-		 LL_DMA_ClearFlag_HT5(DMA1);
-		}
-	}
-	  if(LL_DMA_IsActiveFlag_TC5(DMA1) == 1)
-	  {
+    if (LL_DMA_IsActiveFlag_HT5(DMA1)) {
+        if (servoPwm) {
+            LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
+            LL_DMA_ClearFlag_HT5(DMA1);
+        }
+    }
+    if (LL_DMA_IsActiveFlag_TC5(DMA1) == 1) {
 
-	    LL_DMA_ClearFlag_GI5(DMA1);
+        LL_DMA_ClearFlag_GI5(DMA1);
 
-	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_5);
 
-//	    TIM6->CNT = 0;
-//	    TIM17->CNT = 0;
-//	    TIM6->SR = 0x00;
-	    transfercomplete();
+        //      TIM6->CNT = 0;
+        //      TIM17->CNT = 0;
+        //      TIM6->SR = 0x00;
+        transfercomplete();
 
+    }
+    else if (LL_DMA_IsActiveFlag_TE5(DMA1) == 1) {
+        LL_DMA_ClearFlag_GI5(DMA1);
+    }
 
-
-	  }
-	  else if(LL_DMA_IsActiveFlag_TE5(DMA1) == 1)
-	  {
-		  LL_DMA_ClearFlag_GI5(DMA1);
-	  }
-
-//	  if(LL_DMA_IsActiveFlag_TC4(DMA1))
-//	  {
-//		serial_transfer++;
-//	    LL_DMA_ClearFlag_GI4(DMA1);
-//	    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-//	    /* Call function Transmission complete Callback */
-//
-//	  }
-//	  else if(LL_DMA_IsActiveFlag_TE4(DMA1))
-//	  {
-//		  LL_DMA_ClearFlag_GI4(DMA1);
-//		  LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
-//	    /* Call Error function */
-//	   // USART_TransferError_Callback();
-//	  }
-
-
-
-
+    //    if(LL_DMA_IsActiveFlag_TC4(DMA1))
+    //    {
+    //      serial_transfer++;
+    //      LL_DMA_ClearFlag_GI4(DMA1);
+    //      LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    //      /* Call function Transmission complete Callback */
+    //
+    //    }
+    //    else if(LL_DMA_IsActiveFlag_TE4(DMA1))
+    //    {
+    //        LL_DMA_ClearFlag_GI4(DMA1);
+    //        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+    //      /* Call Error function */
+    //     // USART_TransferError_Callback();
+    //    }
 
 #endif
 
+    /* USER CODE END DMA1_Channel4_5_IRQn 0 */
 
-  /* USER CODE END DMA1_Channel4_5_IRQn 0 */
-  
-  /* USER CODE BEGIN DMA1_Channel4_5_IRQn 1 */
+    /* USER CODE BEGIN DMA1_Channel4_5_IRQn 1 */
 #ifdef USE_TIMER_3_CHANNEL_1
-		if(LL_DMA_IsActiveFlag_HT4(DMA1)){
-			if(servoPwm){
-			LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
-			 LL_DMA_ClearFlag_HT4(DMA1);
-			}
-		}
-		  if(LL_DMA_IsActiveFlag_TC4(DMA1) == 1)
-		  {
-		    LL_DMA_ClearFlag_GI4(DMA1);
+    if (LL_DMA_IsActiveFlag_HT4(DMA1)) {
+        if (servoPwm) {
+            LL_TIM_IC_SetPolarity(IC_TIMER_REGISTER, IC_TIMER_CHANNEL, LL_TIM_IC_POLARITY_FALLING);
+            LL_DMA_ClearFlag_HT4(DMA1);
+        }
+    }
+    if (LL_DMA_IsActiveFlag_TC4(DMA1) == 1) {
+        LL_DMA_ClearFlag_GI4(DMA1);
 
-		    LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_4);
 
-//		    TIM6->CNT = 0;
-//		    TIM17->CNT = 0;
-//		    TIM6->SR = 0x00;
-		    transfercomplete();
+        //          TIM6->CNT = 0;
+        //          TIM17->CNT = 0;
+        //          TIM6->SR = 0x00;
+        transfercomplete();
 
-		  }
-		  else if(LL_DMA_IsActiveFlag_TE4(DMA1) == 1)
-		  {
-			  LL_DMA_ClearFlag_GI4(DMA1);
-		  }
+    }
+    else if (LL_DMA_IsActiveFlag_TE4(DMA1) == 1) {
+        LL_DMA_ClearFlag_GI4(DMA1);
+    }
 #endif
-  /* USER CODE END DMA1_Channel4_5_IRQn 1 */
+    /* USER CODE END DMA1_Channel4_5_IRQn 1 */
 }
 
 /**
@@ -275,21 +259,20 @@ void DMA1_Channel4_5_IRQHandler(void)
   */
 void ADC1_COMP_IRQHandler(void)
 {
-//	TIM17->CNT = 0;
-  /* USER CODE BEGIN ADC1_COMP_IRQn 0 */
-	  if(LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_21) != RESET)
-	  {
-	    /* Clear flag of EXTI */
-	    LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_21);
+    //  TIM17->CNT = 0;
+    /* USER CODE BEGIN ADC1_COMP_IRQn 0 */
+    if (LL_EXTI_IsActiveFlag_0_31(LL_EXTI_LINE_21) != RESET) {
+        /* Clear flag of EXTI */
+        LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_21);
 
-	    /* Call interruption treatment function */
-	    interruptRoutine();
-	  }
-  /* USER CODE END ADC1_COMP_IRQn 0 */
-	//  process_time = TIM17->CNT;
-  /* USER CODE BEGIN ADC1_COMP_IRQn 1 */
+        /* Call interruption treatment function */
+        interruptRoutine();
+    }
+    /* USER CODE END ADC1_COMP_IRQn 0 */
+    //  process_time = TIM17->CNT;
+    /* USER CODE BEGIN ADC1_COMP_IRQn 1 */
 
-  /* USER CODE END ADC1_COMP_IRQn 1 */
+    /* USER CODE END ADC1_COMP_IRQn 1 */
 }
 
 /**
@@ -298,21 +281,20 @@ void ADC1_COMP_IRQHandler(void)
 void TIM6_DAC_IRQHandler(void)
 {
 
-  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
-	//TIM6->DIER &= ~(0x1UL << (0U));
-	  if(LL_TIM_IsActiveFlag_UPDATE(TIM6) == 1)
-	  {
+    /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+    //TIM6->DIER &= ~(0x1UL << (0U));
+    if (LL_TIM_IsActiveFlag_UPDATE(TIM6) == 1) {
 
-	    LL_TIM_ClearFlag_UPDATE(TIM6);
-	    tenKhzRoutine();
+        LL_TIM_ClearFlag_UPDATE(TIM6);
+        tenKhzRoutine();
 
-	  }
+    }
 
-  /* USER CODE END TIM6_DAC_IRQn 0 */
-  
-  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+    /* USER CODE END TIM6_DAC_IRQn 0 */
 
-  /* USER CODE END TIM6_DAC_IRQn 1 */
+    /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+    /* USER CODE END TIM6_DAC_IRQn 1 */
 }
 
 /**
@@ -320,19 +302,19 @@ void TIM6_DAC_IRQHandler(void)
   */
 void TIM4_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM14_IRQn 0 */
-//	  if(LL_TIM_IsActiveFlag_UPDATE(TIM14) == 1)
-//	  {
-	LL_TIM_ClearFlag_UPDATE(TIM4);
+    /* USER CODE BEGIN TIM14_IRQn 0 */
+    //    if(LL_TIM_IsActiveFlag_UPDATE(TIM14) == 1)
+    //    {
+    LL_TIM_ClearFlag_UPDATE(TIM4);
 
-		PeriodElapsedCallback();
+    PeriodElapsedCallback();
 
-//	  }
+    //    }
 
-  /* USER CODE END TIM14_IRQn 0 */
-  /* USER CODE BEGIN TIM14_IRQn 1 */
+    /* USER CODE END TIM14_IRQn 0 */
+    /* USER CODE BEGIN TIM14_IRQn 1 */
 
-  /* USER CODE END TIM14_IRQn 1 */
+    /* USER CODE END TIM14_IRQn 1 */
 }
 
 /**
@@ -340,12 +322,12 @@ void TIM4_IRQHandler(void)
   */
 void TIM1_UP_TIM16_IRQHandler(void)
 {
-  /* USER CODE BEGIN TIM16_IRQn 0 */
+    /* USER CODE BEGIN TIM16_IRQn 0 */
 
-  /* USER CODE END TIM16_IRQn 0 */
-  /* USER CODE BEGIN TIM16_IRQn 1 */
+    /* USER CODE END TIM16_IRQn 0 */
+    /* USER CODE BEGIN TIM16_IRQn 1 */
 
-  /* USER CODE END TIM16_IRQn 1 */
+    /* USER CODE END TIM16_IRQn 1 */
 }
 
 /**
@@ -353,76 +335,68 @@ void TIM1_UP_TIM16_IRQHandler(void)
   */
 void USART1_IRQHandler(void)
 {
-  /* USER CODE BEGIN USART1_IRQn 0 */
+    /* USER CODE BEGIN USART1_IRQn 0 */
 
+    /* USER CODE END USART1_IRQn 0 */
+    /* USER CODE BEGIN USART1_IRQn 1 */
 
-
-  /* USER CODE END USART1_IRQn 0 */
-  /* USER CODE BEGIN USART1_IRQn 1 */
-
-  /* USER CODE END USART1_IRQn 1 */
+    /* USER CODE END USART1_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */
 void TIM15_IRQHandler(void)
 {
-	  if(LL_TIM_IsActiveFlag_CC1(TIM15) == 1)
-	  {
+    if (LL_TIM_IsActiveFlag_CC1(TIM15) == 1) {
 
-	    LL_TIM_ClearFlag_CC1(TIM15);
-	  }
+        LL_TIM_ClearFlag_CC1(TIM15);
+    }
 
-	  if(LL_TIM_IsActiveFlag_UPDATE(TIM15) == 1)
-	  {
-		  LL_TIM_ClearFlag_UPDATE(TIM15);
-		 // update_interupt++;
+    if (LL_TIM_IsActiveFlag_UPDATE(TIM15) == 1) {
+        LL_TIM_ClearFlag_UPDATE(TIM15);
+        // update_interupt++;
 
-	  }
+    }
 }
 
 void TIM3_IRQHandler(void)
 {
-	LL_TIM_ClearFlag_UPDATE(TIM3);
+    LL_TIM_ClearFlag_UPDATE(TIM3);
 
-		PeriodElapsedCallback();
+    PeriodElapsedCallback();
 }
 
 void DMA1_Channel1_IRQHandler(void)         // ADC
 {
-	  if(LL_DMA_IsActiveFlag_TC1(DMA1) == 1)
-	  {
-	    /* Clear flag DMA global interrupt */
-	    /* (global interrupt flag: half transfer and transfer complete flags) */
-	    LL_DMA_ClearFlag_GI1(DMA1);
-	    ADC_DMA_Callback();
-	    /* Call interruption treatment function */
-	 //   AdcDmaTransferComplete_Callback();
-	  }
+    if (LL_DMA_IsActiveFlag_TC1(DMA1) == 1) {
+        /* Clear flag DMA global interrupt */
+        /* (global interrupt flag: half transfer and transfer complete flags) */
+        LL_DMA_ClearFlag_GI1(DMA1);
+        ADC_DMA_Callback();
+        /* Call interruption treatment function */
+        //   AdcDmaTransferComplete_Callback();
+    }
 
-	  /* Check whether DMA transfer error caused the DMA interruption */
-	  if(LL_DMA_IsActiveFlag_TE1(DMA1) == 1)
-	  {
-	    /* Clear flag DMA transfer error */
-	    LL_DMA_ClearFlag_TE1(DMA1);
+    /* Check whether DMA transfer error caused the DMA interruption */
+    if (LL_DMA_IsActiveFlag_TE1(DMA1) == 1) {
+        /* Clear flag DMA transfer error */
+        LL_DMA_ClearFlag_TE1(DMA1);
 
-	    /* Call interruption treatment function */
-	  }
+        /* Call interruption treatment function */
+    }
 }
 
 void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 {
-	  if(LL_TIM_IsActiveFlag_CC1(TIM1) == 1)
-	  {
+    if (LL_TIM_IsActiveFlag_CC1(TIM1) == 1) {
 
-	    LL_TIM_ClearFlag_CC1(TIM1);
-	  }
+        LL_TIM_ClearFlag_CC1(TIM1);
+    }
 
-	  if(LL_TIM_IsActiveFlag_UPDATE(TIM1) == 1)
-	  {
-		  LL_TIM_ClearFlag_UPDATE(TIM1);
-		//  doPWMChanges();
+    if (LL_TIM_IsActiveFlag_UPDATE(TIM1) == 1) {
+        LL_TIM_ClearFlag_UPDATE(TIM1);
+        //  doPWMChanges();
 
-	  }
+    }
 }
 
 /* USER CODE END 1 */

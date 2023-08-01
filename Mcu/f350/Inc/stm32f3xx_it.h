@@ -23,7 +23,7 @@
 #define __STM32F3xx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Private includes ----------------------------------------------------------*/

@@ -23,8 +23,8 @@
 #define __STM32F0xx_IT_H
 
 #ifdef __cplusplus
- extern "C" {
-#endif 
+extern "C" {
+#endif
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -58,7 +58,6 @@ void TIM2_IRQHandler(void);
 void TIM14_IRQHandler(void);
 void TIM16_IRQHandler(void);
 /* USER CODE BEGIN EFP */
-
 
 void TIM2_IRQHandler(void);
 void EXTI0_1_IRQHandler(void);
