@@ -1,1 +1,0 @@
-"C:\ProgramFiles\astyle-3.4-x64\astyle.exe" --options=_astylerc --recursive ./Src/*.c ./Inc/*.h ./Mcu/f051/Src/*.c ./Mcu/f051/Inc/*.h ./Mcu/f350/Src/*.c ./Mcu/f350/Inc/*.h ./Mcu/g071/Src/*.c ./Mcu/g071/Inc/*.h ./Mcu/l431/Src/*.c ./Mcu/l431/Inc/*.h ./Mcu/f031/Src/*.c ./Mcu/f031/Inc/*.h 
