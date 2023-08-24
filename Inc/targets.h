@@ -273,7 +273,7 @@
 #define CURRENT_OFFSET          0
 #define TARGET_VOLTAGE_DIVIDER  210
 #define USE_SERIAL_TELEMETRY
-#define USE_RGB_LED
+//#define USE_RGB_LED
 #endif
 
 #ifdef  AM32REF_F051
