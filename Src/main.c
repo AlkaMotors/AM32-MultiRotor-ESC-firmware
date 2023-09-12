@@ -216,7 +216,7 @@ uint32_t MINIMUM_RPM_SPEED_CONTROL = 1000;
 		.derivative = 0,
 		.last_error = 0,
  		.integral_limit = 25500000, //10000,
- 		.output_limit = 20470000 //50000
+ 		.output_limit = 2047 //50000
  };
 
  fastPID currentPid = {   // 1khz loop time
@@ -592,6 +592,33 @@ int32_t doPidCalculations(struct fastPID *pidnow, int actual, int target){
 
 }
 
+int32_t doPidCalculations2(struct fastPID *pidnow, int actual, int target){
+
+	pidnow->error = target - actual;
+	pidnow->integral += pidnow->error;
+	if(pidnow->integral > pidnow->integral_limit){
+		pidnow->integral = pidnow->integral_limit;
+	}
+	if(pidnow->integral < -pidnow->integral_limit){
+		pidnow->integral = -pidnow->integral_limit;
+	}
+
+	pidnow->derivative = (pidnow->error - pidnow->last_error); // *10000
+	pidnow->last_error = pidnow->error;
+
+	pidnow->pid_output = ((int32_t)(pidnow->error*pidnow->Kp))/(int32_t)100
+                       + (int32_t)(pidnow->Ki * pidnow->integral) / (int32_t)10000
+	                     + ((int32_t)(pidnow->Kd*pidnow->derivative));
+
+
+	if (pidnow->pid_output > pidnow->output_limit){
+		pidnow->pid_output = pidnow->output_limit;
+	}else if(pidnow->pid_output < -pidnow->output_limit){
+		pidnow->pid_output = -pidnow->output_limit;
+	}
+	return pidnow->pid_output;
+
+}
 
 void loadEEpromSettings(){
 	   read_flash_bin( eepromBuffer , EEPROM_START_ADD , 183);
@@ -789,8 +816,8 @@ void loadEEpromSettings(){
    }else{
      drive_by_rpm = 1;
 
-     MINIMUM_RPM_SPEED_CONTROL=eepromBuffer[49]*1000;
-     MAXIMUM_RPM_SPEED_CONTROL=eepromBuffer[50]*1000;
+     MINIMUM_RPM_SPEED_CONTROL=eepromBuffer[49]*200;
+     MAXIMUM_RPM_SPEED_CONTROL=eepromBuffer[50]*200;
 
      speedPid.Kp = eepromBuffer[51];
      speedPid.Ki = eepromBuffer[52];
@@ -928,7 +955,9 @@ if(average_interval > 2000 && (stall_protection || RC_CAR_REVERSE)){
 
 	  uint32_t rpm = 60000000 / (e_com_time * (motor_poles>>1));
 	  
-	  input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
+	  //input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) - doPidCalculations(&speedPid, rpm, target_rpm)/10000;
+	  
+	  input_override = (target_rpm*2047)/(motor_kv*battery_voltage/100) + (float) doPidCalculations2(&speedPid, rpm, target_rpm);
 
 	  if(input_override > 2047){
 		  input_override = 2047;
