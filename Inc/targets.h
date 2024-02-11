@@ -12,11 +12,12 @@
 //#define HGLRC_F051
 //#define SISKIN_F051
 //#define MAMBA_F60PRO_F051
+#define MTCU_BLDC_MODULE
 //#define WRAITH32V2_F051
 //#define AIKON20X20_F051
 //#define AIKONSINGLE_F051
 //#define FLYCOLOR_F051
-#define AM32REF_F051
+//#define AM32REF_F051
 //#define BLPWR_F051
 //#define HVFLYCOLOR_F051
 //#define FLASHHOBBY_F051
@@ -165,6 +166,22 @@
 #define DEAD_TIME               20
 #define HARDWARE_GROUP_F0_F
 #define USE_SERIAL_TELEMETRY
+#endif
+
+#ifdef  MTCU_BLDC_MODULE
+#define FILE_NAME				"MTCU_BLDC_MODULE"
+#define FIRMWARE_NAME           "MTCU BLDC Module"
+#define DEAD_TIME               45
+#define MILLIVOLT_PER_AMP       50
+#define CURRENT_OFFSET          0
+#define TARGET_VOLTAGE_DIVIDER  55
+#define HARDWARE_GROUP_F0_A
+#define USE_MTCU_INPUT
+//#define USE_SERIAL_TELEMETRY
+#define VOLTAGE_ADC_PIN        LL_GPIO_PIN_7
+#define VOLTAGE_ADC_CHANNEL    LL_ADC_CHANNEL_7
+#define CURRENT_ADC_PIN        LL_GPIO_PIN_5
+#define CURRENT_ADC_CHANNEL    LL_ADC_CHANNEL_5
 #endif
 
 #ifdef WRAITH32V1_F051
