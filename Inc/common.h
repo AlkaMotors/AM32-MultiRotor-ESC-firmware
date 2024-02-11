@@ -3,6 +3,7 @@ extern char armed;
 extern uint8_t eepromBuffer[176];
 extern uint16_t TIMER1_MAX_ARR;
 extern uint8_t crsf_buffer[100];
+extern uint8_t mtcu_buffer[100];
 extern uint8_t crsf_input_channel;
 extern uint32_t gcr[37];
 extern uint8_t buffer_padding;
