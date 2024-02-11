@@ -196,7 +196,10 @@
 
 #ifdef USE_CRSF_INPUT
 #include "crsf.h"
+#endif
 
+#ifdef USE_MTCU_INPUT
+#include "mtcu.h"
 #endif
 
 #define VERSION_MAJOR 2
@@ -217,15 +220,15 @@
 //=============================  Defaults =============================
 //===========================================================================
 
-uint8_t drive_by_rpm = 0;
-uint32_t MAXIMUM_RPM_SPEED_CONTROL = 5000;
-uint32_t MINIMUM_RPM_SPEED_CONTROL = 500;
+uint8_t drive_by_rpm = 1;
+uint32_t MAXIMUM_RPM_SPEED_CONTROL = 10800;
+uint32_t MINIMUM_RPM_SPEED_CONTROL = 100;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
- 		.Kp = 10,
+ 		.Kp = 3,
  		.Ki = 0,
- 		.Kd = 100,
+ 		.Kd = 0,
  		.integral_limit = 10000,
  		.output_limit = 50000
  };
@@ -263,23 +266,23 @@ char eeprom_layout_version = 2;
 char dir_reversed = 0;
 char comp_pwm = 1;
 char VARIABLE_PWM = 1;
-char bi_direction = 0;
-char stuck_rotor_protection = 1;	// Turn off for Crawlers
-char brake_on_stop = 0;
+char bi_direction = 1;
+char stuck_rotor_protection = 0;	// Turn off for Crawlers
+char brake_on_stop = 1;
 char stall_protection = 0;
-char use_sin_start = 0;
+char use_sin_start = 1;
 char TLM_ON_INTERVAL = 0;
 uint8_t telemetry_interval_ms = 30;
 uint8_t TEMPERATURE_LIMIT = 255;  // degrees 255 to disable
 char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
-uint16_t motor_kv = 2000;
+uint16_t motor_kv = 1260;
 char motor_poles = 14;
 uint16_t CURRENT_LIMIT = 202;
-uint8_t sine_mode_power = 5;
+uint8_t sine_mode_power = 10;
 char drag_brake_strength = 10;		// Drag Brake Power when brake on stop is enabled
 uint8_t driving_brake_strength = 10;
 uint8_t dead_time_override = DEAD_TIME;
-char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
+char sine_mode_changeover_thottle_level = 10;	// Sine Startup Range
 uint16_t stall_protect_target_interval = TARGET_STALL_PROTECTION_INTERVAL;
 char USE_HALL_SENSOR = 0;
 uint16_t enter_sine_angle = 180;
@@ -1895,52 +1898,99 @@ if(newinput > 2000){
 #endif
 	 	  }else{
 #ifdef FIXED_DUTY_MODE
-  			input = FIXED_DUTY_MODE_POWER * 20 + 47;
+			input = FIXED_DUTY_MODE_POWER * 20 + 47;
 #else
-	  	  	if(use_sin_start){
-  				if(adjusted_input < 30){           // dead band ?
-  					input= 0;
-  					}
+			if (use_sin_start && !use_speed_control_loop)
+			{
+				if (adjusted_input < 30)
+				{ // dead band ?
+					input = 0;
+				}
 
-  					if(adjusted_input > 30 && adjusted_input < (sine_mode_changeover_thottle_level * 20)){
-  					input= map(adjusted_input, 30 , (sine_mode_changeover_thottle_level * 20) , 47 ,160);
-  					}
-  					if(adjusted_input >= (sine_mode_changeover_thottle_level * 20)){
-  					input = map(adjusted_input , (sine_mode_changeover_thottle_level * 20) ,2047 , 160, 2047);
-  					}
-  				}else{
-  					if(use_speed_control_loop){
-  					  if (drive_by_rpm){
- 						target_e_com_time = 60000000 / map(adjusted_input , 47 ,2047 , MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL) / (motor_poles/2);
-  		  				if(adjusted_input < 47){           // dead band ?
-  		  					input= 0;
-  		  					speedPid.error = 0;
-  		  				    input_override = 0;
-  		  				}else{
-  	  						input = (uint16_t)input_override;  // speed control pid override
-  	  						if(input_override > 2047){
-  	  							input = 2047;
-  	  						}
-  	  						if(input_override < 48){
-  	  							input = 48;
-  	  						}
-  		  				}
-					    }else{
+				if (adjusted_input > 30 && adjusted_input < (sine_mode_changeover_thottle_level * 20))
+				{
+					input = map(adjusted_input, 30, (sine_mode_changeover_thottle_level * 20), 47, 160);
+				}
+				if (adjusted_input >= (sine_mode_changeover_thottle_level * 20))
+				{
+					input = map(adjusted_input, (sine_mode_changeover_thottle_level * 20), 2047, 160, 2047);
+				}
+			}
+			else
+			{
+				if (use_speed_control_loop)
+				{
+					if (drive_by_rpm && use_sin_start)
+					{
+						target_e_com_time = 60000000 / map(adjusted_input, 160, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL) / (motor_poles / 2);
+						
+						if (adjusted_input < 30)
+						{ // dead band ?
+							input = 0;
+							speedPid.error = 0;
+							input_override = 0;
+						}
+						if (adjusted_input >= 30 && adjusted_input < (sine_mode_changeover_thottle_level * 20))
+						{
+							input = map(adjusted_input, 30, (sine_mode_changeover_thottle_level * 20), 47, 160);
+							input_override = input;
+						}
+						else
+						{
+							input = (uint16_t)input_override; // speed control pid override
+							if (input_override > 2047)
+							{
+								input = 2047;
+							}
+							if (input_override < 48)
+							{
+								input = 48;
+							}
+						}
+					}
+					else if (drive_by_rpm)
+					{
+						target_e_com_time = 60000000 / map(adjusted_input, 47, 2047, MINIMUM_RPM_SPEED_CONTROL, MAXIMUM_RPM_SPEED_CONTROL) / (motor_poles / 2);
+						
+						if (adjusted_input < 47)
+						{ // dead band ?
+							input = 0;
+							speedPid.error = 0;
+							input_override = 0;
+						}
+						else
+						{
+							input = (uint16_t)input_override; // speed control pid override
+							if (input_override > 2047)
+							{
+								input = 2047;
+							}
+							if (input_override < 48)
+							{
+								input = 48;
+							}
+						}
+					}
+					else
+					{
 
-  						input = (uint16_t)input_override;  // speed control pid override
-  						if(input_override > 2047){
-  							input = 2047;
-  						}
-  						if(input_override < 48){
-  							input = 48;
-  						}
-					    }
-  					}else{
+						input = (uint16_t)input_override; // speed control pid override
+						if (input_override > 2047)
+						{
+							input = 2047;
+						}
+						if (input_override < 48)
+						{
+							input = 48;
+						}
+					}
+				}
+				else
+				{
 
-  						input = adjusted_input;
-
-  					}
-  				}
+					input = adjusted_input;
+				}
+			}
 #endif
 	 	  }
 		  if ( stepper_sine == 0){
