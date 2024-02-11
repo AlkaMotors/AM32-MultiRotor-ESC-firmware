@@ -65,17 +65,17 @@ if (ReadData(&Sentence))
 // -------------------------------------------------------------------------------------------------------------------------------------------------->
 // SERIAL COMMANDS - Check the serial port, do whatever we're told
 // -------------------------------------------------------------------------------------------------------------------------------------------------->
-bool ReadData(DataSentence *sentence)
+uint8_t ReadData(DataSentence *sentence)
 {
   //byte ByteIn;
-  bool addressReceived = false; // Have we received a byte that matches our address
+  uint8_t addressReceived = 0; // Have we received a byte that matches our address
   //bool longAddressReceived = false;
   static char input_line[SENTENCE_BYTES];
   //static char input_line_long[LONG_SENTENCE_BYTES];
   static uint8_t numBytes = 0; // Start off with no data received
   //static uint8_t longNumBytes = 0;
 
-  bool SentenceReceived = false; // Start off false, will get set to true if a valid sentence was received
+  uint8_t SentenceReceived = 0; // Start off false, will get set to true if a valid sentence was received
 
   // Read all the bytes that are available, starting with the first byte that matches our address
  /* while (Serial1.available())
@@ -132,12 +132,12 @@ bool ReadData(DataSentence *sentence)
     // Now verify the checksum
     if (ChecksumValid(sentence))
     {
-      SentenceReceived = true; // Yes, a valid sentence has been received!
+      SentenceReceived = 1; // Yes, a valid sentence has been received!
     }
 
     // Start everything over
     input_line[0] = '\0';
-    addressReceived = false;
+    addressReceived = 0;
     numBytes = 0;
   }
   /*if (longNumBytes >= LONG_SENTENCE_BYTES)
@@ -164,17 +164,17 @@ bool ReadData(DataSentence *sentence)
   return SentenceReceived;
 }
 
-bool ChecksumValid(DataSentence *sentence)
+uint8_t ChecksumValid(DataSentence *sentence)
 {
   uint8_t check = (sentence->Address + sentence->Command + sentence->Value) & B01111111;
 
   if (check == sentence->Checksum)
-    return true;
+    return 1;
   else
-    return false;
+    return 0;
 }
 
-bool longChecksumValid(DataSentence *sentence)
+/*bool longChecksumValid(DataSentence *sentence)
 {
   uint8_t check = (sentence->Address + sentence->Command + sentence->Value + sentence->Modifier) & B01111111;
 
@@ -182,7 +182,7 @@ bool longChecksumValid(DataSentence *sentence)
     return true;
   else
     return false;
-}
+}*/
 
 void ProcessCommand(DataSentence *sentence)
 {
