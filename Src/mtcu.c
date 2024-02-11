@@ -78,7 +78,7 @@ uint8_t ReadData(DataSentence *sentence)
   uint8_t SentenceReceived = 0; // Start off false, will get set to true if a valid sentence was received
 
   // Read all the bytes that are available, starting with the first byte that matches our address
- /* while (Serial1.available())
+  while (Serial1.available())
   {
     ByteIn = Serial1.read();
 #ifdef debug
@@ -140,7 +140,7 @@ uint8_t ReadData(DataSentence *sentence)
     addressReceived = 0;
     numBytes = 0;
   }
-  /*if (longNumBytes >= LONG_SENTENCE_BYTES)
+  if (longNumBytes >= LONG_SENTENCE_BYTES)
     //if (input_line_long[0] == 0xDA)
     { // We have enough bytes for a full sentence
     //Serial1.println("L");
@@ -174,7 +174,7 @@ uint8_t ChecksumValid(DataSentence *sentence)
     return 0;
 }
 
-/*bool longChecksumValid(DataSentence *sentence)
+bool longChecksumValid(DataSentence *sentence)
 {
   uint8_t check = (sentence->Address + sentence->Command + mtcu_buffer[2] + sentence->Modifier) & B01111111;
 
@@ -203,7 +203,7 @@ void setChannelsMTCU()
             input_line[i] = mtcu_buffer[i];
         }*/
     }
-    uint8_t val;
+    //uint8_t val;
     /*Serial1.print(sentence->Address);
       Serial1.print(" ");
       Serial1.print(sentence->Command);
