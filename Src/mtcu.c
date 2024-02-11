@@ -12,21 +12,21 @@
 #include "functions.h"
 #include "signal.h"
 
-uint8_t mtcu_buffer[100] ={0};
-struct DataSentence
+uint8_t mtcu_buffer[100] = {0};
+/*struct DataSentence
 {                      // Serial commands should have five bytes (plus termination).
   uint8_t Address = 0; // We use a struct for convenience
   uint8_t Command = 0;
   uint8_t Value = 0;
   uint8_t Modifier = 0; // Unlike the Sabertooth and Scout protocols, the sentence for the sound card includes an extra byte we call Modifier.
   uint8_t Checksum = 0;
-};
-//uint16_t crsf_channels[16] = {0};
-//uint32_t invalid_crc = 0;
-static DataSentence Sentence; // A struct to store incoming commands
-#define AddressA 131 // Device has two possible addresses, set by dipswitch
-#define AddressB 132 // These are within the range of addresses also used by Dimension Engineering Sabertooth devices (128-135)
-uint8_t MyAddress = AddressA;   // Address of device. Set by dipswitch.
+};*/
+// uint16_t crsf_channels[16] = {0};
+// uint32_t invalid_crc = 0;
+//static DataSentence Sentence; // A struct to store incoming commands
+#define AddressA 131          // Device has two possible addresses, set by dipswitch
+#define AddressB 132          // These are within the range of addresses also used by Dimension Engineering Sabertooth devices (128-135)
+uint8_t MyAddress = AddressA; // Address of device. Set by dipswitch.
 
 /*
 uint8_t crsf_crc8(const uint8_t *ptr, uint8_t len){
@@ -55,7 +55,7 @@ for (uint8_t i = 0; i < len; i++)
 }
 return crc;
 }*/
-if (ReadData(&Sentence))
+/*if (ReadData(&Sentence))
 {
     ProcessCommand(&Sentence); // Do whatever we're told
     //TimeLastSerial = millis(); // Save the time
@@ -107,17 +107,17 @@ uint8_t ReadData(DataSentence *sentence)
        input_line_long[longNumBytes++] = ByteIn;
        if (longNumBytes >= LONG_SENTENCE_BYTES) break;  // We have enough bytes for a full sentence, so evaluate it
       }
-  }*/
+  }
   if (mtcu_buffer[0] == MyAddress)
   {
     numBytes = 1;
     for(int i = 0; i<= SENTENCE_BYTES;i++)
     {
         numBytes++;
-        input_line[i] = mtcu_buffer[i];  
+        input_line[i] = mtcu_buffer[i];
     }
   }
-  
+
 
   // If we have enough bytes for a full sentence, save it
   if (numBytes >= SENTENCE_BYTES)
@@ -126,7 +126,7 @@ uint8_t ReadData(DataSentence *sentence)
     // Serial1.println("S");
     sentence->Address = input_line[0];
     sentence->Command = input_line[1];
-    sentence->Value = input_line[2];
+    mtcu_buffer[2] = input_line[2];
     sentence->Checksum = input_line[3];
 
     // Now verify the checksum
@@ -146,7 +146,7 @@ uint8_t ReadData(DataSentence *sentence)
     //Serial1.println("L");
     sentence->Address  = input_line_long[0];
     sentence->Command  = input_line_long[1];
-    sentence->Value    = input_line_long[2];
+    mtcu_buffer[2]    = input_line_long[2];
     sentence->Modifier = input_line_long[3];
     sentence->Checksum = input_line_long[4];
 
@@ -160,13 +160,13 @@ uint8_t ReadData(DataSentence *sentence)
     input_line_long[0] = '\0';
     longAddressReceived = false;
     longNumBytes = 0;
-    }*/
+    }
   return SentenceReceived;
 }
 
 uint8_t ChecksumValid(DataSentence *sentence)
 {
-  uint8_t check = (sentence->Address + sentence->Command + sentence->Value) & B01111111;
+  uint8_t check = (sentence->Address + sentence->Command + mtcu_buffer[2]) & B01111111;
 
   if (check == sentence->Checksum)
     return 1;
@@ -176,312 +176,331 @@ uint8_t ChecksumValid(DataSentence *sentence)
 
 /*bool longChecksumValid(DataSentence *sentence)
 {
-  uint8_t check = (sentence->Address + sentence->Command + sentence->Value + sentence->Modifier) & B01111111;
+  uint8_t check = (sentence->Address + sentence->Command + mtcu_buffer[2] + sentence->Modifier) & B01111111;
 
   if (check == sentence->Checksum)
     return true;
   else
     return false;
-}*/
+}
 
 void ProcessCommand(DataSentence *sentence)
 {
-
-  uint8_t val;
-  /*Serial1.print(sentence->Address);
-    Serial1.print(" ");
-    Serial1.print(sentence->Command);
-    Serial1.print(" ");
-    Serial1.print(sentence->Value);
-    Serial1.print(" ");
-    Serial1.println(sentence->Modifier);*/
-  // Serial1.println(val);
-  //  Address bytes have values greater than 127
-  switch (sentence->Command)
-  {
-  case 0:
-    // Motor 1 Forward
-    newinput = map(sentence->Value, 0, 127, 1000, 2000);
-    //setSpeed(1, getSpeedCommand_fromSerial(sentence->Value));
-    break;
-
-  case 1:
-    // Motor 1 Reverse
-    newinput = map(sentence->Value, 0, 127, 1000, 0);
-    //setSpeed(1, -getSpeedCommand_fromSerial(sentence->Value));
-    break;
-
-  case 2:
-    // Set minimum voltage
-    // Used to set a custom minimum voltage for the battery supplying power (essentially LVC level). If battery voltage drops below this value,
-    // motors will be turned off. This value is cleared at startup, so must be set each run. The value is sent in .2 volt
-    // increments with a command of zero corresponding to 6v, which is the minimum. Valid data is from 0 to 50 (6-16 volts).
-    // The function for converting volts to command data is Value = (desired volts-6) x 5
-
-    // If valid value sent, update MinVoltage
-    if (sentence->Value <= 50)
+*/
+void setChannelsMTCU()
+{
+    uint8_t validData = 0;
+    if (mtcu_buffer[0] == MyAddress)
     {
-      // MinVoltage = 6.0 + ((float)sentence->Value * 0.2);
-    }
-    break;
-
-  case 3:
-    // If voltage exceeds the value set here, the motors will be turned off, however the valute set here can also not exceed AbsMaxVoltage which is
-    // determined by the hardware on the board. MaxVoltage is cleared at startup (and set to default of AbsMaxVoltage) so must be re-set by serial
-    // at each boot. The value is sent in 0.2 volt increments with valid values being:
-    // 30 to 140 (6 volts to 28 volts)
-    // However again this is subject to AbsMaxVoltage which for all curent board revisios is actually capped at 16 volts.
-    // The function for converting volts to command data is Value = (desired volts / 0.2)
-
-    // If valid value is sent, update MaxVoltage
-    /*val = sentence->Value;
-      if (val >= 30 && val <= 140)        // Allowable range
-      {
-        if (val <= (AbsMaxVoltage * 5)) // But constrain also to our board-specific AbsMaxVoltage
+        uint8_t check = (mtcu_buffer[0] + mtcu_buffer[1] + mtcu_buffer[2]) & 0x7F;
+        if (mtcu_buffer[3] == check)
         {
-            MaxVoltage = ((float)val * 0.2);
+            validData = 1;
         }
-      }*/
-    break;
+        /*for(int i = 0; i<= SENTENCE_BYTES;i++)
 
-  case 4:
-    // Motor 2 Forward
-    //setSpeed(2, getSpeedCommand_fromSerial(sentence->Value));
-    break;
-
-  case 5:
-    // Motor 2 Reverse
-    //setSpeed(2, -getSpeedCommand_fromSerial(sentence->Value));
-    break;
-
-    // cases  6-13 reserved for future compatibility with the equivalent Sabertooth commands
-
-  case 14:
-    // Serial1 Watchdog (disabled by default on each boot)
-    // Values greater than 0 will enabled the watchdog. The value specifies what length of time the controller will wait for a new serial command, after which if it does not receive one it will
-    // stop the motors as a safety precaution. This can help guard against for example the communication cable becoming disconnected.
-    // The the value passed is 0 it will disable the watchdog, however the feature is disabled by default on each restart so you don't need to do anything if you don't want it.
-    // Note also the serial watchdog has no effect when the Scout is running in RC mode.
-
-    if (sentence->Value == 0)
-    {
-      //SerialWatchdog = false;
+        {
+            input_line[i] = mtcu_buffer[i];
+        }*/
     }
-    else
+    uint8_t val;
+    /*Serial1.print(sentence->Address);
+      Serial1.print(" ");
+      Serial1.print(sentence->Command);
+      Serial1.print(" ");
+      Serial1.print(mtcu_buffer[2]);
+      Serial1.print(" ");
+      Serial1.println(sentence->Modifier);*/
+    // Serial1.println(val);
+    //  Address bytes have values greater than 127
+    if (validData == 1)
     {
-      // The length of time for the watchdog to wait is set in 100mS increments, so for example a value of 10 would equate to a watchdog timeout of 1000mS (1 second).
-      // Valid data is a number from 0 to 255 which corresponds to watchdog timeouts of 100ms (1/10 second) to 25500mS (25.5 seconds)
-      // The function for converting watchdog time to command data is Value = desired time in mS / 100
-      //SerialWatchdogTimeout_mS = sentence->Value * 100;
-      //SerialWatchdog = true;
-    }
-    break;
+        switch (mtcu_buffer[1])
+        {
+        case 0:
+            // Motor 1 Forward
+            newinput = map(mtcu_buffer[2], 0, 127, 1000, 2000);
+            // setSpeed(1, getSpeedCommand_fromSerial(mtcu_buffer[2]));
+            break;
 
-  case 15:
-    // Change baud rate. If valid value passed, re-start the hardware serial port at the selected baud rate
-    // Serial1.println(6);
-    /*Serial1.end();
-    delay(1);
-    switch (sentence->Value)
-    {
-    case BAUD_CODE_2400:
-      Serial1.begin(2400);
-      break;
-    case BAUD_CODE_9600:
-      Serial1.begin(9600);
-      break;
-    case BAUD_CODE_19200:
-      Serial1.begin(19200);
-      break;
-    case BAUD_CODE_38400:
-      Serial1.begin(38400);
-      break;
-    case BAUD_CODE_115200:
-      Serial1.begin(115200);
-      break;
-    case BAUD_CODE_57600:
-      Serial1.begin(57600);
-      break;
-    }*/
-    break;
+        case 1:
+            // Motor 1 Reverse
+            newinput = map(mtcu_buffer[2], 0, 127, 1000, 0);
+            // setSpeed(1, -getSpeedCommand_fromSerial(mtcu_buffer[2]));
+            break;
 
-  // cases 16-17 reserved for future compatibility with Sabertooth commands (ramping and deadband)
-  // case  19 presently un-assigned
-  case 19:
-    // Throttle position
-    if (sentence->Value)
-    {
-      //Throttle = sentence->Value;
-    }
-    break;
-  case 20:
-    // Direct fan control
-    // Set fan speed to value 0-255
-    /*setFanSpeed(sentence->Value);
-      // If user sets a fan speed, we switch to ManualFanControl. They can revert to automatic control by issuing command 21
-      ManualFanControl = true;*/
-    break;
+        case 2:
+            // Set minimum voltage
+            // Used to set a custom minimum voltage for the battery supplying power (essentially LVC level). If battery voltage drops below this value,
+            // motors will be turned off. This value is cleared at startup, so must be set each run. The value is sent in .2 volt
+            // increments with a command of zero corresponding to 6v, which is the minimum. Valid data is from 0 to 50 (6-16 volts).
+            // The function for converting volts to command data is Value = (desired volts-6) x 5
 
-  case 21:
-    // Set fan control to "Automatic"
-    // Fan control is automatic by default, so this command doesn't need to be issued unless the user initiated manual fan control (command 20) and now wants to revert to automatic.
-    // Value is ignored.
-    // ManualFanControl = false;
-    break;
+            // If valid value sent, update MinVoltage
+            if (mtcu_buffer[2] <= 50)
+            {
+                // MinVoltage = 6.0 + ((float)mtcu_buffer[2] * 0.2);
+            }
+            break;
 
-  case 22:
-    // Set maximum current
-    // Used to set a maximum current PER MOTOR (not total device current). If current on either motor exceeds the maximum level, BOTH motors will be stopped.
-    // Value is in amps and can be any value from 1 to 30. Default is 12 amps, if the user chooses to set a higher level it is highly recommended to use a cooling fan.
-    // One may wonder why we don't permit milliamp-level adjustment the way we do with voltage. The reason is that current sensing on this device is crude and
-    // setting a precision current limit isn't possible anyway.
+        case 3:
+            // If voltage exceeds the value set here, the motors will be turned off, however the valute set here can also not exceed AbsMaxVoltage which is
+            // determined by the hardware on the board. MaxVoltage is cleared at startup (and set to default of AbsMaxVoltage) so must be re-set by serial
+            // at each boot. The value is sent in 0.2 volt increments with valid values being:
+            // 30 to 140 (6 volts to 28 volts)
+            // However again this is subject to AbsMaxVoltage which for all curent board revisios is actually capped at 16 volts.
+            // The function for converting volts to command data is Value = (desired volts / 0.2)
 
-    // If valid value sent, update MaxWatt
+            // If valid value is sent, update MaxVoltage
+            /*val = mtcu_buffer[2];
+              if (val >= 30 && val <= 140)        // Allowable range
+              {
+                if (val <= (AbsMaxVoltage * 5)) // But constrain also to our board-specific AbsMaxVoltage
+                {
+                    MaxVoltage = ((float)val * 0.2);
+                }
+              }*/
+            break;
+
+        case 4:
+            // Motor 2 Forward
+            // setSpeed(2, getSpeedCommand_fromSerial(mtcu_buffer[2]));
+            break;
+
+        case 5:
+            // Motor 2 Reverse
+            // setSpeed(2, -getSpeedCommand_fromSerial(mtcu_buffer[2]));
+            break;
+
+            // cases  6-13 reserved for future compatibility with the equivalent Sabertooth commands
+
+        case 14:
+            // Serial1 Watchdog (disabled by default on each boot)
+            // Values greater than 0 will enabled the watchdog. The value specifies what length of time the controller will wait for a new serial command, after which if it does not receive one it will
+            // stop the motors as a safety precaution. This can help guard against for example the communication cable becoming disconnected.
+            // The the value passed is 0 it will disable the watchdog, however the feature is disabled by default on each restart so you don't need to do anything if you don't want it.
+            // Note also the serial watchdog has no effect when the Scout is running in RC mode.
+
+            if (mtcu_buffer[2] == 0)
+            {
+                // SerialWatchdog = false;
+            }
+            else
+            {
+                // The length of time for the watchdog to wait is set in 100mS increments, so for example a value of 10 would equate to a watchdog timeout of 1000mS (1 second).
+                // Valid data is a number from 0 to 255 which corresponds to watchdog timeouts of 100ms (1/10 second) to 25500mS (25.5 seconds)
+                // The function for converting watchdog time to command data is Value = desired time in mS / 100
+                // SerialWatchdogTimeout_mS = mtcu_buffer[2] * 100;
+                // SerialWatchdog = true;
+            }
+            break;
+
+        case 15:
+            // Change baud rate. If valid value passed, re-start the hardware serial port at the selected baud rate
+            // Serial1.println(6);
+            /*Serial1.end();
+            delay(1);
+            switch (mtcu_buffer[2])
+            {
+            case BAUD_CODE_2400:
+              Serial1.begin(2400);
+              break;
+            case BAUD_CODE_9600:
+              Serial1.begin(9600);
+              break;
+            case BAUD_CODE_19200:
+              Serial1.begin(19200);
+              break;
+            case BAUD_CODE_38400:
+              Serial1.begin(38400);
+              break;
+            case BAUD_CODE_115200:
+              Serial1.begin(115200);
+              break;
+            case BAUD_CODE_57600:
+              Serial1.begin(57600);
+              break;
+            }*/
+            break;
+
+        // cases 16-17 reserved for future compatibility with Sabertooth commands (ramping and deadband)
+        // case  19 presently un-assigned
+        case 19:
+            // Throttle position
+            if (mtcu_buffer[2])
+            {
+                // Throttle = mtcu_buffer[2];
+            }
+            break;
+        case 20:
+            // Direct fan control
+            // Set fan speed to value 0-255
+            /*setFanSpeed(mtcu_buffer[2]);
+              // If user sets a fan speed, we switch to ManualFanControl. They can revert to automatic control by issuing command 21
+              ManualFanControl = true;*/
+            break;
+
+        case 21:
+            // Set fan control to "Automatic"
+            // Fan control is automatic by default, so this command doesn't need to be issued unless the user initiated manual fan control (command 20) and now wants to revert to automatic.
+            // Value is ignored.
+            // ManualFanControl = false;
+            break;
+
+        case 22:
+            // Set maximum current
+            // Used to set a maximum current PER MOTOR (not total device current). If current on either motor exceeds the maximum level, BOTH motors will be stopped.
+            // Value is in amps and can be any value from 1 to 30. Default is 12 amps, if the user chooses to set a higher level it is highly recommended to use a cooling fan.
+            // One may wonder why we don't permit milliamp-level adjustment the way we do with voltage. The reason is that current sensing on this device is crude and
+            // setting a precision current limit isn't possible anyway.
+
+            // If valid value sent, update MaxWatt
 
 #if defined REV1_3 || defined REV1_2
 #if defined HIGH_CURRENT
-    if (sentence->Value > 0 && sentence->Value <= 60)
-    {
-      MaxCurrent = sentence->Value;
-    }
-    else
-    {
-      MaxCurrent = 60;
-    }
+            if (mtcu_buffer[2] > 0 && mtcu_buffer[2] <= 60)
+            {
+                MaxCurrent = mtcu_buffer[2];
+            }
+            else
+            {
+                MaxCurrent = 60;
+            }
 #elif defined LOW_CURRENT
-    if (sentence->Value > 0 && sentence->Value <= 6)
-    {
-      MaxCurrent = sentence->Value;
-    }
-    else
-    {
-      MaxCurrent = 6;
-    }
+            if (mtcu_buffer[2] > 0 && mtcu_buffer[2] <= 6)
+            {
+                MaxCurrent = mtcu_buffer[2];
+            }
+            else
+            {
+                MaxCurrent = 6;
+            }
 #else
-    if (sentence->Value > 0 && sentence->Value <= 20)
-    {
-      MaxCurrent = sentence->Value;
-    }
-    else
-    {
-      MaxCurrent = 20;
-    }
+            if (mtcu_buffer[2] > 0 && mtcu_buffer[2] <= 20)
+            {
+                MaxCurrent = mtcu_buffer[2];
+            }
+            else
+            {
+                MaxCurrent = 20;
+            }
 #endif
 #elif defined REV1_1
-    if (sentence->Value > 0 && sentence->Value <= 30)
-    {
-      MaxCurrent = sentence->Value;
-    }
-    else
-    {
-      MaxCurrent = 30;
-    }
+            if (mtcu_buffer[2] > 0 && mtcu_buffer[2] <= 30)
+            {
+                MaxCurrent = mtcu_buffer[2];
+            }
+            else
+            {
+                MaxCurrent = 30;
+            }
 #endif
-    
-    break;
 
-  case 23:
-    // Brake motors at stop
-    // The default method of stopping the motors is simply to quit powering them. However this does nothing to keep them from free-wheeling in response to an external
-    // force. If we actually want them to remain stopped, we need to "brake" them. This is done by shorting both motor leads together which creates resistance inside
-    // the motor that can help keep it stationary. The motor of course can still be turned as the brake is not very strong. But it can make a difference in some applications.
-    // For tracked vehicles we will typically want this enabled since turning at slow speed is accomplished by keeping one track stationary.
-    // The BrakeAtStop setting defaults to false at bootup but can be set by the user via this serial command. Pass a value of 1 (true) in the data byte to enable, or 0 (false) to disable.
-    /*if (sentence->Value)
-    {
-      BrakeAtStop = true;
-      // If a motor is already stopped go ahead and apply the brakes now
-      if (M1_Speed == 0)
-        BrakeMotor1();
-      if (M2_Speed == 0)
-        BrakeMotor2();
-    }
-    else
-    {
-      BrakeAtStop = false;
-    }*/
-    break;
+            break;
 
-  case 24:
-    // Drag Inner Track
-    // This function was created to compensate for certain gearboxes such as the Taigen V2 Steel 3:1 and 4:1 gearboxes that have inadequate
-    // internal friction to prevent freewheeling with any sort of external force. When used in a tank or similar vehicle that requires
-    // differential motor speed in order to turn, the model may become difficult or impossible to steer.
-    //
-    // The effect is most pronounced on heavy wide-tracked models with metal upgrades, such as the King Tiger, Jagdtiger, Panther, Jagdpanther, etc....
-    // In these cases reducing voltage to the inner track to steer does nothing, the outer (faster) track has enough traction with the ground to
-    // keep driving the model straight forward and the inner track just freewheels to keep up, rather than "dragging" the model into a turn as it should.
-    //
-    // The DragInnerTrack setting defaults to false at bootup but can be set by the user via this serial command. Pass a value of 1 (true) in the data byte
-    // to enable, or 0 (false) to disable. When enabled, the Scout will determine which motor is supposed to be turning slower than the other, and attempt
-    // to prevent it from freewheeling beyond the desired speed by "dragging" it with brief, pulsed brake commands.
-    // See the DragMotor() function on the MOTOR tab of this sketch for further comments.
-    /*if (sentence->Value)
-      DragInnerTrack = true;
-    else
-      DragInnerTrack = false;*/
-    break;
-  case 25:
-    // Max speed forward set by user in op config
-    if (sentence->Value)
-    {
-      //MaxSpeedForward = sentence->Value;
-    }
-    break;
-  case 26:
-    // Max speed reverse set by user in op config
-    if (sentence->Value)
-    {
-      //MaxSpeedReverse = sentence->Value;
-    }
-    break;
-  case 27:
-    // Torque modifier for the current selected gear 0-255 = 0 - 100%
-    if (sentence->Value)
-    {
-      //GearTorque = sentence->Value;
-    }
-    break;
-  case 46:
-    // Throttle position
-    if (sentence->Value)
-    {
-      //Throttle = sentence->Value;
+        case 23:
+            // Brake motors at stop
+            // The default method of stopping the motors is simply to quit powering them. However this does nothing to keep them from free-wheeling in response to an external
+            // force. If we actually want them to remain stopped, we need to "brake" them. This is done by shorting both motor leads together which creates resistance inside
+            // the motor that can help keep it stationary. The motor of course can still be turned as the brake is not very strong. But it can make a difference in some applications.
+            // For tracked vehicles we will typically want this enabled since turning at slow speed is accomplished by keeping one track stationary.
+            // The BrakeAtStop setting defaults to false at bootup but can be set by the user via this serial command. Pass a value of 1 (true) in the data byte to enable, or 0 (false) to disable.
+            /*if (mtcu_buffer[2])
+            {
+              BrakeAtStop = true;
+              // If a motor is already stopped go ahead and apply the brakes now
+              if (M1_Speed == 0)
+                BrakeMotor1();
+              if (M2_Speed == 0)
+                BrakeMotor2();
+            }
+            else
+            {
+              BrakeAtStop = false;
+            }*/
+            break;
+
+        case 24:
+            // Drag Inner Track
+            // This function was created to compensate for certain gearboxes such as the Taigen V2 Steel 3:1 and 4:1 gearboxes that have inadequate
+            // internal friction to prevent freewheeling with any sort of external force. When used in a tank or similar vehicle that requires
+            // differential motor speed in order to turn, the model may become difficult or impossible to steer.
+            //
+            // The effect is most pronounced on heavy wide-tracked models with metal upgrades, such as the King Tiger, Jagdtiger, Panther, Jagdpanther, etc....
+            // In these cases reducing voltage to the inner track to steer does nothing, the outer (faster) track has enough traction with the ground to
+            // keep driving the model straight forward and the inner track just freewheels to keep up, rather than "dragging" the model into a turn as it should.
+            //
+            // The DragInnerTrack setting defaults to false at bootup but can be set by the user via this serial command. Pass a value of 1 (true) in the data byte
+            // to enable, or 0 (false) to disable. When enabled, the Scout will determine which motor is supposed to be turning slower than the other, and attempt
+            // to prevent it from freewheeling beyond the desired speed by "dragging" it with brief, pulsed brake commands.
+            // See the DragMotor() function on the MOTOR tab of this sketch for further comments.
+            /*if (mtcu_buffer[2])
+              DragInnerTrack = true;
+            else
+              DragInnerTrack = false;*/
+            break;
+        case 25:
+            // Max speed forward set by user in op config
+            if (mtcu_buffer[2])
+            {
+                // MaxSpeedForward = mtcu_buffer[2];
+            }
+            break;
+        case 26:
+            // Max speed reverse set by user in op config
+            if (mtcu_buffer[2])
+            {
+                // MaxSpeedReverse = mtcu_buffer[2];
+            }
+            break;
+        case 27:
+            // Torque modifier for the current selected gear 0-255 = 0 - 100%
+            if (mtcu_buffer[2])
+            {
+                // GearTorque = mtcu_buffer[2];
+            }
+            break;
+        case 46:
+            // Throttle position
+            if (mtcu_buffer[2])
+            {
+                // Throttle = mtcu_buffer[2];
 #ifdef uart_debug
-      Serial.print(" t ");
-      Serial.println(Throttle);
+                Serial.print(" t ");
+                Serial.println(Throttle);
 #endif
-    }
-    break;
-  case 75:
-    // Vehicle speed scaled by max speed values
-    if (sentence->Value)
-    {
-      //vehicleSpeed = sentence->Value;
+            }
+            break;
+        case 75:
+            // Vehicle speed scaled by max speed values
+            if (mtcu_buffer[2])
+            {
+                // vehicleSpeed = mtcu_buffer[2];
 #ifdef uart_debug
-      Serial.print(" vs ");
-      Serial.println(vehicleSpeed);
+                Serial.print(" vs ");
+                Serial.println(vehicleSpeed);
 #endif
+            }
+            break;
+        default:
+            break;
+        }
     }
-    break;
-  default:
-    break;
-  }
 }
 
-int16_t getSpeedCommand_fromSerial(uint8_t val)
+/*int16_t getSpeedCommand_fromSerial(uint8_t val)
 {
   // Serial speed commands should be 0 to 127.
   //val = constrain(val, 0, 127);
 
   // Now multiply by 3 to scale our speed value (from 0 to 127) to our PWM duty cycle range (0 to 381)
   return val * 2;
-}
+}*/
 
 /*void setChannelsMTCU(){
-	uint8_t crc = crsf_crc8(&crsf_buffer[2], crsf_buffer[1] - 1);
+    uint8_t crc = crsf_crc8(&crsf_buffer[2], crsf_buffer[1] - 1);
 
-	if(crc == crsf_buffer[25]){
+    if(crc == crsf_buffer[25]){
 
     if (crsf_buffer[1] == 24)
     {
@@ -515,27 +534,25 @@ int16_t getSpeedCommand_fromSerial(uint8_t val)
 //    	brake_on_stop = 1;
 //    }
 if(bi_direction){
-	if((crsf_channels[crsf_input_channel] > 980) && (crsf_channels[crsf_input_channel] <996)){
-	newinput = 1000;
-	}else{
-	newinput = map(crsf_channels[crsf_input_channel], 174, 1810, 0, 2000);
+    if((crsf_channels[crsf_input_channel] > 980) && (crsf_channels[crsf_input_channel] <996)){
+    newinput = 1000;
+    }else{
+    newinput = map(crsf_channels[crsf_input_channel], 174, 1810, 0, 2000);
     }
 }else{
     if(crsf_channels[crsf_input_channel]<= 174){
-    	newinput = 0;
+        newinput = 0;
     }else{
     newinput = map(crsf_channels[crsf_input_channel], 174, 1810, 47, 2047);
-	}
+    }
 }
     signaltimeout = 0;
     if((adjusted_input == 0) && !armed){
-    	zero_input_count++;
+        zero_input_count++;
     }else{
-    	zero_input_count = 0;
+        zero_input_count = 0;
     }
-	}else{
-		invalid_crc++;
-	}
+    }else{
+        invalid_crc++;
+    }
 }*/
-
-
