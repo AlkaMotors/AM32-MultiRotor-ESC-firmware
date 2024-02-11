@@ -322,7 +322,7 @@ uint16_t desired_angle = 90;
 
 uint16_t target_e_com_time = 0;
 int16_t Speed_pid_output;
-char use_speed_control_loop = 0;
+char use_speed_control_loop = 1;
 float input_override = 0;
 int16_t	use_current_limit_adjust = 2000;
 char use_current_limit = 0;
