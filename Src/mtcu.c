@@ -65,17 +65,17 @@ if (ReadData(&Sentence))
 // -------------------------------------------------------------------------------------------------------------------------------------------------->
 // SERIAL COMMANDS - Check the serial port, do whatever we're told
 // -------------------------------------------------------------------------------------------------------------------------------------------------->
-boolean ReadData(DataSentence *sentence)
+bool ReadData(DataSentence *sentence)
 {
   //byte ByteIn;
-  boolean addressReceived = false; // Have we received a byte that matches our address
-  //boolean longAddressReceived = false;
+  bool addressReceived = false; // Have we received a byte that matches our address
+  //bool longAddressReceived = false;
   static char input_line[SENTENCE_BYTES];
   //static char input_line_long[LONG_SENTENCE_BYTES];
   static uint8_t numBytes = 0; // Start off with no data received
   //static uint8_t longNumBytes = 0;
 
-  boolean SentenceReceived = false; // Start off false, will get set to true if a valid sentence was received
+  bool SentenceReceived = false; // Start off false, will get set to true if a valid sentence was received
 
   // Read all the bytes that are available, starting with the first byte that matches our address
  /* while (Serial1.available())
@@ -164,7 +164,7 @@ boolean ReadData(DataSentence *sentence)
   return SentenceReceived;
 }
 
-boolean ChecksumValid(DataSentence *sentence)
+bool ChecksumValid(DataSentence *sentence)
 {
   uint8_t check = (sentence->Address + sentence->Command + sentence->Value) & B01111111;
 
@@ -174,7 +174,7 @@ boolean ChecksumValid(DataSentence *sentence)
     return false;
 }
 
-boolean longChecksumValid(DataSentence *sentence)
+bool longChecksumValid(DataSentence *sentence)
 {
   uint8_t check = (sentence->Address + sentence->Command + sentence->Value + sentence->Modifier) & B01111111;
 
@@ -472,7 +472,7 @@ void ProcessCommand(DataSentence *sentence)
 int16_t getSpeedCommand_fromSerial(uint8_t val)
 {
   // Serial speed commands should be 0 to 127.
-  val = constrain(val, 0, 127);
+  //val = constrain(val, 0, 127);
 
   // Now multiply by 3 to scale our speed value (from 0 to 127) to our PWM duty cycle range (0 to 381)
   return val * 2;
