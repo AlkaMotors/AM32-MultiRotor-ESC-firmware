@@ -32,6 +32,8 @@ void MX_TIM17_Init(void);
 //static void MX_USART1_UART_Init(void);
 void crsf_UART_Init(void);
 void receiveCRSF();
+void mtcu_UART_Init(void);
+void receiveMTCU();
 void UN_TIM_Init(void);
 
 void LED_GPIO_init(void);
