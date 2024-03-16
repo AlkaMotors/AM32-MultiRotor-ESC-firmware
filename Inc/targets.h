@@ -36,7 +36,6 @@
 
 //GLOBAL
 //#define USE_ADC_INPUT
-//#define USE_ALKAS_DEBUG_LED
 
 /******************************* L431 Targets ***************************************/
 #ifdef NEUTRON_L431
@@ -234,6 +233,25 @@
 #define HARDWARE_GROUP_F0_A
 //#define USE_SERIAL_TELEMETRY
 #define PA6_VOLTAGE
+#endif
+
+#ifdef ARIA70A_F051
+#define FILE_NAME				"ARIA70A_F051"
+#define FIRMWARE_NAME           "Aria 70A"
+#define DEAD_TIME               45
+#define HARDWARE_GROUP_F0_A
+//#define USE_SERIAL_TELEMETRY
+#define PA6_VOLTAGE
+#define USE_RGB_LED
+
+#define RGBLED_RED_GPIOx        GPIOA
+#define RGBLED_RED_PIN          LL_GPIO_PIN_15
+#define RGBLED_GREEN_GPIOx      GPIOB
+#define RGBLED_GREEN_PIN        LL_GPIO_PIN_3
+#define RGBLED_BLUE_GPIOx       GPIOB
+#define RGBLED_BLUE_PIN         LL_GPIO_PIN_4
+#define LED_IS_OPENDRAIN        true
+
 #endif
 
 #ifdef HVFLYCOLOR_F051
@@ -1358,6 +1376,41 @@
 #define TARGET_MIN_BEMF_COUNTS 6
 //#define USE_SERIAL_TELEMETRY // moved to individual ESCs
 #define USE_ADC
+
+#ifdef USE_RGB_LED
+    #ifndef RGBLED_RED_GPIOx
+        #define RGBLED_RED_GPIOx    GPIOB
+    #endif
+    #ifndef RGBLED_GREEN_GPIOx
+        #define RGBLED_GREEN_GPIOx  GPIOB
+    #endif
+    #ifndef RGBLED_BLUE_GPIOx
+        #define RGBLED_BLUE_GPIOx   GPIOB
+    #endif
+    #ifndef RGBLED_RED_PIN
+        #define RGBLED_RED_PIN      LL_GPIO_PIN_8
+    #endif
+    #ifndef RGBLED_GREEN_PIN
+        #define RGBLED_GREEN_PIN    LL_GPIO_PIN_3
+    #endif
+    #ifndef RGBLED_BLUE_PIN
+        #define RGBLED_BLUE_PIN     LL_GPIO_PIN_5
+    #endif
+    #ifndef LED_IS_OPENDRAIN
+        #define LED_IS_OPENDRAIN    true
+    #endif
+#else
+    #ifndef LED_GPIOx
+        #define LED_GPIOx           GPIOA
+    #endif
+    #ifndef LED_PIN
+        #define LED_PIN             LL_GPIO_PIN_15
+    #endif
+    #ifndef LED_IS_OPENDRAIN
+        #define LED_IS_OPENDRAIN true
+    #endif
+#endif
+
 #endif
 
 
