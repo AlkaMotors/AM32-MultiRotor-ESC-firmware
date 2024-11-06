@@ -218,14 +218,15 @@
 //===========================================================================
 
 uint8_t drive_by_rpm = 0;
+//uint32_t MAXIMUM_RPM_SPEED_CONTROL = 5000;
 uint32_t MAXIMUM_RPM_SPEED_CONTROL = 5000;
-uint32_t MINIMUM_RPM_SPEED_CONTROL = 500;
+uint32_t MINIMUM_RPM_SPEED_CONTROL = 800;
 
  //assign speed control PID values values are x10000
  fastPID speedPid = {      //commutation speed loop time
- 		.Kp = 10,
+ 		.Kp = 15,
  		.Ki = 0,
- 		.Kd = 100,
+ 		.Kd = 110,
  		.integral_limit = 10000,
  		.output_limit = 50000
  };
@@ -272,9 +273,9 @@ char TLM_ON_INTERVAL = 0;
 uint8_t telemetry_interval_ms = 30;
 uint8_t TEMPERATURE_LIMIT = 255;  // degrees 255 to disable
 char advance_level = 2;			// 7.5 degree increments 0 , 7.5, 15, 22.5)
-uint16_t motor_kv = 2000;
-char motor_poles = 14;
-uint16_t CURRENT_LIMIT = 202;
+uint16_t motor_kv = 4140;
+char motor_poles = 2;
+uint16_t CURRENT_LIMIT = 302;
 uint8_t sine_mode_power = 5;
 char drag_brake_strength = 10;		// Drag Brake Power when brake on stop is enabled
 uint8_t driving_brake_strength = 10;
@@ -282,17 +283,17 @@ uint8_t dead_time_override = DEAD_TIME;
 char sine_mode_changeover_thottle_level = 5;	// Sine Startup Range
 uint16_t stall_protect_target_interval = TARGET_STALL_PROTECTION_INTERVAL;
 char USE_HALL_SENSOR = 0;
-uint16_t enter_sine_angle = 180;
+uint16_t enter_sine_angle = 60;
 char do_once_sinemode= 0;
 //============================= Servo Settings ==============================
-uint16_t servo_low_threshold = 1100;	// anything below this point considered 0
-uint16_t servo_high_threshold = 1900;	// anything above this point considered 2000 (max)
+uint16_t servo_low_threshold = 950;	// anything below this point considered 0
+uint16_t servo_high_threshold = 1950;	// anything above this point considered 2000 (max)
 uint16_t servo_neutral = 1500;
 uint8_t servo_dead_band = 100;
 
 //========================= Battery Cuttoff Settings ========================
 char LOW_VOLTAGE_CUTOFF = 0;		// Turn Low Voltage CUTOFF on or off
-uint16_t low_cell_volt_cutoff = 330;	// 3.3volts per cell
+uint16_t low_cell_volt_cutoff = 310;	// 3.3volts per cell
 
 //=========================== END EEPROM Defaults ===========================
 
@@ -314,14 +315,14 @@ uint8_t EEPROM_VERSION;
 //move these to targets folder or peripherals for each mcu
 char RC_CAR_REVERSE = 0;   // have to set bidirectional, comp_pwm off and stall protection off, no sinusoidal startup
 uint16_t ADC_CCR = 30;
-uint16_t current_angle = 90;
-uint16_t desired_angle = 90;
+uint16_t current_angle = 60;
+uint16_t desired_angle = 60;
 
 uint16_t target_e_com_time = 0;
 int16_t Speed_pid_output;
 char use_speed_control_loop = 0;
 float input_override = 0;
-int16_t	use_current_limit_adjust = 2000;
+int16_t	use_current_limit_adjust = 3000;
 char use_current_limit = 0;
 float stall_protection_adjust = 0;
 
@@ -354,7 +355,7 @@ int16_t actual_current = 0;
 
 char lowkv = 0;
 
-uint16_t min_startup_duty = 120;
+uint16_t min_startup_duty = 200;
 uint16_t sin_mode_min_s_d = 120;
 char bemf_timeout = 10;
 
@@ -385,7 +386,7 @@ uint16_t TIMER1_MAX_ARR = TIM1_AUTORELOAD;      // maximum auto reset register v
 uint16_t duty_cycle_maximum = TIM1_AUTORELOAD;     //restricted by temperature or low rpm throttle protect
 uint16_t low_rpm_level  = 20;        // thousand erpm used to set range for throttle resrictions
 uint16_t high_rpm_level = 70;      //
-uint16_t throttle_max_at_low_rpm  = 400;
+uint16_t throttle_max_at_low_rpm  = 300;
 uint16_t throttle_max_at_high_rpm = TIM1_AUTORELOAD;
 
 uint16_t commutation_intervals[6] = {0};
